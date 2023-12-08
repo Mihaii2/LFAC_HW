@@ -1,13 +1,16 @@
+END_USR_TYPES
+
+int myint;
+char myChar;
+bool myBool;
+
+END_GLOBAL_VARS
 
 
-int function(int x, float y, char z, string w);
 
-const int myArray[200][20];
+END_GLOBAL_FUNCS
 
-
-
-
-begin_progr
-    function(10, 20, 2, 2);
-
-end_progr
+clean_code_executer() {
+    abc = (a + age) + 3 < 3;
+    while(3) {}
+}

@@ -3,21 +3,13 @@
 #include <string>
 #include <vector>
 using namespace std;
+extern FILE* yyin;
+extern char* yytext;
+extern int yylineno;
+extern int yylex();
+void yyerror(const char * s);
 
-// User-defined data types
-class MyClass {
-public:
-    int myField;
-    void myMethod() {
-        cout << "Hello from myMethod!" << endl;
-    }
-};
-
-// Global variables
-int globalVar;
-
-// Function declarations
-void globalFunction(int param);
+// void globalFunction(int param);
 
 %}
 
@@ -25,30 +17,35 @@ void globalFunction(int param);
     int intValue;
     float floatValue;
     char charValue;
-    string stringValue;
     bool boolValue;
-    MyClass* classValue;
+    char* string;
 }
+
 
 %token <intValue> INT
 %token <floatValue> FLOAT
 %token <charValue> CHAR
-%token <stringValue> STRING
+%token <string> STRING
 %token <boolValue> BOOL
-%token ID TYPE 
+%token <string> ID TYPE
+%token IF ELSE WHILE FOR  
+%token SPECIAL_FUNCTION END_USR_TYPES END_GLOBAL_VARS END_GLOBAL_FUNCS
+%token CONST CLASS
+%token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV 0 MOD AND OR
 
-%type <intValue> expression
-%type <boolValue> boolean_expression
-%type <classValue> user_defined_type
-
+%start program 
 %%
 // Entry point of the program
-program: user_defined_types 'END_USR_TYPES' global_variables 'END_GLOBAL_VAR' global_function_definitions 'END_GLOBAL_FUNC' special_function
+program: user_defined_types END_USR_TYPES declarations END_GLOBAL_VARS global_function_definitions END_GLOBAL_FUNCS special_function {printf("The programme is correct!\n");}
 
 
+user_defined_types: /* epsilon */
+                    | user_defined_types user_defined_type
+                    ;
 
 // User-defined data types
-user_defined_type: 'class' ID '{' class_body '}' {
+user_defined_type: CLASS ID '{' class_body '}' {
+    printf("User-defined type: %s\n", $2);
     // Code to handle user-defined types
     // You can store the type information in a symbol table or generate C++ code for the type
 }
@@ -58,36 +55,49 @@ class_body: /* epsilon */
             ;
 
 class_member: TYPE ID ';'
-            | TYPE ID '(' parameters ')' '{' statements '}'
+            | TYPE ID '(' list_param ')' '{' statements '}'
             ;
 
 // Global variables
-global_variables: global_variable
-                | global_variables global_variable
+declarations : decl ';'
+                | declarations  decl ';'
                 ;
 
-global_variable: TYPE ID {
+decl: TYPE ID {
+    printf("Variable: %s, name: %s\n", $1, $2);
     // Code to handle global variable declarations
     // You can store the variable information in a symbol table or generate C++ code for the variable
     // Access the variable using $$ = $2;
-}
+    }
+        | CONST TYPE ID '=' CONST_VAL {
+            // Code to handle global constant declarations
+            // You can store the constant information in a symbol table or generate C++ code for the constant
+            // Access the constant using $$ = $4;
+        }
+
+CONST_VAL: INT
+            | FLOAT
+            | CHAR
+            | STRING
+            | BOOL
+            ;
 
 // Function definitions
-global_function_definitions: global_function_definition
+global_function_definitions: /* epsilon */
                             | global_function_definitions global_function_definition
                             ;
 
-global_function_definition: TYPE ID '(' parameters ')' '{' statements '}' {
+global_function_definition: TYPE ID '(' list_param ')' '{' statements '}' {
     // Code to handle function definitions
     // You can store the function information in a symbol table or generate C++ code for the function
     // Access the function using $$ = $2;
 }
 
-parameters: /* epsilon */
-            | parameters parameter
+list_param: /* epsilon */
+            | list_param param
             ;
 
-parameter: TYPE ID {
+param: TYPE ID {
     // Code to handle function parameters
     // You can store the parameter information in a symbol table or generate C++ code for the parameter
 }
@@ -96,7 +106,6 @@ parameter: TYPE ID {
 
 
 statements: /* epsilon */
-            | statement
             | statements statement
             ;
 
@@ -105,7 +114,7 @@ statement: assignment_statement
             | function_call_statement
             ;
 
-assignment_statement: left_value '=' expression {
+assignment_statement: left_value ASSIGN expr ';' {
     // Code to handle assignment statements
     // You can generate C++ code for the assignment
 }
@@ -114,24 +123,24 @@ left_value: ID
             | array_element_access
             ;
 
-array_element_access: ID '[' expression ']'
+array_element_access: ID '[' expr ']'
 
 control_statement: if_statement
                     | for_statement
                     | while_statement
                     ;
 
-if_statement: 'if' '(' boolean_expression ')' '{' statements '}' {
+if_statement: IF '(' expr ')' '{' statements '}' {
     // Code to handle if statements
     // You can generate C++ code for the if statement
 }
 
-for_statement: 'for' '(' assignment_statement ';' boolean_expression ';' assignment_statement ')' '{' statements '}' {
+for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' statements '}' {
     // Code to handle for statements
     // You can generate C++ code for the for statement
 }
 
-while_statement: 'while' '(' boolean_expression ')' '{' statements '}' {
+while_statement: WHILE '(' expr ')' '{' statements '}' {
     // Code to handle while statements
     // You can generate C++ code for the while statement
 }
@@ -141,72 +150,76 @@ function_call_statement: function_call ';'
 function_call: ID '(' arguments ')'
 
 arguments: /* epsilon */
-            | argument_list
+            | arguments_list
             ;
 
-argument_list: expression
-                | argument_list ',' expression
+arguments_list: expr
+                | arguments_list ',' expr
                 ;
 
-// Arithmetic expressions
-expression: INT
-            | FLOAT
-            | CHAR
-            | STRING
-            | boolean_expression
-            | user_defined_type
-            | ID
-            | expression '+' expression
-            | expression '-' expression
-            | expression '*' expression
-            | expression '/' expression
-            | '(' expression ')'
-            ;
+expr: NOT T
+    | T
+    ;
+T : T EQ F
+    | T NEQ F
+    | F
+    ;
+F : F LT G
+    | F LE G
+    | F GT G
+    | F GE G
+    | G
+    ;
+G : G PLUS H
+    | G MINUS H
+    | H
+    ;
+H : H MUL I
+    | H DIV I
+    | H MOD I
+    | I
+    ;
+I : I AND J
+    | I OR J
+    | J
+    ;
+J : ID
+    | INT
+    | FLOAT
+    | CHAR
+    | STRING
+    | BOOL
+    | '(' expr ')'
+    ;
 
-// Boolean expressions
-boolean_expression: BOOL
-            | expression '<' expression
-            | expression '>' expression
-            | expression '<=' expression
-            | expression '>=' expression
-            | expression '==' expression
-            | expression '!=' expression
-            | '!' boolean_expression
-            | boolean_expression '&&' boolean_expression
-            | boolean_expression '||' boolean_expression
-            | '(' boolean_expression ')'
-            ;
 
-special_function: 'clean_code_executer' '(' ')' '{' statements '}'
-
+special_function: SPECIAL_FUNCTION '(' ')' '{' statements '}'
 %%
 
-// Function to evaluate expressions
-void Eval(arg) {
-    // Code to evaluate expressions
-    // You can generate C++ code for evaluating the expression
+// // Function to evaluate expressions
+// void Eval(arg) {
+//     // Code to evaluate expressions
+//     // You can generate C++ code for evaluating the expression
+// }
+
+// // Function to get the type of an expression
+// void TypeOf(arg) {
+//     // Code to get the type of an expression
+//     // You can generate C++ code for getting the type
+// }
+
+// // Function to handle global function calls
+// void globalFunction(int param) {
+//     // Code to handle global function calls
+//     // You can generate C++ code for the function call
+// }
+
+void yyerror(const char * s){
+    printf("error: %s at line:%d\n",s,yylineno);
 }
 
-// Function to get the type of an expression
-void TypeOf(arg) {
-    // Code to get the type of an expression
-    // You can generate C++ code for getting the type
-}
-
-// Function to handle global function calls
-void globalFunction(int param) {
-    // Code to handle global function calls
-    // You can generate C++ code for the function call
-}
-
-%%
-
-int yucc() {
-    yyparse();
-    return 0;
-}
-
-int yyerror(const char* msg) {
-    cout << "Error: " << msg << endl;
-    return 0;
-}
+int main(int argc, char** argv){
+     yyin=fopen(argv[1],"r");
+     yyparse();
+    
+} 

@@ -19,7 +19,7 @@ class StructList {
    
     public:
     bool existsStruct(const char* s);
-    void addStruct(const char* name, IdList* vars);
+    // void addStruct(const char* name, IdList* vars);
     void printStructs();
     ~StructList();
 };
