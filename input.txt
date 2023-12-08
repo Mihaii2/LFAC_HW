@@ -1,20 +1,13 @@
-struct abc = { int a, char b,bool d}; 
+
 
 int function(int x, float y, char z, string w);
 
 const int myArray[200][20];
 
-################declarations
 
-struct abc egsegsrgeg;
 
-struct char
-
-struct struct_that_doesnt_exist asdaefsjdaj;
 
 begin_progr
     function(10, 20, 2, 2);
-    struct abc = {5,b,0};
-    struct abc myABC = {2, 'a', true, 'a', 5};
 
 end_progr

@@ -8,5 +8,8 @@ struct student {
 
 int main() {
     struct student myStudent = {"John", 100};
+    int a;
+    char b;
+    struct student masdna;
     return 0;
 }

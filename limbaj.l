@@ -4,6 +4,8 @@
 %}
 %option noyywrap
 %%
+"begin_types" {return GBINTYPES;}
+"end_types" {return ENDTYPES;}
 "begin_progr" {return BGIN;}
 "end_progr" {return END;}
 "const" {yylval.string = strdup(yytext); return CONST;}
