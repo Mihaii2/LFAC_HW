@@ -38,7 +38,7 @@ void yyerror(const char * s);
 %start PROGRAM 
 %%
 // Entry point of the program
-PROGRAM: DECLARATIONS _end_global_vars USER_DEFINED_TYPES _end_usr_types global_function_definitions _end_global_funcs SPECIAL_FUNCTION {printf("The programme is correct!\n");}
+PROGRAM: DECLARATIONS _end_global_vars USER_DEFINED_TYPES _end_usr_types GLOBAL_FUNCTION_DEFINITIONS _end_global_funcs SPECIAL_FUNCTION {printf("The programme is correct!\n");}
 
 
 USER_DEFINED_TYPES: /* epsilon */
