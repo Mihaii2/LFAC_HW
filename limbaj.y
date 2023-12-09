@@ -32,7 +32,7 @@ void yyerror(const char * s);
 %token SPECIAL_FUNCTION END_USR_TYPES END_GLOBAL_VARS END_GLOBAL_FUNCS
 %token CONST USR_TYPE
 %token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV 0 MOD AND OR
-%type <floatValue> expr T F G H I J
+%type <floatValue> expr T F G H I J VAR
 
 %start program 
 %%
@@ -115,10 +115,7 @@ statement: assignment_statement
             | function_call_statement
             ;
 
-assignment_statement: left_value ASSIGN expr ';' {
-    // Code to handle assignment statements
-    // You can generate C++ code for the assignment
-}
+assignment_statement: left_value ASSIGN expr ';'  {cout << "Expression value: " << $3 << endl;}
 
 left_value: ID
             | array_element_access
@@ -154,8 +151,8 @@ arguments: /* epsilon */
             | arguments_list
             ;
 
-arguments_list: expr {cout << "Expression value: " << $1 << endl;}
-                | arguments_list ',' expr { cout << "Expression value: " << $3 << endl;}
+arguments_list: expr 
+                | arguments_list ',' expr 
                 ;
 
 expr: expr AND T { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }
@@ -184,13 +181,15 @@ H : H MUL I { $$ = ($1 * $3); cout << "e * e" << " : " <<$$ <<endl; }
 I : NOT J { $$ = !$2; cout << "!e" << " : " <<$$ <<endl; }
     | J { $$ = $1;}
     ;
-J :// ID 
-     INT { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+J : VAR { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+    | INT { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
     | FLOAT { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
     | BOOL { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
     | '(' expr ')' { $$ = $2; cout << "e->(e)" <<$2<< " : " <<$$ <<endl; }
     ;
 
+VAR : ID {$$ = 0 /* add code to retreive variable value */; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+    ;
 
 special_function: SPECIAL_FUNCTION '(' ')' '{' statements '}'
 %%

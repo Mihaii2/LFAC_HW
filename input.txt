@@ -19,6 +19,6 @@ END_USR_TYPES
 END_GLOBAL_FUNCS
 
 clean_code_executer() {
-    abc =  12 + 34;
+    abc =  12 + 2 < 3 + myVar;
     
 }
