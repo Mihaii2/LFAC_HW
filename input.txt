@@ -19,6 +19,6 @@ END_USR_TYPES
 END_GLOBAL_FUNCS
 
 clean_code_executer() {
-    abc =  2+3*4 > 23.5;
-    while(3) {}
+    abc =  12 + 34;
+    
 }

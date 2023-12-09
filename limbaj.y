@@ -158,7 +158,8 @@ arguments_list: expr {cout << "Expression value: " << $1 << endl;}
                 | arguments_list ',' expr { cout << "Expression value: " << $3 << endl;}
                 ;
 
-expr: NOT T { $$ = !($2); cout << "!" << endl; }
+expr: expr AND T { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }
+    | expr OR T {($1 || $3); cout << "e || e" << " : " <<$$ <<endl; }
     | T { $$ = $1;}
     ;
 T : T EQ F { $$ = ($1 == $3); cout << "e == e" << ": " <<$$ <<endl; }
@@ -180,8 +181,7 @@ H : H MUL I { $$ = ($1 * $3); cout << "e * e" << " : " <<$$ <<endl; }
     | H MOD I { $$ = (float)((int)$1 % (int)$3); cout << "e % e" << " : " <<$$ <<endl; }
     | I { $$ = $1;}
     ;
-I : I AND J { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }
-    | I OR J { $$ = ($1 || $3); cout << "e || e" << " : " <<$$ <<endl; }
+I : NOT J { $$ = !$2; cout << "!e" << " : " <<$$ <<endl; }
     | J { $$ = $1;}
     ;
 J :// ID 

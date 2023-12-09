@@ -5,6 +5,6 @@ using namespace std;
 
 
 int main() {
-    cout << (3.2) % 2<<endl;
+    cout <<  !(23)  << endl;
     return 0;
 }
