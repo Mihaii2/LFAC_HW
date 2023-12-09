@@ -57,7 +57,7 @@ USR_TYPE_BODY: /* epsilon */
             ;
 
 MEMBER: _type _id ';'
-            | _type _id '(' LIST_PARAM ')' '{' STATEMENTS '}'
+            | _type _id '(' FUNC_PARAM ')' '{' STATEMENTS '}'
             ;
 
 // Global variables
@@ -89,15 +89,18 @@ GLOBAL_FUNCTION_DEFINITIONS: /* epsilon */
                             | GLOBAL_FUNCTION_DEFINITIONS GLOBAL_FUNCTION_DEFINITION
                             ;
 
-GLOBAL_FUNCTION_DEFINITION: _type _id '(' LIST_PARAM ')' '{' STATEMENTS '}' {
+GLOBAL_FUNCTION_DEFINITION: _type _id '(' FUNC_PARAM ')' '{' STATEMENTS '}' {
     // Code to handle function definitions
     // You can store the function information in a symbol table or generate C++ code for the function
     // Access the function using $$ = $2;
 }
 
-LIST_PARAM: /* epsilon */
-            | LIST_PARAM PARAM
+FUNC_PARAM: /* epsilon */
+            | LIST_PARAM
             ;
+
+LIST_PARAM: PARAM
+            | LIST_PARAM ',' PARAM
 
 PARAM: _type _id {
     // Code to handle function parameters
