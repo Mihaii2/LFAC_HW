@@ -101,6 +101,7 @@ FUNC_PARAM: /* epsilon */
 
 LIST_PARAM: PARAM
             | LIST_PARAM ',' PARAM
+            ;
 
 PARAM: _type _id {
     // Code to handle function parameters

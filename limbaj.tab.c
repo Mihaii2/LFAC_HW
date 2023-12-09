@@ -582,12 +582,12 @@ static const yytype_uint8 yyrline[] =
 {
        0,    41,    41,    44,    45,    49,    55,    56,    59,    60,
       64,    65,    68,    74,    80,    81,    82,    83,    84,    88,
-      89,    92,    98,    99,   102,   103,   105,   113,   114,   117,
-     118,   119,   122,   124,   125,   128,   130,   131,   132,   135,
-     140,   145,   150,   152,   154,   155,   158,   159,   160,   163,
-     164,   165,   167,   168,   169,   171,   172,   173,   174,   175,
-     177,   178,   179,   181,   182,   183,   184,   186,   187,   189,
-     190,   191,   192,   193,   196,   199
+      89,    92,    98,    99,   102,   103,   106,   114,   115,   118,
+     119,   120,   123,   125,   126,   129,   131,   132,   133,   136,
+     141,   146,   151,   153,   155,   156,   159,   160,   161,   164,
+     165,   166,   168,   169,   170,   172,   173,   174,   175,   176,
+     178,   179,   180,   182,   183,   184,   185,   187,   188,   190,
+     191,   192,   193,   194,   197,   200
 };
 #endif
 
@@ -1302,7 +1302,7 @@ yyreduce:
     break;
 
   case 26: /* PARAM: _type _id  */
-#line 105 "limbaj.y"
+#line 106 "limbaj.y"
                  {
     // Code to handle function parameters
     // You can store the parameter information in a symbol table or generate C++ code for the parameter
@@ -1311,13 +1311,13 @@ yyreduce:
     break;
 
   case 32: /* ASSIGNMENT_STATEMENT: LEFT_VALUE _assign EXPR ';'  */
-#line 122 "limbaj.y"
+#line 123 "limbaj.y"
                                                    {cout << "Expression value: " << (yyvsp[-1].floatValue) << endl;}
 #line 1317 "limbaj.tab.c"
     break;
 
   case 39: /* IF_STATEMENT: _if '(' EXPR ')' '{' STATEMENTS '}'  */
-#line 135 "limbaj.y"
+#line 136 "limbaj.y"
                                                   {
     // Code to handle if statements
     // You can generate C++ code for the if statement
@@ -1326,7 +1326,7 @@ yyreduce:
     break;
 
   case 40: /* FOR_STATEMENT: _for '(' ASSIGNMENT_STATEMENT ';' EXPR ';' ASSIGNMENT_STATEMENT ')' '{' STATEMENTS '}'  */
-#line 140 "limbaj.y"
+#line 141 "limbaj.y"
                                                                                                       {
     // Code to handle for statements
     // You can generate C++ code for the for statement
@@ -1335,7 +1335,7 @@ yyreduce:
     break;
 
   case 41: /* WHILE_STATEMENT: _while '(' EXPR ')' '{' STATEMENTS '}'  */
-#line 145 "limbaj.y"
+#line 146 "limbaj.y"
                                                         {
     // Code to handle while statements
     // You can generate C++ code for the while statement
@@ -1344,157 +1344,157 @@ yyreduce:
     break;
 
   case 49: /* EXPR: EXPR _and T  */
-#line 163 "limbaj.y"
+#line 164 "limbaj.y"
                   { (yyval.floatValue) = ((yyvsp[-2].floatValue) && (yyvsp[0].floatValue)); cout << "e && e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1350 "limbaj.tab.c"
     break;
 
   case 50: /* EXPR: EXPR _or T  */
-#line 164 "limbaj.y"
+#line 165 "limbaj.y"
                  {((yyvsp[-2].floatValue) || (yyvsp[0].floatValue)); cout << "e || e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1356 "limbaj.tab.c"
     break;
 
   case 51: /* EXPR: T  */
-#line 165 "limbaj.y"
+#line 166 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1362 "limbaj.tab.c"
     break;
 
   case 52: /* T: T _eq F  */
-#line 167 "limbaj.y"
+#line 168 "limbaj.y"
             { (yyval.floatValue) = ((yyvsp[-2].floatValue) == (yyvsp[0].floatValue)); cout << "e == e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1368 "limbaj.tab.c"
     break;
 
   case 53: /* T: T _neq F  */
-#line 168 "limbaj.y"
+#line 169 "limbaj.y"
                { (yyval.floatValue) = ((yyvsp[-2].floatValue) != (yyvsp[0].floatValue)); cout << "e != e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1374 "limbaj.tab.c"
     break;
 
   case 54: /* T: F  */
-#line 169 "limbaj.y"
+#line 170 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1380 "limbaj.tab.c"
     break;
 
   case 55: /* F: F _lt G  */
-#line 171 "limbaj.y"
+#line 172 "limbaj.y"
             { (yyval.floatValue) = ((yyvsp[-2].floatValue) < (yyvsp[0].floatValue)); cout << "e < e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1386 "limbaj.tab.c"
     break;
 
   case 56: /* F: F _le G  */
-#line 172 "limbaj.y"
+#line 173 "limbaj.y"
               { (yyval.floatValue) = ((yyvsp[-2].floatValue) <= (yyvsp[0].floatValue)); cout << "e <= e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1392 "limbaj.tab.c"
     break;
 
   case 57: /* F: F _gt G  */
-#line 173 "limbaj.y"
+#line 174 "limbaj.y"
               { (yyval.floatValue) = ((yyvsp[-2].floatValue) > (yyvsp[0].floatValue)); cout << "e > e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1398 "limbaj.tab.c"
     break;
 
   case 58: /* F: F _ge G  */
-#line 174 "limbaj.y"
+#line 175 "limbaj.y"
               { (yyval.floatValue) = ((yyvsp[-2].floatValue) >= (yyvsp[0].floatValue)); cout << "e >= e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1404 "limbaj.tab.c"
     break;
 
   case 59: /* F: G  */
-#line 175 "limbaj.y"
+#line 176 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1410 "limbaj.tab.c"
     break;
 
   case 60: /* G: G _plus H  */
-#line 177 "limbaj.y"
+#line 178 "limbaj.y"
               { (yyval.floatValue) = ((yyvsp[-2].floatValue) + (yyvsp[0].floatValue)); cout << "e + e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1416 "limbaj.tab.c"
     break;
 
   case 61: /* G: G _minus H  */
-#line 178 "limbaj.y"
+#line 179 "limbaj.y"
                  { (yyval.floatValue) = ((yyvsp[-2].floatValue) - (yyvsp[0].floatValue)); cout << "e - e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1422 "limbaj.tab.c"
     break;
 
   case 62: /* G: H  */
-#line 179 "limbaj.y"
+#line 180 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1428 "limbaj.tab.c"
     break;
 
   case 63: /* H: H _mul I  */
-#line 181 "limbaj.y"
+#line 182 "limbaj.y"
              { (yyval.floatValue) = ((yyvsp[-2].floatValue) * (yyvsp[0].floatValue)); cout << "e * e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1434 "limbaj.tab.c"
     break;
 
   case 64: /* H: H _div I  */
-#line 182 "limbaj.y"
+#line 183 "limbaj.y"
                { (yyval.floatValue) = ((yyvsp[-2].floatValue) / (yyvsp[0].floatValue)); cout << "e / e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1440 "limbaj.tab.c"
     break;
 
   case 65: /* H: H _mod I  */
-#line 183 "limbaj.y"
+#line 184 "limbaj.y"
                { (yyval.floatValue) = (float)((int)(yyvsp[-2].floatValue) % (int)(yyvsp[0].floatValue)); cout << "e % e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1446 "limbaj.tab.c"
     break;
 
   case 66: /* H: I  */
-#line 184 "limbaj.y"
+#line 185 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1452 "limbaj.tab.c"
     break;
 
   case 67: /* I: _not J  */
-#line 186 "limbaj.y"
+#line 187 "limbaj.y"
            { (yyval.floatValue) = !(yyvsp[0].floatValue); cout << "!e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1458 "limbaj.tab.c"
     break;
 
   case 68: /* I: J  */
-#line 187 "limbaj.y"
+#line 188 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1464 "limbaj.tab.c"
     break;
 
   case 69: /* J: VAR  */
-#line 189 "limbaj.y"
+#line 190 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue); cout << "e->" <<(yyvsp[0].floatValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1470 "limbaj.tab.c"
     break;
 
   case 70: /* J: _int  */
-#line 190 "limbaj.y"
+#line 191 "limbaj.y"
            { (yyval.floatValue) = (yyvsp[0].intValue); cout << "e->" <<(yyvsp[0].intValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1476 "limbaj.tab.c"
     break;
 
   case 71: /* J: _float  */
-#line 191 "limbaj.y"
+#line 192 "limbaj.y"
              { (yyval.floatValue) = (yyvsp[0].floatValue); cout << "e->" <<(yyvsp[0].floatValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1482 "limbaj.tab.c"
     break;
 
   case 72: /* J: _bool  */
-#line 192 "limbaj.y"
+#line 193 "limbaj.y"
             { (yyval.floatValue) = (yyvsp[0].boolValue); cout << "e->" <<(yyvsp[0].boolValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1488 "limbaj.tab.c"
     break;
 
   case 73: /* J: '(' EXPR ')'  */
-#line 193 "limbaj.y"
+#line 194 "limbaj.y"
                    { (yyval.floatValue) = (yyvsp[-1].floatValue); cout << "e->(e)" <<(yyvsp[-1].floatValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1494 "limbaj.tab.c"
     break;
 
   case 74: /* VAR: _id  */
-#line 196 "limbaj.y"
+#line 197 "limbaj.y"
           {(yyval.floatValue) = 0 /* add code to retreive variable value */; cout << "e->" <<(yyvsp[0].string)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1500 "limbaj.tab.c"
     break;
@@ -1693,7 +1693,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 200 "limbaj.y"
+#line 201 "limbaj.y"
 
 
 // // Function to evaluate expressions
