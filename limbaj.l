@@ -4,7 +4,7 @@
 %}
 %option noyywrap
 %%
-"class" { return CLASS; }
+"usr_type" { return USR_TYPE; }
 "bool"|"int"|"float"|"char"|"string" {yylval.string = strdup(yytext);return TYPE;}
 "==" {return EQ;}
 "!=" {return NEQ;}
@@ -20,7 +20,6 @@
 "!" {return NOT;}
 "&&" {return AND;}
 "||" {return OR;}
-
 "END_USR_TYPES" {return END_USR_TYPES;}
 "END_GLOBAL_VARS" {return END_GLOBAL_VARS;}
 "END_GLOBAL_FUNCS" {return END_GLOBAL_FUNCS;}
@@ -29,8 +28,8 @@
 "while" {return WHILE;}
 "for" {return FOR;}
 "clean_code_executer" {return SPECIAL_FUNCTION;}
-[0-9]+ {return INT;}
-[0-9]+"."[0-9]+ {return FLOAT;}
+[0-9]+ {yylval.intValue = atoi(yytext); return INT;}
+[0-9]+"."[0-9]+ {yylval.floatValue = atof(yytext); return FLOAT;}
 \"[^\"]*\" {yylval.string = strdup(yytext); return STRING;}
 "true"|"false" {yylval.string = strdup(yytext); return BOOL;}
 "=" {return ASSIGN;}

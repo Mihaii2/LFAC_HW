@@ -70,7 +70,7 @@ extern int yydebug;
     END_GLOBAL_VARS = 271,         /* END_GLOBAL_VARS  */
     END_GLOBAL_FUNCS = 272,        /* END_GLOBAL_FUNCS  */
     CONST = 273,                   /* CONST  */
-    CLASS = 274,                   /* CLASS  */
+    USR_TYPE = 274,                /* USR_TYPE  */
     NOT = 275,                     /* NOT  */
     EQ = 276,                      /* EQ  */
     NEQ = 277,                     /* NEQ  */

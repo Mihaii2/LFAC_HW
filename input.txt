@@ -1,16 +1,24 @@
-END_USR_TYPES
-
 int myint;
 char myChar;
 bool myBool;
 
 END_GLOBAL_VARS
 
+usr_type myType {
+    int a;
+    char gender;
+
+    int someMethod() {
+        
+    }
+}
+
+END_USR_TYPES
 
 
 END_GLOBAL_FUNCS
 
 clean_code_executer() {
-    abc = (a + age) + 3 < 3;
+    abc =  2+3*4 > 23.5;
     while(3) {}
 }

@@ -30,13 +30,14 @@ void yyerror(const char * s);
 %token <string> ID TYPE
 %token IF ELSE WHILE FOR  
 %token SPECIAL_FUNCTION END_USR_TYPES END_GLOBAL_VARS END_GLOBAL_FUNCS
-%token CONST CLASS
+%token CONST USR_TYPE
 %token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV 0 MOD AND OR
+%type <floatValue> expr T F G H I J
 
 %start program 
 %%
 // Entry point of the program
-program: user_defined_types END_USR_TYPES declarations END_GLOBAL_VARS global_function_definitions END_GLOBAL_FUNCS special_function {printf("The programme is correct!\n");}
+program: declarations END_GLOBAL_VARS user_defined_types END_USR_TYPES global_function_definitions END_GLOBAL_FUNCS special_function {printf("The programme is correct!\n");}
 
 
 user_defined_types: /* epsilon */
@@ -44,17 +45,17 @@ user_defined_types: /* epsilon */
                     ;
 
 // User-defined data types
-user_defined_type: CLASS ID '{' class_body '}' {
+user_defined_type: USR_TYPE ID '{' usr_type_body '}' {
     printf("User-defined type: %s\n", $2);
     // Code to handle user-defined types
     // You can store the type information in a symbol table or generate C++ code for the type
 }
 
-class_body: /* epsilon */
-            | class_body class_member
+usr_type_body: /* epsilon */
+            | usr_type_body member
             ;
 
-class_member: TYPE ID ';'
+member: TYPE ID ';'
             | TYPE ID '(' list_param ')' '{' statements '}'
             ;
 
@@ -153,43 +154,41 @@ arguments: /* epsilon */
             | arguments_list
             ;
 
-arguments_list: expr
-                | arguments_list ',' expr
+arguments_list: expr {cout << "Expression value: " << $1 << endl;}
+                | arguments_list ',' expr { cout << "Expression value: " << $3 << endl;}
                 ;
 
-expr: NOT T
-    | T
+expr: NOT T { $$ = !($2); cout << "!" << endl; }
+    | T { $$ = $1;}
     ;
-T : T EQ F
-    | T NEQ F
-    | F
+T : T EQ F { $$ = ($1 == $3); cout << "e == e" << ": " <<$$ <<endl; }
+    | T NEQ F { $$ = ($1 != $3); cout << "e != e" << ": " <<$$ <<endl; }
+    | F { $$ = $1;}
     ;
-F : F LT G
-    | F LE G
-    | F GT G
-    | F GE G
-    | G
+F : F LT G { $$ = ($1 < $3); cout << "e < e" << ": " <<$$ <<endl; }
+    | F LE G { $$ = ($1 <= $3); cout << "e <= e" << ": " <<$$ <<endl; }
+    | F GT G { $$ = ($1 > $3); cout << "e > e" << ": " <<$$ <<endl; }
+    | F GE G { $$ = ($1 >= $3); cout << "e >= e" << ": " <<$$ <<endl; }
+    | G { $$ = $1;}
     ;
-G : G PLUS H
-    | G MINUS H
-    | H
+G : G PLUS H { $$ = ($1 + $3); cout << "e + e" << " : " <<$$ <<endl; }
+    | G MINUS H { $$ = ($1 - $3); cout << "e - e" << " : " <<$$ <<endl; }
+    | H { $$ = $1;}
     ;
-H : H MUL I
-    | H DIV I
-    | H MOD I
-    | I
+H : H MUL I { $$ = ($1 * $3); cout << "e * e" << " : " <<$$ <<endl; }
+    | H DIV I { $$ = ($1 / $3); cout << "e / e" << " : " <<$$ <<endl; }
+    | H MOD I { $$ = (float)((int)$1 % (int)$3); cout << "e % e" << " : " <<$$ <<endl; }
+    | I { $$ = $1;}
     ;
-I : I AND J
-    | I OR J
-    | J
+I : I AND J { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }
+    | I OR J { $$ = ($1 || $3); cout << "e || e" << " : " <<$$ <<endl; }
+    | J { $$ = $1;}
     ;
-J : ID
-    | INT
-    | FLOAT
-    | CHAR
-    | STRING
-    | BOOL
-    | '(' expr ')'
+J :// ID 
+     INT { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+    | FLOAT { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+    | BOOL { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+    | '(' expr ')' { $$ = $2; cout << "e->(e)" <<$2<< " : " <<$$ <<endl; }
     ;
 
 
