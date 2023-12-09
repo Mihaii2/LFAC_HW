@@ -22,22 +22,23 @@ void yyerror(const char * s);
 }
 
 
-%token <intValue> INT
-%token <floatValue> FLOAT
-%token <charValue> CHAR
-%token <string> STRING
-%token <boolValue> BOOL
-%token <string> ID TYPE
-%token IF ELSE WHILE FOR  
-%token SPECIAL_FUNCTION END_USR_TYPES END_GLOBAL_VARS END_GLOBAL_FUNCS
-%token CONST USR_TYPE
-%token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV 0 MOD AND OR
-%type <floatValue> expr T F G H I J VAR
+%token <intValue> _int
+%token <floatValue> _float
+%token <charValue> _char
+%token <string> _string
+%token <boolValue> _bool
+%token <string> _id _type
+%token _if _while _for  
+%token _special_function _end_usr_types _end_global_vars _end_global_funcs
+%token _const _usr_type
+%token _not _eq _neq _lt _le _gt _ge _assign _plus _minus _mul _div _mod _and _or _geq _leq
+
+%type <floatValue> EXPR T F G H I J VAR
 
 %start program 
 %%
 // Entry point of the program
-program: declarations END_GLOBAL_VARS user_defined_types END_USR_TYPES global_function_definitions END_GLOBAL_FUNCS special_function {printf("The programme is correct!\n");}
+program: declarations _end_global_vars user_defined_types _end_usr_types global_function_definitions _end_global_funcs special_function {printf("The programme is correct!\n");}
 
 
 user_defined_types: /* epsilon */
@@ -45,7 +46,7 @@ user_defined_types: /* epsilon */
                     ;
 
 // User-defined data types
-user_defined_type: USR_TYPE ID '{' usr_type_body '}' {
+user_defined_type: _usr_type _id '{' usr_type_body '}' {
     printf("User-defined type: %s\n", $2);
     // Code to handle user-defined types
     // You can store the type information in a symbol table or generate C++ code for the type
@@ -55,8 +56,8 @@ usr_type_body: /* epsilon */
             | usr_type_body member
             ;
 
-member: TYPE ID ';'
-            | TYPE ID '(' list_param ')' '{' statements '}'
+member: _type _id ';'
+            | _type _id '(' list_param ')' '{' statements '}'
             ;
 
 // Global variables
@@ -64,23 +65,23 @@ declarations : decl ';'
                 | declarations  decl ';'
                 ;
 
-decl: TYPE ID {
+decl: _type _id {
     printf("Variable: %s, name: %s\n", $1, $2);
     // Code to handle global variable declarations
     // You can store the variable information in a symbol table or generate C++ code for the variable
     // Access the variable using $$ = $2;
     }
-        | CONST TYPE ID '=' CONST_VAL {
+        | _const _type _id '=' CONST_VAL {
             // Code to handle global constant declarations
             // You can store the constant information in a symbol table or generate C++ code for the constant
             // Access the constant using $$ = $4;
         }
 
-CONST_VAL: INT
-            | FLOAT
-            | CHAR
-            | STRING
-            | BOOL
+CONST_VAL: _int
+            | _float
+            | _char
+            | _string
+            | _bool
             ;
 
 // Function definitions
@@ -88,7 +89,7 @@ global_function_definitions: /* epsilon */
                             | global_function_definitions global_function_definition
                             ;
 
-global_function_definition: TYPE ID '(' list_param ')' '{' statements '}' {
+global_function_definition: _type _id '(' list_param ')' '{' statements '}' {
     // Code to handle function definitions
     // You can store the function information in a symbol table or generate C++ code for the function
     // Access the function using $$ = $2;
@@ -98,7 +99,7 @@ list_param: /* epsilon */
             | list_param param
             ;
 
-param: TYPE ID {
+param: _type _id {
     // Code to handle function parameters
     // You can store the parameter information in a symbol table or generate C++ code for the parameter
 }
@@ -115,83 +116,84 @@ statement: assignment_statement
             | function_call_statement
             ;
 
-assignment_statement: left_value ASSIGN expr ';'  {cout << "Expression value: " << $3 << endl;}
+assignment_statement: left_value _assign EXPR ';'  {cout << "Expression value: " << $3 << endl;}
 
-left_value: ID
+left_value: _id
             | array_element_access
             ;
 
-array_element_access: ID '[' expr ']'
+array_element_access: _id '[' EXPR ']'
 
 control_statement: if_statement
                     | for_statement
                     | while_statement
                     ;
 
-if_statement: IF '(' expr ')' '{' statements '}' {
+if_statement: _if '(' EXPR ')' '{' statements '}' {
     // Code to handle if statements
     // You can generate C++ code for the if statement
 }
 
-for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' statements '}' {
+for_statement: _for '(' assignment_statement ';' EXPR ';' assignment_statement ')' '{' statements '}' {
     // Code to handle for statements
     // You can generate C++ code for the for statement
 }
 
-while_statement: WHILE '(' expr ')' '{' statements '}' {
+while_statement: _while '(' EXPR ')' '{' statements '}' {
     // Code to handle while statements
     // You can generate C++ code for the while statement
 }
 
 function_call_statement: function_call ';'
 
-function_call: ID '(' arguments ')'
+function_call: _id '(' arguments ')'
 
 arguments: /* epsilon */
             | arguments_list
             ;
 
-arguments_list: expr 
-                | arguments_list ',' expr 
+arguments_list: EXPR 
+                | function_call
+                | arguments_list ',' EXPR 
                 ;
 
-expr: expr AND T { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }
-    | expr OR T {($1 || $3); cout << "e || e" << " : " <<$$ <<endl; }
+EXPR: EXPR _and T { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }
+    | EXPR _or T {($1 || $3); cout << "e || e" << " : " <<$$ <<endl; }
     | T { $$ = $1;}
     ;
-T : T EQ F { $$ = ($1 == $3); cout << "e == e" << ": " <<$$ <<endl; }
-    | T NEQ F { $$ = ($1 != $3); cout << "e != e" << ": " <<$$ <<endl; }
+T : T _eq F { $$ = ($1 == $3); cout << "e == e" << ": " <<$$ <<endl; }
+    | T _neq F { $$ = ($1 != $3); cout << "e != e" << ": " <<$$ <<endl; }
     | F { $$ = $1;}
     ;
-F : F LT G { $$ = ($1 < $3); cout << "e < e" << ": " <<$$ <<endl; }
-    | F LE G { $$ = ($1 <= $3); cout << "e <= e" << ": " <<$$ <<endl; }
-    | F GT G { $$ = ($1 > $3); cout << "e > e" << ": " <<$$ <<endl; }
-    | F GE G { $$ = ($1 >= $3); cout << "e >= e" << ": " <<$$ <<endl; }
+F : F _lt G { $$ = ($1 < $3); cout << "e < e" << ": " <<$$ <<endl; }
+    | F _le G { $$ = ($1 <= $3); cout << "e <= e" << ": " <<$$ <<endl; }
+    | F _gt G { $$ = ($1 > $3); cout << "e > e" << ": " <<$$ <<endl; }
+    | F _ge G { $$ = ($1 >= $3); cout << "e >= e" << ": " <<$$ <<endl; }
     | G { $$ = $1;}
     ;
-G : G PLUS H { $$ = ($1 + $3); cout << "e + e" << " : " <<$$ <<endl; }
-    | G MINUS H { $$ = ($1 - $3); cout << "e - e" << " : " <<$$ <<endl; }
+G : G _plus H { $$ = ($1 + $3); cout << "e + e" << " : " <<$$ <<endl; }
+    | G _minus H { $$ = ($1 - $3); cout << "e - e" << " : " <<$$ <<endl; }
     | H { $$ = $1;}
     ;
-H : H MUL I { $$ = ($1 * $3); cout << "e * e" << " : " <<$$ <<endl; }
-    | H DIV I { $$ = ($1 / $3); cout << "e / e" << " : " <<$$ <<endl; }
-    | H MOD I { $$ = (float)((int)$1 % (int)$3); cout << "e % e" << " : " <<$$ <<endl; }
+H : H _mul I { $$ = ($1 * $3); cout << "e * e" << " : " <<$$ <<endl; }
+    | H _div I { $$ = ($1 / $3); cout << "e / e" << " : " <<$$ <<endl; }
+    | H _mod I { $$ = (float)((int)$1 % (int)$3); cout << "e % e" << " : " <<$$ <<endl; }
     | I { $$ = $1;}
     ;
-I : NOT J { $$ = !$2; cout << "!e" << " : " <<$$ <<endl; }
+I : _not J { $$ = !$2; cout << "!e" << " : " <<$$ <<endl; }
     | J { $$ = $1;}
     ;
 J : VAR { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
-    | INT { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
-    | FLOAT { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
-    | BOOL { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
-    | '(' expr ')' { $$ = $2; cout << "e->(e)" <<$2<< " : " <<$$ <<endl; }
+    | _int { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+    | _float { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+    | _bool { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+    | '(' EXPR ')' { $$ = $2; cout << "e->(e)" <<$2<< " : " <<$$ <<endl; }
     ;
 
-VAR : ID {$$ = 0 /* add code to retreive variable value */; cout << "e->" <<$1<< " : " <<$$ <<endl; }
+VAR : _id {$$ = 0 /* add code to retreive variable value */; cout << "e->" <<$1<< " : " <<$$ <<endl; }
     ;
 
-special_function: SPECIAL_FUNCTION '(' ')' '{' statements '}'
+special_function: _special_function '(' ')' '{' statements '}'
 %%
 
 // // Function to evaluate expressions

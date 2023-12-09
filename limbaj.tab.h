@@ -51,40 +51,42 @@ extern int yydebug;
   enum yytokentype
   {
     YYEMPTY = -2,
-    DIV = 0,                       /* DIV  */
+    YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    INT = 258,                     /* INT  */
-    FLOAT = 259,                   /* FLOAT  */
-    CHAR = 260,                    /* CHAR  */
-    STRING = 261,                  /* STRING  */
-    BOOL = 262,                    /* BOOL  */
-    ID = 263,                      /* ID  */
-    TYPE = 264,                    /* TYPE  */
-    IF = 265,                      /* IF  */
-    ELSE = 266,                    /* ELSE  */
-    WHILE = 267,                   /* WHILE  */
-    FOR = 268,                     /* FOR  */
-    SPECIAL_FUNCTION = 269,        /* SPECIAL_FUNCTION  */
-    END_USR_TYPES = 270,           /* END_USR_TYPES  */
-    END_GLOBAL_VARS = 271,         /* END_GLOBAL_VARS  */
-    END_GLOBAL_FUNCS = 272,        /* END_GLOBAL_FUNCS  */
-    CONST = 273,                   /* CONST  */
-    USR_TYPE = 274,                /* USR_TYPE  */
-    NOT = 275,                     /* NOT  */
-    EQ = 276,                      /* EQ  */
-    NEQ = 277,                     /* NEQ  */
-    LT = 278,                      /* LT  */
-    LE = 279,                      /* LE  */
-    GT = 280,                      /* GT  */
-    GE = 281,                      /* GE  */
-    ASSIGN = 282,                  /* ASSIGN  */
-    PLUS = 283,                    /* PLUS  */
-    MINUS = 284,                   /* MINUS  */
-    MUL = 285,                     /* MUL  */
-    MOD = 286,                     /* MOD  */
-    AND = 287,                     /* AND  */
-    OR = 288                       /* OR  */
+    _int = 258,                    /* _int  */
+    _float = 259,                  /* _float  */
+    _char = 260,                   /* _char  */
+    _string = 261,                 /* _string  */
+    _bool = 262,                   /* _bool  */
+    _id = 263,                     /* _id  */
+    _type = 264,                   /* _type  */
+    _if = 265,                     /* _if  */
+    _while = 266,                  /* _while  */
+    _for = 267,                    /* _for  */
+    _special_function = 268,       /* _special_function  */
+    _end_usr_types = 269,          /* _end_usr_types  */
+    _end_global_vars = 270,        /* _end_global_vars  */
+    _end_global_funcs = 271,       /* _end_global_funcs  */
+    _const = 272,                  /* _const  */
+    _usr_type = 273,               /* _usr_type  */
+    _not = 274,                    /* _not  */
+    _eq = 275,                     /* _eq  */
+    _neq = 276,                    /* _neq  */
+    _lt = 277,                     /* _lt  */
+    _le = 278,                     /* _le  */
+    _gt = 279,                     /* _gt  */
+    _ge = 280,                     /* _ge  */
+    _assign = 281,                 /* _assign  */
+    _plus = 282,                   /* _plus  */
+    _minus = 283,                  /* _minus  */
+    _mul = 284,                    /* _mul  */
+    _div = 285,                    /* _div  */
+    _mod = 286,                    /* _mod  */
+    _and = 287,                    /* _and  */
+    _or = 288,                     /* _or  */
+    _geq = 289,                    /* _geq  */
+    _leq = 290                     /* _leq  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -101,7 +103,7 @@ union YYSTYPE
     bool boolValue;
     char* string;
 
-#line 105 "limbaj.tab.h"
+#line 107 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
