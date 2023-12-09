@@ -35,37 +35,37 @@ void yyerror(const char * s);
 
 %type <floatValue> EXPR T F G H I J VAR
 
-%start program 
+%start PROGRAM 
 %%
 // Entry point of the program
-program: declarations _end_global_vars user_defined_types _end_usr_types global_function_definitions _end_global_funcs special_function {printf("The programme is correct!\n");}
+PROGRAM: DECLARATIONS _end_global_vars USER_DEFINED_TYPES _end_usr_types global_function_definitions _end_global_funcs SPECIAL_FUNCTION {printf("The programme is correct!\n");}
 
 
-user_defined_types: /* epsilon */
-                    | user_defined_types user_defined_type
+USER_DEFINED_TYPES: /* epsilon */
+                    | USER_DEFINED_TYPES USER_DEFINED_TYPE
                     ;
 
 // User-defined data types
-user_defined_type: _usr_type _id '{' usr_type_body '}' {
+USER_DEFINED_TYPE: _usr_type _id '{' USR_TYPE_BODY '}' {
     printf("User-defined type: %s\n", $2);
     // Code to handle user-defined types
     // You can store the type information in a symbol table or generate C++ code for the type
 }
 
-usr_type_body: /* epsilon */
-            | usr_type_body member
+USR_TYPE_BODY: /* epsilon */
+            | USR_TYPE_BODY MEMBER
             ;
 
-member: _type _id ';'
-            | _type _id '(' list_param ')' '{' statements '}'
+MEMBER: _type _id ';'
+            | _type _id '(' LIST_PARAM ')' '{' STATEMENTS '}'
             ;
 
 // Global variables
-declarations : decl ';'
-                | declarations  decl ';'
+DECLARATIONS : DECL ';'
+                | DECLARATIONS  DECL ';'
                 ;
 
-decl: _type _id {
+DECL: _type _id {
     printf("Variable: %s, name: %s\n", $1, $2);
     // Code to handle global variable declarations
     // You can store the variable information in a symbol table or generate C++ code for the variable
@@ -85,21 +85,21 @@ CONST_VAL: _int
             ;
 
 // Function definitions
-global_function_definitions: /* epsilon */
-                            | global_function_definitions global_function_definition
+GLOBAL_FUNCTION_DEFINITIONS: /* epsilon */
+                            | GLOBAL_FUNCTION_DEFINITIONS GLOBAL_FUNCTION_DEFINITION
                             ;
 
-global_function_definition: _type _id '(' list_param ')' '{' statements '}' {
+GLOBAL_FUNCTION_DEFINITION: _type _id '(' LIST_PARAM ')' '{' STATEMENTS '}' {
     // Code to handle function definitions
     // You can store the function information in a symbol table or generate C++ code for the function
     // Access the function using $$ = $2;
 }
 
-list_param: /* epsilon */
-            | list_param param
+LIST_PARAM: /* epsilon */
+            | LIST_PARAM PARAM
             ;
 
-param: _type _id {
+PARAM: _type _id {
     // Code to handle function parameters
     // You can store the parameter information in a symbol table or generate C++ code for the parameter
 }
@@ -107,54 +107,54 @@ param: _type _id {
 
 
 
-statements: /* epsilon */
-            | statements statement
+STATEMENTS: /* epsilon */
+            | STATEMENTS STATEMENT
             ;
 
-statement: assignment_statement
-            | control_statement
-            | function_call_statement
+STATEMENT: ASSIGNMENT_STATEMENT
+            | CONTROL_STATEMENT
+            | FUNCTION_CALL_STATEMENT
             ;
 
-assignment_statement: left_value _assign EXPR ';'  {cout << "Expression value: " << $3 << endl;}
+ASSIGNMENT_STATEMENT: LEFT_VALUE _assign EXPR ';'  {cout << "Expression value: " << $3 << endl;}
 
-left_value: _id
-            | array_element_access
+LEFT_VALUE: _id
+            | ARRAY_ELEMENT_ACCESS
             ;
 
-array_element_access: _id '[' EXPR ']'
+ARRAY_ELEMENT_ACCESS: _id '[' EXPR ']'
 
-control_statement: if_statement
-                    | for_statement
-                    | while_statement
+CONTROL_STATEMENT: IF_STATEMENT
+                    | FOR_STATEMENT
+                    | WHILE_STATEMENT
                     ;
 
-if_statement: _if '(' EXPR ')' '{' statements '}' {
+IF_STATEMENT: _if '(' EXPR ')' '{' STATEMENTS '}' {
     // Code to handle if statements
     // You can generate C++ code for the if statement
 }
 
-for_statement: _for '(' assignment_statement ';' EXPR ';' assignment_statement ')' '{' statements '}' {
+FOR_STATEMENT: _for '(' ASSIGNMENT_STATEMENT ';' EXPR ';' ASSIGNMENT_STATEMENT ')' '{' STATEMENTS '}' {
     // Code to handle for statements
     // You can generate C++ code for the for statement
 }
 
-while_statement: _while '(' EXPR ')' '{' statements '}' {
+WHILE_STATEMENT: _while '(' EXPR ')' '{' STATEMENTS '}' {
     // Code to handle while statements
     // You can generate C++ code for the while statement
 }
 
-function_call_statement: function_call ';'
+FUNCTION_CALL_STATEMENT: FUNCTION_CALL ';'
 
-function_call: _id '(' arguments ')'
+FUNCTION_CALL: _id '(' ARGUMENTS ')'
 
-arguments: /* epsilon */
-            | arguments_list
+ARGUMENTS: /* epsilon */
+            | ARG_LIST
             ;
 
-arguments_list: EXPR 
-                | function_call
-                | arguments_list ',' EXPR 
+ARG_LIST: EXPR 
+                | FUNCTION_CALL
+                | ARG_LIST ',' EXPR 
                 ;
 
 EXPR: EXPR _and T { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }
@@ -193,7 +193,7 @@ J : VAR { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
 VAR : _id {$$ = 0 /* add code to retreive variable value */; cout << "e->" <<$1<< " : " <<$$ <<endl; }
     ;
 
-special_function: _special_function '(' ')' '{' statements '}'
+SPECIAL_FUNCTION: _special_function '(' ')' '{' STATEMENTS '}'
 %%
 
 // // Function to evaluate expressions

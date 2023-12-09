@@ -157,27 +157,27 @@ enum yysymbol_kind_t
   YYSYMBOL_44_ = 44,                       /* ','  */
   YYSYMBOL_YYACCEPT = 45,                  /* $accept  */
   YYSYMBOL_program = 46,                   /* program  */
-  YYSYMBOL_user_defined_types = 47,        /* user_defined_types  */
-  YYSYMBOL_user_defined_type = 48,         /* user_defined_type  */
-  YYSYMBOL_usr_type_body = 49,             /* usr_type_body  */
-  YYSYMBOL_member = 50,                    /* member  */
-  YYSYMBOL_declarations = 51,              /* declarations  */
-  YYSYMBOL_decl = 52,                      /* decl  */
+  YYSYMBOL_USER_DEFINED_TYPES = 47,        /* USER_DEFINED_TYPES  */
+  YYSYMBOL_USER_DEFINED_TYPE = 48,         /* USER_DEFINED_TYPE  */
+  YYSYMBOL_USR_TYPE_BODY = 49,             /* USR_TYPE_BODY  */
+  YYSYMBOL_MEMBER = 50,                    /* MEMBER  */
+  YYSYMBOL_DECLARATIONS = 51,              /* DECLARATIONS  */
+  YYSYMBOL_DECL = 52,                      /* DECL  */
   YYSYMBOL_CONST_VAL = 53,                 /* CONST_VAL  */
   YYSYMBOL_global_function_definitions = 54, /* global_function_definitions  */
   YYSYMBOL_global_function_definition = 55, /* global_function_definition  */
-  YYSYMBOL_list_param = 56,                /* list_param  */
+  YYSYMBOL_LIST_PARAM = 56,                /* LIST_PARAM  */
   YYSYMBOL_param = 57,                     /* param  */
-  YYSYMBOL_statements = 58,                /* statements  */
+  YYSYMBOL_STATEMENTS = 58,                /* STATEMENTS  */
   YYSYMBOL_statement = 59,                 /* statement  */
-  YYSYMBOL_assignment_statement = 60,      /* assignment_statement  */
-  YYSYMBOL_left_value = 61,                /* left_value  */
-  YYSYMBOL_array_element_access = 62,      /* array_element_access  */
-  YYSYMBOL_control_statement = 63,         /* control_statement  */
-  YYSYMBOL_if_statement = 64,              /* if_statement  */
-  YYSYMBOL_for_statement = 65,             /* for_statement  */
-  YYSYMBOL_while_statement = 66,           /* while_statement  */
-  YYSYMBOL_function_call_statement = 67,   /* function_call_statement  */
+  YYSYMBOL_ASSIGNMENT_STATEMENT = 60,      /* ASSIGNMENT_STATEMENT  */
+  YYSYMBOL_LEFT_VALUE = 61,                /* LEFT_VALUE  */
+  YYSYMBOL_ARRAY_ELEMENT_ACCESS = 62,      /* ARRAY_ELEMENT_ACCESS  */
+  YYSYMBOL_CONTROL_STATEMENT = 63,         /* CONTROL_STATEMENT  */
+  YYSYMBOL_IF_STATEMENT = 64,              /* IF_STATEMENT  */
+  YYSYMBOL_FOR_STATEMENT = 65,             /* FOR_STATEMENT  */
+  YYSYMBOL_WHILE_STATEMENT = 66,           /* WHILE_STATEMENT  */
+  YYSYMBOL_FUNCTION_CALL_STATEMENT = 67,   /* FUNCTION_CALL_STATEMENT  */
   YYSYMBOL_function_call = 68,             /* function_call  */
   YYSYMBOL_arguments = 69,                 /* arguments  */
   YYSYMBOL_arguments_list = 70,            /* arguments_list  */
@@ -189,7 +189,7 @@ enum yysymbol_kind_t
   YYSYMBOL_I = 76,                         /* I  */
   YYSYMBOL_J = 77,                         /* J  */
   YYSYMBOL_VAR = 78,                       /* VAR  */
-  YYSYMBOL_special_function = 79           /* special_function  */
+  YYSYMBOL_SPECIAL_FUNCTION = 79           /* SPECIAL_FUNCTION  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -608,15 +608,15 @@ static const char *const yytname[] =
   "_end_global_funcs", "_const", "_usr_type", "_not", "_eq", "_neq", "_lt",
   "_le", "_gt", "_ge", "_assign", "_plus", "_minus", "_mul", "_div",
   "_mod", "_and", "_or", "_geq", "_leq", "'{'", "'}'", "';'", "'('", "')'",
-  "'='", "'['", "']'", "','", "$accept", "program", "user_defined_types",
-  "user_defined_type", "usr_type_body", "member", "declarations", "decl",
+  "'='", "'['", "']'", "','", "$accept", "program", "USER_DEFINED_TYPES",
+  "USER_DEFINED_TYPE", "USR_TYPE_BODY", "MEMBER", "DECLARATIONS", "DECL",
   "CONST_VAL", "global_function_definitions", "global_function_definition",
-  "list_param", "param", "statements", "statement", "assignment_statement",
-  "left_value", "array_element_access", "control_statement",
-  "if_statement", "for_statement", "while_statement",
-  "function_call_statement", "function_call", "arguments",
+  "LIST_PARAM", "param", "STATEMENTS", "statement", "ASSIGNMENT_STATEMENT",
+  "LEFT_VALUE", "ARRAY_ELEMENT_ACCESS", "CONTROL_STATEMENT",
+  "IF_STATEMENT", "FOR_STATEMENT", "WHILE_STATEMENT",
+  "FUNCTION_CALL_STATEMENT", "function_call", "arguments",
   "arguments_list", "EXPR", "T", "F", "G", "H", "I", "J", "VAR",
-  "special_function", YY_NULLPTR
+  "SPECIAL_FUNCTION", YY_NULLPTR
 };
 
 static const char *
@@ -1254,13 +1254,13 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 2: /* program: declarations _end_global_vars user_defined_types _end_usr_types global_function_definitions _end_global_funcs special_function  */
+  case 2: /* program: DECLARATIONS _end_global_vars USER_DEFINED_TYPES _end_usr_types global_function_definitions _end_global_funcs SPECIAL_FUNCTION  */
 #line 41 "limbaj.y"
                                                                                                                                         {printf("The programme is correct!\n");}
 #line 1261 "limbaj.tab.c"
     break;
 
-  case 5: /* user_defined_type: _usr_type _id '{' usr_type_body '}'  */
+  case 5: /* USER_DEFINED_TYPE: _usr_type _id '{' USR_TYPE_BODY '}'  */
 #line 49 "limbaj.y"
                                                        {
     printf("User-defined type: %s\n", (yyvsp[-3].string));
@@ -1270,7 +1270,7 @@ yyreduce:
 #line 1271 "limbaj.tab.c"
     break;
 
-  case 12: /* decl: _type _id  */
+  case 12: /* DECL: _type _id  */
 #line 68 "limbaj.y"
                 {
     printf("Variable: %s, name: %s\n", (yyvsp[-1].string), (yyvsp[0].string));
@@ -1281,7 +1281,7 @@ yyreduce:
 #line 1282 "limbaj.tab.c"
     break;
 
-  case 13: /* decl: _const _type _id '=' CONST_VAL  */
+  case 13: /* DECL: _const _type _id '=' CONST_VAL  */
 #line 74 "limbaj.y"
                                          {
             // Code to handle global constant declarations
@@ -1291,7 +1291,7 @@ yyreduce:
 #line 1292 "limbaj.tab.c"
     break;
 
-  case 21: /* global_function_definition: _type _id '(' list_param ')' '{' statements '}'  */
+  case 21: /* global_function_definition: _type _id '(' LIST_PARAM ')' '{' STATEMENTS '}'  */
 #line 92 "limbaj.y"
                                                                             {
     // Code to handle function definitions
@@ -1310,13 +1310,13 @@ yyreduce:
 #line 1311 "limbaj.tab.c"
     break;
 
-  case 30: /* assignment_statement: left_value _assign EXPR ';'  */
+  case 30: /* ASSIGNMENT_STATEMENT: LEFT_VALUE _assign EXPR ';'  */
 #line 119 "limbaj.y"
                                                    {cout << "Expression value: " << (yyvsp[-1].floatValue) << endl;}
 #line 1317 "limbaj.tab.c"
     break;
 
-  case 37: /* if_statement: _if '(' EXPR ')' '{' statements '}'  */
+  case 37: /* IF_STATEMENT: _if '(' EXPR ')' '{' STATEMENTS '}'  */
 #line 132 "limbaj.y"
                                                   {
     // Code to handle if statements
@@ -1325,7 +1325,7 @@ yyreduce:
 #line 1326 "limbaj.tab.c"
     break;
 
-  case 38: /* for_statement: _for '(' assignment_statement ';' EXPR ';' assignment_statement ')' '{' statements '}'  */
+  case 38: /* FOR_STATEMENT: _for '(' ASSIGNMENT_STATEMENT ';' EXPR ';' ASSIGNMENT_STATEMENT ')' '{' STATEMENTS '}'  */
 #line 137 "limbaj.y"
                                                                                                       {
     // Code to handle for statements
@@ -1334,7 +1334,7 @@ yyreduce:
 #line 1335 "limbaj.tab.c"
     break;
 
-  case 39: /* while_statement: _while '(' EXPR ')' '{' statements '}'  */
+  case 39: /* WHILE_STATEMENT: _while '(' EXPR ')' '{' STATEMENTS '}'  */
 #line 142 "limbaj.y"
                                                         {
     // Code to handle while statements
