@@ -46,8 +46,11 @@ USER_DEFINED_TYPES: /* epsilon */
                     ;
 
 // User-defined data types
-USER_DEFINED_TYPE: _usr_type _id '{' USR_TYPE_BODY '}'
-                    ;
+USER_DEFINED_TYPE: _usr_type _id '{' USR_TYPE_BODY '}' {
+    printf("User-defined type: %s\n", $2);
+    // Code to handle user-defined types
+    // You can store the type information in a symbol table or generate C++ code for the type
+}
 
 USR_TYPE_BODY: /* epsilon */
             | USR_TYPE_BODY MEMBER
@@ -62,9 +65,17 @@ DECLARATIONS : DECL ';'
                 | DECLARATIONS  DECL ';'
                 ;
 
-DECL: _type _id 
-        | _const _type _id '=' CONST_VAL 
-        ;
+DECL: _type _id {
+    printf("Variable: %s, name: %s\n", $1, $2);
+    // Code to handle global variable declarations
+    // You can store the variable information in a symbol table or generate C++ code for the variable
+    // Access the variable using $$ = $2;
+    }
+        | _const _type _id '=' CONST_VAL {
+            // Code to handle global constant declarations
+            // You can store the constant information in a symbol table or generate C++ code for the constant
+            // Access the constant using $$ = $4;
+        }
 
 CONST_VAL: _int
             | _float
@@ -78,8 +89,11 @@ GLOBAL_FUNCTION_DEFINITIONS: /* epsilon */
                             | GLOBAL_FUNCTION_DEFINITIONS GLOBAL_FUNCTION_DEFINITION
                             ;
 
-GLOBAL_FUNCTION_DEFINITION: _type _id '(' FUNC_PARAM ')' '{' STATEMENTS '}' 
-                            ;
+GLOBAL_FUNCTION_DEFINITION: _type _id '(' FUNC_PARAM ')' '{' STATEMENTS '}' {
+    // Code to handle function definitions
+    // You can store the function information in a symbol table or generate C++ code for the function
+    // Access the function using $$ = $2;
+}
 
 FUNC_PARAM: /* epsilon */
             | LIST_PARAM
@@ -89,8 +103,10 @@ LIST_PARAM: PARAM
             | LIST_PARAM ',' PARAM
             ;
 
-PARAM: _type _id
-        ;
+PARAM: _type _id {
+    // Code to handle function parameters
+    // You can store the parameter information in a symbol table or generate C++ code for the parameter
+}
 
 
 
@@ -117,14 +133,20 @@ CONTROL_STATEMENT: IF_STATEMENT
                     | WHILE_STATEMENT
                     ;
 
-IF_STATEMENT: _if '(' EXPR ')' '{' STATEMENTS '}'
-                ;
+IF_STATEMENT: _if '(' EXPR ')' '{' STATEMENTS '}' {
+    // Code to handle if statements
+    // You can generate C++ code for the if statement
+}
 
-FOR_STATEMENT: _for '(' ASSIGNMENT_STATEMENT ';' EXPR ';' ASSIGNMENT_STATEMENT ')' '{' STATEMENTS '}'
-                ;
+FOR_STATEMENT: _for '(' ASSIGNMENT_STATEMENT ';' EXPR ';' ASSIGNMENT_STATEMENT ')' '{' STATEMENTS '}' {
+    // Code to handle for statements
+    // You can generate C++ code for the for statement
+}
 
-WHILE_STATEMENT: _while '(' EXPR ')' '{' STATEMENTS '}'
-                ;
+WHILE_STATEMENT: _while '(' EXPR ')' '{' STATEMENTS '}' {
+    // Code to handle while statements
+    // You can generate C++ code for the while statement
+}
 
 FUNCTION_CALL_STATEMENT: FUNCTION_CALL ';'
 
@@ -172,22 +194,29 @@ J : VAR { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
     | '(' EXPR ')' { $$ = $2; cout << "e->(e)" <<$2<< " : " <<$$ <<endl; }
     ;
 
-E = E + T
-    | E - T
-    | T
-    ;
-
-T = T * F
-    | T / F
-    | F
-    ;
-
-
 VAR : _id {$$ = 0 /* add code to retreive variable value */; cout << "e->" <<$1<< " : " <<$$ <<endl; }
     ;
 
 SPECIAL_FUNCTION: _special_function '(' ')' '{' STATEMENTS '}'
 %%
+
+// // Function to evaluate expressions
+// void Eval(arg) {
+//     // Code to evaluate expressions
+//     // You can generate C++ code for evaluating the expression
+// }
+
+// // Function to get the type of an expression
+// void TypeOf(arg) {
+//     // Code to get the type of an expression
+//     // You can generate C++ code for getting the type
+// }
+
+// // Function to handle global function calls
+// void globalFunction(int param) {
+//     // Code to handle global function calls
+//     // You can generate C++ code for the function call
+// }
 
 void yyerror(const char * s){
     printf("error: %s at line:%d\n",s,yylineno);
