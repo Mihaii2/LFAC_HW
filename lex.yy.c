@@ -952,40 +952,48 @@ YY_RULE_SETUP
 case 28:
 YY_RULE_SETUP
 #line 34 "limbaj.l"
-{yylval.string = strdup(yytext); return _bool;}
+{
+    if(yytext[0] == 't') {
+        yylval.boolValue = 1;
+    } else {
+        yylval.boolValue = 0;
+    
+    }
+    return _bool;
+}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 35 "limbaj.l"
+#line 43 "limbaj.l"
 {return _assign;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 36 "limbaj.l"
+#line 44 "limbaj.l"
 {yylval.string = strdup(yytext); return _id;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 37 "limbaj.l"
+#line 45 "limbaj.l"
 ;
 	YY_BREAK
 case 32:
 /* rule 32 can match eol */
 YY_RULE_SETUP
-#line 38 "limbaj.l"
+#line 46 "limbaj.l"
 {yylineno++;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 39 "limbaj.l"
+#line 47 "limbaj.l"
 {return yytext[0];}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 40 "limbaj.l"
+#line 48 "limbaj.l"
 ECHO;
 	YY_BREAK
-#line 989 "lex.yy.c"
+#line 997 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1990,5 +1998,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 40 "limbaj.l"
+#line 48 "limbaj.l"
 

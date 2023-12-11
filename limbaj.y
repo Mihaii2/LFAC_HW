@@ -194,6 +194,17 @@ J : VAR { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
     | '(' EXPR ')' { $$ = $2; cout << "e->(e)" <<$2<< " : " <<$$ <<endl; }
     ;
 
+E = E + T
+    | E - T
+    | T
+    ;
+
+T = T * F
+    | T / F
+    | F
+    ;
+
+
 VAR : _id {$$ = 0 /* add code to retreive variable value */; cout << "e->" <<$1<< " : " <<$$ <<endl; }
     ;
 

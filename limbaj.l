@@ -31,7 +31,15 @@
 [0-9]+"."[0-9]+ {yylval.floatValue = atof(yytext); return _float;}
 \'[^\']\' {yylval.charValue = yytext[1]; return _char;}
 \"[^\"]*\" {yylval.string = strdup(yytext); return _string;}
-"true"|"false" {yylval.string = strdup(yytext); return _bool;}
+"true"|"false" {
+    if(yytext[0] == 't') {
+        yylval.boolValue = 1;
+    } else {
+        yylval.boolValue = 0;
+    
+    }
+    return _bool;
+}
 "=" {return _assign;}
 [a-zA-Z][a-zA-Z0-9]* {yylval.string = strdup(yytext); return _id;}
 [ \t] ;

@@ -33,6 +33,6 @@ END_GLOBAL_FUNCS
 clean_code_executer() {
     abc =  12 + 2 < 3 + myVar;
     if(1 < 2) {
-        myint = 2 + 3;
+        myint = 2 + 3.7 + true;
     }
 }
