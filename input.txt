@@ -1,16 +1,9 @@
-int myint;
-char myChar;
-bool myBool;
-
-END_GLOBAL_VARS
-
 usr_type myType {
     int a;
     char gender;
 
     int someMethod(int boy, char ch) {
-        myint = 3;
-        myBool = 1;
+        boy = 3;
         while(1) {
             myint = 200+3;
         }
@@ -19,9 +12,14 @@ usr_type myType {
 
 END_USR_TYPES
 
+int myint;
+char myChar;
+bool myBool;
+
+END_GLOBAL_VARS
+
+
 int globalMethod(int a, char b) {
-        myint = 3;
-        myBool = 1;
         a = 32;
         while(1) {
             b = 200+3;

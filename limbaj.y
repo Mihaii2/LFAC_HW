@@ -35,10 +35,12 @@ void yyerror(const char * s);
 
 %type <floatValue> EXPR T F G H I J VAR
 
+
+
 %start PROGRAM 
 %%
 // Entry point of the program
-PROGRAM: DECLARATIONS _end_global_vars USER_DEFINED_TYPES _end_usr_types GLOBAL_FUNCTION_DEFINITIONS _end_global_funcs SPECIAL_FUNCTION {printf("The programme is correct!\n");}
+PROGRAM: USER_DEFINED_TYPES _end_usr_types DECLARATIONS _end_global_vars GLOBAL_FUNCTION_DEFINITIONS _end_global_funcs SPECIAL_FUNCTION {printf("The programme is correct!\n");}
 
 
 USER_DEFINED_TYPES: /* epsilon */
@@ -139,10 +141,17 @@ ARG_LIST: EXPR
                 | ARG_LIST ',' EXPR 
                 ;
 
+
+
 EXPR: EXPR _and T { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }
     | EXPR _or T {($1 || $3); cout << "e || e" << " : " <<$$ <<endl; }
     | T { $$ = $1;}
     ;
+
+
+
+
+
 T : T _eq F { $$ = ($1 == $3); cout << "e == e" << ": " <<$$ <<endl; }
     | T _neq F { $$ = ($1 != $3); cout << "e != e" << ": " <<$$ <<endl; }
     | F { $$ = $1;}
