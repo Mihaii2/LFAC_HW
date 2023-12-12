@@ -139,6 +139,11 @@ arg_list: expr
                 | arg_list ',' expr 
                 ;
 
+// e : e _plus e 
+    
+// e_bool : e _op_rel e
+//         e_bool _log_op e_bool
+//         '(' e_bool ')'
 
 
 expr: expr AND t { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }

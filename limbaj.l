@@ -4,33 +4,33 @@
 %}
 %option noyywrap
 %%
-"usr_type" { return _usr_type; }
-"bool"|"int"|"float"|"char"|"string" {yylval.string = strdup(yytext);return _type;}
-"==" {return _eq;}
-"!=" {return _neq;}
-"<" {return _lt;}
-"<=" {return _leq;}
-">" {return _gt;}
-">=" {return _geq;}
-"+" {return _plus;}
-"-" {return _minus;}
-"*" {return _mul;}
-"/" {return _div;}
-"%" {return _mod;}
-"!" {return _not;}
-"&&" {return _and;}
-"||" {return _or;}
-"END_USR_TYPES" {return _end_usr_types;}
-"END_GLOBAL_VARS" {return _end_global_vars;}
-"END_GLOBAL_FUNCS" {return _end_global_funcs;}
-"if" {return _if;}
-"while" {return _while;}
-"for" {return _for;}
-"clean_code_executer" {return _special_function;}
-[0-9]+ {yylval.intValue = atoi(yytext); return _int;}
-[0-9]+"."[0-9]+ {yylval.floatValue = atof(yytext); return _float;}
-\'[^\']\' {yylval.charValue = yytext[1]; return _char;}
-\"[^\"]*\" {yylval.string = strdup(yytext); return _string;}
+"usr_type" { return USR_TYPE; }
+"bool"|"int"|"float"|"char"|"string" {yylval.string = strdup(yytext);return TYPE;}
+"==" {return EQ;}
+"!=" {return NEQ;}
+"<" {return LT;}
+"<=" {return LEQ;}
+">" {return GT;}
+">=" {return GEQ;}
+"+" {return PLUS;}
+"-" {return MINUS;}
+"*" {return MUL;}
+"/" {return DIV;}
+"%" {return MOD;}
+"!" {return NOT;}
+"&&" {return AND;}
+"||" {return OR;}
+"END_USR_TYPES" {return END_USR_TYPES;}
+"END_GLOBAL_VARS" {return END_GLOBAL_VARS;}
+"END_GLOBAL_FUNCS" {return END_GLOBAL_FUNCS;}
+"if" {return IF;}
+"while" {return WHILE;}
+"for" {return FOR;}
+"clean_code_executer" {return SPECIAL_FUNCTION;}
+[0-9]+ {yylval.intValue = atoi(yytext); return INT;}
+[0-9]+"."[0-9]+ {yylval.floatValue = atof(yytext); return FLOAT;}
+\'[^\']\' {yylval.charValue = yytext[1]; return CHAR;}
+\"[^\"]*\" {yylval.string = strdup(yytext); return STRING;}
 "true"|"false" {
     if(yytext[0] == 't') {
         yylval.boolValue = 1;
@@ -38,10 +38,10 @@
         yylval.boolValue = 0;
     
     }
-    return _bool;
+    return BOOL;
 }
-"=" {return _assign;}
-[a-zA-Z][a-zA-Z0-9]* {yylval.string = strdup(yytext); return _id;}
+"=" {return ASSIGN;}
+[a-zA-Z][a-zA-Z0-9]* {yylval.string = strdup(yytext); return ID;}
 [ \t] ;
 \n {yylineno++;}
 . {return yytext[0];}

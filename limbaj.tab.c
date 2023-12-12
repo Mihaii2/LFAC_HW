@@ -113,39 +113,39 @@ enum yysymbol_kind_t
   YYSYMBOL_YYEOF = 0,                      /* "end of file"  */
   YYSYMBOL_YYerror = 1,                    /* error  */
   YYSYMBOL_YYUNDEF = 2,                    /* "invalid token"  */
-  YYSYMBOL__int = 3,                       /* _int  */
-  YYSYMBOL__float = 4,                     /* _float  */
-  YYSYMBOL__char = 5,                      /* _char  */
-  YYSYMBOL__string = 6,                    /* _string  */
-  YYSYMBOL__bool = 7,                      /* _bool  */
-  YYSYMBOL__id = 8,                        /* _id  */
-  YYSYMBOL__type = 9,                      /* _type  */
-  YYSYMBOL__if = 10,                       /* _if  */
-  YYSYMBOL__while = 11,                    /* _while  */
-  YYSYMBOL__for = 12,                      /* _for  */
-  YYSYMBOL__special_function = 13,         /* _special_function  */
-  YYSYMBOL__end_usr_types = 14,            /* _end_usr_types  */
-  YYSYMBOL__end_global_vars = 15,          /* _end_global_vars  */
-  YYSYMBOL__end_global_funcs = 16,         /* _end_global_funcs  */
-  YYSYMBOL__const = 17,                    /* _const  */
-  YYSYMBOL__usr_type = 18,                 /* _usr_type  */
-  YYSYMBOL__not = 19,                      /* _not  */
-  YYSYMBOL__eq = 20,                       /* _eq  */
-  YYSYMBOL__neq = 21,                      /* _neq  */
-  YYSYMBOL__lt = 22,                       /* _lt  */
-  YYSYMBOL__le = 23,                       /* _le  */
-  YYSYMBOL__gt = 24,                       /* _gt  */
-  YYSYMBOL__ge = 25,                       /* _ge  */
-  YYSYMBOL__assign = 26,                   /* _assign  */
-  YYSYMBOL__plus = 27,                     /* _plus  */
-  YYSYMBOL__minus = 28,                    /* _minus  */
-  YYSYMBOL__mul = 29,                      /* _mul  */
-  YYSYMBOL__div = 30,                      /* _div  */
-  YYSYMBOL__mod = 31,                      /* _mod  */
-  YYSYMBOL__and = 32,                      /* _and  */
-  YYSYMBOL__or = 33,                       /* _or  */
-  YYSYMBOL__geq = 34,                      /* _geq  */
-  YYSYMBOL__leq = 35,                      /* _leq  */
+  YYSYMBOL_INT = 3,                        /* INT  */
+  YYSYMBOL_FLOAT = 4,                      /* FLOAT  */
+  YYSYMBOL_CHAR = 5,                       /* CHAR  */
+  YYSYMBOL_STRING = 6,                     /* STRING  */
+  YYSYMBOL_BOOL = 7,                       /* BOOL  */
+  YYSYMBOL_ID = 8,                         /* ID  */
+  YYSYMBOL_TYPE = 9,                       /* TYPE  */
+  YYSYMBOL_IF = 10,                        /* IF  */
+  YYSYMBOL_WHILE = 11,                     /* WHILE  */
+  YYSYMBOL_FOR = 12,                       /* FOR  */
+  YYSYMBOL_SPECIAL_FUNCTION = 13,          /* SPECIAL_FUNCTION  */
+  YYSYMBOL_END_USR_TYPES = 14,             /* END_USR_TYPES  */
+  YYSYMBOL_END_GLOBAL_VARS = 15,           /* END_GLOBAL_VARS  */
+  YYSYMBOL_END_GLOBAL_FUNCS = 16,          /* END_GLOBAL_FUNCS  */
+  YYSYMBOL_CONST = 17,                     /* CONST  */
+  YYSYMBOL_USR_TYPE = 18,                  /* USR_TYPE  */
+  YYSYMBOL_NOT = 19,                       /* NOT  */
+  YYSYMBOL_EQ = 20,                        /* EQ  */
+  YYSYMBOL_NEQ = 21,                       /* NEQ  */
+  YYSYMBOL_LT = 22,                        /* LT  */
+  YYSYMBOL_LE = 23,                        /* LE  */
+  YYSYMBOL_GT = 24,                        /* GT  */
+  YYSYMBOL_GE = 25,                        /* GE  */
+  YYSYMBOL_ASSIGN = 26,                    /* ASSIGN  */
+  YYSYMBOL_PLUS = 27,                      /* PLUS  */
+  YYSYMBOL_MINUS = 28,                     /* MINUS  */
+  YYSYMBOL_MUL = 29,                       /* MUL  */
+  YYSYMBOL_DIV = 30,                       /* DIV  */
+  YYSYMBOL_MOD = 31,                       /* MOD  */
+  YYSYMBOL_AND = 32,                       /* AND  */
+  YYSYMBOL_OR = 33,                        /* OR  */
+  YYSYMBOL_GEQ = 34,                       /* GEQ  */
+  YYSYMBOL_LEQ = 35,                       /* LEQ  */
   YYSYMBOL_36_ = 36,                       /* '{'  */
   YYSYMBOL_37_ = 37,                       /* '}'  */
   YYSYMBOL_38_ = 38,                       /* ';'  */
@@ -156,41 +156,41 @@ enum yysymbol_kind_t
   YYSYMBOL_43_ = 43,                       /* '['  */
   YYSYMBOL_44_ = 44,                       /* ']'  */
   YYSYMBOL_YYACCEPT = 45,                  /* $accept  */
-  YYSYMBOL_PROGRAM = 46,                   /* PROGRAM  */
-  YYSYMBOL_USER_DEFINED_TYPES = 47,        /* USER_DEFINED_TYPES  */
-  YYSYMBOL_USER_DEFINED_TYPE = 48,         /* USER_DEFINED_TYPE  */
-  YYSYMBOL_USR_TYPE_BODY = 49,             /* USR_TYPE_BODY  */
-  YYSYMBOL_MEMBER = 50,                    /* MEMBER  */
-  YYSYMBOL_DECLARATIONS = 51,              /* DECLARATIONS  */
-  YYSYMBOL_DECL = 52,                      /* DECL  */
-  YYSYMBOL_CONST_VAL = 53,                 /* CONST_VAL  */
-  YYSYMBOL_GLOBAL_FUNCTION_DEFINITIONS = 54, /* GLOBAL_FUNCTION_DEFINITIONS  */
-  YYSYMBOL_GLOBAL_FUNCTION_DEFINITION = 55, /* GLOBAL_FUNCTION_DEFINITION  */
-  YYSYMBOL_FUNC_PARAM = 56,                /* FUNC_PARAM  */
-  YYSYMBOL_LIST_PARAM = 57,                /* LIST_PARAM  */
-  YYSYMBOL_PARAM = 58,                     /* PARAM  */
-  YYSYMBOL_STATEMENTS = 59,                /* STATEMENTS  */
-  YYSYMBOL_STATEMENT = 60,                 /* STATEMENT  */
-  YYSYMBOL_ASSIGNMENT_STATEMENT = 61,      /* ASSIGNMENT_STATEMENT  */
-  YYSYMBOL_LEFT_VALUE = 62,                /* LEFT_VALUE  */
-  YYSYMBOL_ARRAY_ELEMENT_ACCESS = 63,      /* ARRAY_ELEMENT_ACCESS  */
-  YYSYMBOL_CONTROL_STATEMENT = 64,         /* CONTROL_STATEMENT  */
-  YYSYMBOL_IF_STATEMENT = 65,              /* IF_STATEMENT  */
-  YYSYMBOL_FOR_STATEMENT = 66,             /* FOR_STATEMENT  */
-  YYSYMBOL_WHILE_STATEMENT = 67,           /* WHILE_STATEMENT  */
-  YYSYMBOL_FUNCTION_CALL_STATEMENT = 68,   /* FUNCTION_CALL_STATEMENT  */
-  YYSYMBOL_FUNCTION_CALL = 69,             /* FUNCTION_CALL  */
-  YYSYMBOL_ARGUMENTS = 70,                 /* ARGUMENTS  */
-  YYSYMBOL_ARG_LIST = 71,                  /* ARG_LIST  */
-  YYSYMBOL_EXPR = 72,                      /* EXPR  */
-  YYSYMBOL_T = 73,                         /* T  */
-  YYSYMBOL_F = 74,                         /* F  */
-  YYSYMBOL_G = 75,                         /* G  */
-  YYSYMBOL_H = 76,                         /* H  */
-  YYSYMBOL_I = 77,                         /* I  */
-  YYSYMBOL_J = 78,                         /* J  */
-  YYSYMBOL_VAR = 79,                       /* VAR  */
-  YYSYMBOL_SPECIAL_FUNCTION = 80           /* SPECIAL_FUNCTION  */
+  YYSYMBOL_program = 46,                   /* program  */
+  YYSYMBOL_user_defined_types = 47,        /* user_defined_types  */
+  YYSYMBOL_user_defined_type = 48,         /* user_defined_type  */
+  YYSYMBOL_usr_type_body = 49,             /* usr_type_body  */
+  YYSYMBOL_member = 50,                    /* member  */
+  YYSYMBOL_declarations = 51,              /* declarations  */
+  YYSYMBOL_decl = 52,                      /* decl  */
+  YYSYMBOL_const_val = 53,                 /* const_val  */
+  YYSYMBOL_global_function_definitions = 54, /* global_function_definitions  */
+  YYSYMBOL_global_function_definition = 55, /* global_function_definition  */
+  YYSYMBOL_func_param = 56,                /* func_param  */
+  YYSYMBOL_list_param = 57,                /* list_param  */
+  YYSYMBOL_param = 58,                     /* param  */
+  YYSYMBOL_statements = 59,                /* statements  */
+  YYSYMBOL_statement = 60,                 /* statement  */
+  YYSYMBOL_assignment_statement = 61,      /* assignment_statement  */
+  YYSYMBOL_left_value = 62,                /* left_value  */
+  YYSYMBOL_array_element_access = 63,      /* array_element_access  */
+  YYSYMBOL_control_statement = 64,         /* control_statement  */
+  YYSYMBOL_if_statement = 65,              /* if_statement  */
+  YYSYMBOL_for_statement = 66,             /* for_statement  */
+  YYSYMBOL_while_statement = 67,           /* while_statement  */
+  YYSYMBOL_function_call_statement = 68,   /* function_call_statement  */
+  YYSYMBOL_function_call = 69,             /* function_call  */
+  YYSYMBOL_arguments = 70,                 /* arguments  */
+  YYSYMBOL_arg_list = 71,                  /* arg_list  */
+  YYSYMBOL_expr = 72,                      /* expr  */
+  YYSYMBOL_t = 73,                         /* t  */
+  YYSYMBOL_f = 74,                         /* f  */
+  YYSYMBOL_g = 75,                         /* g  */
+  YYSYMBOL_h = 76,                         /* h  */
+  YYSYMBOL_i = 77,                         /* i  */
+  YYSYMBOL_j = 78,                         /* j  */
+  YYSYMBOL_var = 79,                       /* var  */
+  YYSYMBOL_special_function = 80           /* special_function  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -580,14 +580,14 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    43,    43,    46,    47,    51,    54,    55,    58,    59,
-      63,    64,    67,    68,    71,    72,    73,    74,    75,    79,
-      80,    83,    86,    87,    90,    91,    94,   100,   101,   104,
-     105,   106,   109,   111,   112,   115,   117,   118,   119,   122,
-     125,   128,   131,   133,   135,   136,   139,   140,   141,   146,
-     147,   148,   155,   156,   157,   159,   160,   161,   162,   163,
-     165,   166,   167,   169,   170,   171,   172,   174,   175,   177,
-     178,   179,   180,   181,   185,   188
+       0,    41,    41,    44,    45,    49,    52,    53,    56,    57,
+      61,    62,    65,    66,    69,    70,    71,    72,    73,    77,
+      78,    81,    84,    85,    88,    89,    92,    98,    99,   102,
+     103,   104,   107,   109,   110,   113,   115,   116,   117,   120,
+     123,   126,   129,   131,   133,   134,   137,   138,   139,   149,
+     150,   151,   158,   159,   160,   162,   163,   164,   165,   166,
+     168,   169,   170,   172,   173,   174,   175,   177,   178,   180,
+     181,   182,   183,   184,   188,   191
 };
 #endif
 
@@ -603,20 +603,20 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "\"end of file\"", "error", "\"invalid token\"", "_int", "_float",
-  "_char", "_string", "_bool", "_id", "_type", "_if", "_while", "_for",
-  "_special_function", "_end_usr_types", "_end_global_vars",
-  "_end_global_funcs", "_const", "_usr_type", "_not", "_eq", "_neq", "_lt",
-  "_le", "_gt", "_ge", "_assign", "_plus", "_minus", "_mul", "_div",
-  "_mod", "_and", "_or", "_geq", "_leq", "'{'", "'}'", "';'", "'('", "')'",
-  "'='", "','", "'['", "']'", "$accept", "PROGRAM", "USER_DEFINED_TYPES",
-  "USER_DEFINED_TYPE", "USR_TYPE_BODY", "MEMBER", "DECLARATIONS", "DECL",
-  "CONST_VAL", "GLOBAL_FUNCTION_DEFINITIONS", "GLOBAL_FUNCTION_DEFINITION",
-  "FUNC_PARAM", "LIST_PARAM", "PARAM", "STATEMENTS", "STATEMENT",
-  "ASSIGNMENT_STATEMENT", "LEFT_VALUE", "ARRAY_ELEMENT_ACCESS",
-  "CONTROL_STATEMENT", "IF_STATEMENT", "FOR_STATEMENT", "WHILE_STATEMENT",
-  "FUNCTION_CALL_STATEMENT", "FUNCTION_CALL", "ARGUMENTS", "ARG_LIST",
-  "EXPR", "T", "F", "G", "H", "I", "J", "VAR", "SPECIAL_FUNCTION", YY_NULLPTR
+  "\"end of file\"", "error", "\"invalid token\"", "INT", "FLOAT", "CHAR",
+  "STRING", "BOOL", "ID", "TYPE", "IF", "WHILE", "FOR", "SPECIAL_FUNCTION",
+  "END_USR_TYPES", "END_GLOBAL_VARS", "END_GLOBAL_FUNCS", "CONST",
+  "USR_TYPE", "NOT", "EQ", "NEQ", "LT", "LE", "GT", "GE", "ASSIGN", "PLUS",
+  "MINUS", "MUL", "DIV", "MOD", "AND", "OR", "GEQ", "LEQ", "'{'", "'}'",
+  "';'", "'('", "')'", "'='", "','", "'['", "']'", "$accept", "program",
+  "user_defined_types", "user_defined_type", "usr_type_body", "member",
+  "declarations", "decl", "const_val", "global_function_definitions",
+  "global_function_definition", "func_param", "list_param", "param",
+  "statements", "statement", "assignment_statement", "left_value",
+  "array_element_access", "control_statement", "if_statement",
+  "for_statement", "while_statement", "function_call_statement",
+  "function_call", "arguments", "arg_list", "expr", "t", "f", "g", "h",
+  "i", "j", "var", "special_function", YY_NULLPTR
 };
 
 static const char *
@@ -1254,171 +1254,171 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 2: /* PROGRAM: USER_DEFINED_TYPES _end_usr_types DECLARATIONS _end_global_vars GLOBAL_FUNCTION_DEFINITIONS _end_global_funcs SPECIAL_FUNCTION  */
-#line 43 "limbaj.y"
-                                                                                                                                        {printf("The programme is correct!\n");}
+  case 2: /* program: user_defined_types END_USR_TYPES declarations END_GLOBAL_VARS global_function_definitions END_GLOBAL_FUNCS special_function  */
+#line 41 "limbaj.y"
+                                                                                                                                     {printf("The programme is correct!\n");}
 #line 1261 "limbaj.tab.c"
     break;
 
-  case 32: /* ASSIGNMENT_STATEMENT: LEFT_VALUE _assign EXPR ';'  */
-#line 109 "limbaj.y"
-                                                   {cout << "Expression value: " << (yyvsp[-1].floatValue) << endl;}
+  case 32: /* assignment_statement: left_value ASSIGN expr ';'  */
+#line 107 "limbaj.y"
+                                                  {cout << "Expression value: " << (yyvsp[-1].floatValue) << endl;}
 #line 1267 "limbaj.tab.c"
     break;
 
-  case 49: /* EXPR: EXPR _and T  */
-#line 146 "limbaj.y"
-                  { (yyval.floatValue) = ((yyvsp[-2].floatValue) && (yyvsp[0].floatValue)); cout << "e && e" << " : " <<(yyval.floatValue) <<endl; }
+  case 49: /* expr: expr AND t  */
+#line 149 "limbaj.y"
+                 { (yyval.floatValue) = ((yyvsp[-2].floatValue) && (yyvsp[0].floatValue)); cout << "e && e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1273 "limbaj.tab.c"
     break;
 
-  case 50: /* EXPR: EXPR _or T  */
-#line 147 "limbaj.y"
-                 {((yyvsp[-2].floatValue) || (yyvsp[0].floatValue)); cout << "e || e" << " : " <<(yyval.floatValue) <<endl; }
+  case 50: /* expr: expr OR t  */
+#line 150 "limbaj.y"
+                {((yyvsp[-2].floatValue) || (yyvsp[0].floatValue)); cout << "e || e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1279 "limbaj.tab.c"
     break;
 
-  case 51: /* EXPR: T  */
-#line 148 "limbaj.y"
+  case 51: /* expr: t  */
+#line 151 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1285 "limbaj.tab.c"
     break;
 
-  case 52: /* T: T _eq F  */
-#line 155 "limbaj.y"
-            { (yyval.floatValue) = ((yyvsp[-2].floatValue) == (yyvsp[0].floatValue)); cout << "e == e" << ": " <<(yyval.floatValue) <<endl; }
+  case 52: /* t: t EQ f  */
+#line 158 "limbaj.y"
+           { (yyval.floatValue) = ((yyvsp[-2].floatValue) == (yyvsp[0].floatValue)); cout << "e == e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1291 "limbaj.tab.c"
     break;
 
-  case 53: /* T: T _neq F  */
-#line 156 "limbaj.y"
-               { (yyval.floatValue) = ((yyvsp[-2].floatValue) != (yyvsp[0].floatValue)); cout << "e != e" << ": " <<(yyval.floatValue) <<endl; }
+  case 53: /* t: t NEQ f  */
+#line 159 "limbaj.y"
+              { (yyval.floatValue) = ((yyvsp[-2].floatValue) != (yyvsp[0].floatValue)); cout << "e != e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1297 "limbaj.tab.c"
     break;
 
-  case 54: /* T: F  */
-#line 157 "limbaj.y"
+  case 54: /* t: f  */
+#line 160 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1303 "limbaj.tab.c"
     break;
 
-  case 55: /* F: F _lt G  */
-#line 159 "limbaj.y"
-            { (yyval.floatValue) = ((yyvsp[-2].floatValue) < (yyvsp[0].floatValue)); cout << "e < e" << ": " <<(yyval.floatValue) <<endl; }
+  case 55: /* f: f LT g  */
+#line 162 "limbaj.y"
+           { (yyval.floatValue) = ((yyvsp[-2].floatValue) < (yyvsp[0].floatValue)); cout << "e < e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1309 "limbaj.tab.c"
     break;
 
-  case 56: /* F: F _le G  */
-#line 160 "limbaj.y"
-              { (yyval.floatValue) = ((yyvsp[-2].floatValue) <= (yyvsp[0].floatValue)); cout << "e <= e" << ": " <<(yyval.floatValue) <<endl; }
+  case 56: /* f: f LE g  */
+#line 163 "limbaj.y"
+             { (yyval.floatValue) = ((yyvsp[-2].floatValue) <= (yyvsp[0].floatValue)); cout << "e <= e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1315 "limbaj.tab.c"
     break;
 
-  case 57: /* F: F _gt G  */
-#line 161 "limbaj.y"
-              { (yyval.floatValue) = ((yyvsp[-2].floatValue) > (yyvsp[0].floatValue)); cout << "e > e" << ": " <<(yyval.floatValue) <<endl; }
+  case 57: /* f: f GT g  */
+#line 164 "limbaj.y"
+             { (yyval.floatValue) = ((yyvsp[-2].floatValue) > (yyvsp[0].floatValue)); cout << "e > e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1321 "limbaj.tab.c"
     break;
 
-  case 58: /* F: F _ge G  */
-#line 162 "limbaj.y"
-              { (yyval.floatValue) = ((yyvsp[-2].floatValue) >= (yyvsp[0].floatValue)); cout << "e >= e" << ": " <<(yyval.floatValue) <<endl; }
+  case 58: /* f: f GE g  */
+#line 165 "limbaj.y"
+             { (yyval.floatValue) = ((yyvsp[-2].floatValue) >= (yyvsp[0].floatValue)); cout << "e >= e" << ": " <<(yyval.floatValue) <<endl; }
 #line 1327 "limbaj.tab.c"
     break;
 
-  case 59: /* F: G  */
-#line 163 "limbaj.y"
+  case 59: /* f: g  */
+#line 166 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1333 "limbaj.tab.c"
     break;
 
-  case 60: /* G: G _plus H  */
-#line 165 "limbaj.y"
-              { (yyval.floatValue) = ((yyvsp[-2].floatValue) + (yyvsp[0].floatValue)); cout << "e + e" << " : " <<(yyval.floatValue) <<endl; }
+  case 60: /* g: g PLUS h  */
+#line 168 "limbaj.y"
+             { (yyval.floatValue) = ((yyvsp[-2].floatValue) + (yyvsp[0].floatValue)); cout << "e + e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1339 "limbaj.tab.c"
     break;
 
-  case 61: /* G: G _minus H  */
-#line 166 "limbaj.y"
-                 { (yyval.floatValue) = ((yyvsp[-2].floatValue) - (yyvsp[0].floatValue)); cout << "e - e" << " : " <<(yyval.floatValue) <<endl; }
+  case 61: /* g: g MINUS h  */
+#line 169 "limbaj.y"
+                { (yyval.floatValue) = ((yyvsp[-2].floatValue) - (yyvsp[0].floatValue)); cout << "e - e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1345 "limbaj.tab.c"
     break;
 
-  case 62: /* G: H  */
-#line 167 "limbaj.y"
+  case 62: /* g: h  */
+#line 170 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1351 "limbaj.tab.c"
     break;
 
-  case 63: /* H: H _mul I  */
-#line 169 "limbaj.y"
-             { (yyval.floatValue) = ((yyvsp[-2].floatValue) * (yyvsp[0].floatValue)); cout << "e * e" << " : " <<(yyval.floatValue) <<endl; }
+  case 63: /* h: h MUL i  */
+#line 172 "limbaj.y"
+            { (yyval.floatValue) = ((yyvsp[-2].floatValue) * (yyvsp[0].floatValue)); cout << "e * e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1357 "limbaj.tab.c"
     break;
 
-  case 64: /* H: H _div I  */
-#line 170 "limbaj.y"
-               { (yyval.floatValue) = ((yyvsp[-2].floatValue) / (yyvsp[0].floatValue)); cout << "e / e" << " : " <<(yyval.floatValue) <<endl; }
+  case 64: /* h: h DIV i  */
+#line 173 "limbaj.y"
+              { (yyval.floatValue) = ((yyvsp[-2].floatValue) / (yyvsp[0].floatValue)); cout << "e / e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1363 "limbaj.tab.c"
     break;
 
-  case 65: /* H: H _mod I  */
-#line 171 "limbaj.y"
-               { (yyval.floatValue) = (float)((int)(yyvsp[-2].floatValue) % (int)(yyvsp[0].floatValue)); cout << "e % e" << " : " <<(yyval.floatValue) <<endl; }
+  case 65: /* h: h MOD i  */
+#line 174 "limbaj.y"
+              { (yyval.floatValue) = (float)((int)(yyvsp[-2].floatValue) % (int)(yyvsp[0].floatValue)); cout << "e % e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1369 "limbaj.tab.c"
     break;
 
-  case 66: /* H: I  */
-#line 172 "limbaj.y"
+  case 66: /* h: i  */
+#line 175 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1375 "limbaj.tab.c"
     break;
 
-  case 67: /* I: _not J  */
-#line 174 "limbaj.y"
-           { (yyval.floatValue) = !(yyvsp[0].floatValue); cout << "!e" << " : " <<(yyval.floatValue) <<endl; }
+  case 67: /* i: NOT j  */
+#line 177 "limbaj.y"
+          { (yyval.floatValue) = !(yyvsp[0].floatValue); cout << "!e" << " : " <<(yyval.floatValue) <<endl; }
 #line 1381 "limbaj.tab.c"
     break;
 
-  case 68: /* I: J  */
-#line 175 "limbaj.y"
+  case 68: /* i: j  */
+#line 178 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue);}
 #line 1387 "limbaj.tab.c"
     break;
 
-  case 69: /* J: VAR  */
-#line 177 "limbaj.y"
+  case 69: /* j: var  */
+#line 180 "limbaj.y"
         { (yyval.floatValue) = (yyvsp[0].floatValue); cout << "e->" <<(yyvsp[0].floatValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1393 "limbaj.tab.c"
     break;
 
-  case 70: /* J: _int  */
-#line 178 "limbaj.y"
-           { (yyval.floatValue) = (yyvsp[0].intValue); cout << "e->" <<(yyvsp[0].intValue)<< " : " <<(yyval.floatValue) <<endl; }
+  case 70: /* j: INT  */
+#line 181 "limbaj.y"
+          { (yyval.floatValue) = (yyvsp[0].intValue); cout << "e->" <<(yyvsp[0].intValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1399 "limbaj.tab.c"
     break;
 
-  case 71: /* J: _float  */
-#line 179 "limbaj.y"
-             { (yyval.floatValue) = (yyvsp[0].floatValue); cout << "e->" <<(yyvsp[0].floatValue)<< " : " <<(yyval.floatValue) <<endl; }
+  case 71: /* j: FLOAT  */
+#line 182 "limbaj.y"
+            { (yyval.floatValue) = (yyvsp[0].floatValue); cout << "e->" <<(yyvsp[0].floatValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1405 "limbaj.tab.c"
     break;
 
-  case 72: /* J: _bool  */
-#line 180 "limbaj.y"
-            { (yyval.floatValue) = (yyvsp[0].boolValue); cout << "e->" <<(yyvsp[0].boolValue)<< " : " <<(yyval.floatValue) <<endl; }
+  case 72: /* j: BOOL  */
+#line 183 "limbaj.y"
+           { (yyval.floatValue) = (yyvsp[0].boolValue); cout << "e->" <<(yyvsp[0].boolValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1411 "limbaj.tab.c"
     break;
 
-  case 73: /* J: '(' EXPR ')'  */
-#line 181 "limbaj.y"
+  case 73: /* j: '(' expr ')'  */
+#line 184 "limbaj.y"
                    { (yyval.floatValue) = (yyvsp[-1].floatValue); cout << "e->(e)" <<(yyvsp[-1].floatValue)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1417 "limbaj.tab.c"
     break;
 
-  case 74: /* VAR: _id  */
-#line 185 "limbaj.y"
-          {(yyval.floatValue) = 0 /* add code to retreive variable value */; cout << "e->" <<(yyvsp[0].string)<< " : " <<(yyval.floatValue) <<endl; }
+  case 74: /* var: ID  */
+#line 188 "limbaj.y"
+         {(yyval.floatValue) = 0 /* add code to retreive variable value */; cout << "e->" <<(yyvsp[0].string)<< " : " <<(yyval.floatValue) <<endl; }
 #line 1423 "limbaj.tab.c"
     break;
 
@@ -1616,7 +1616,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 189 "limbaj.y"
+#line 192 "limbaj.y"
 
 
 void yyerror(const char * s){
@@ -1627,4 +1627,4 @@ int main(int argc, char** argv){
      yyin=fopen(argv[1],"r");
      yyparse();
     
-} 
+}
