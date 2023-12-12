@@ -33,7 +33,13 @@ void yyerror(const char * s);
 %token CONST USR_TYPE
 %token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV MOD AND OR GEQ LEQ
 
-%type <floatValue> expr t f g h i j var
+%type <intValue> expr
+
+%left AND OR
+%left LT LE GT GE EQ NEQ
+%left PLUS MINUS
+%left MUL DIV MOD
+%right NOT
 
 %start program 
 %%
@@ -63,7 +69,7 @@ declarations : decl ';'
                 ;
 
 decl: TYPE ID 
-        | CONST TYPE ID '=' const_val 
+        | CONST TYPE ID ASSIGN const_val
         ;
 
 const_val: INT
@@ -104,7 +110,8 @@ statement: assignment_statement
             | function_call_statement
             ;
 
-assignment_statement: left_value ASSIGN expr ';'  {cout << "Expression value: " << $3 << endl;}
+assignment_statement: left_value ASSIGN expr ';'
+                        ;
 
 left_value: ID
             | array_element_access
@@ -118,6 +125,7 @@ control_statement: if_statement
                     ;
 
 if_statement: IF '(' expr ')' '{' statements '}'
+                | IF '(' e_bool ')' '{' statements '}'
                 ;
 
 for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' statements '}'
@@ -139,54 +147,30 @@ arg_list: expr
                 | arg_list ',' expr 
                 ;
 
-// e : e _plus e 
-    
-// e_bool : e _op_rel e
-//         e_bool _log_op e_bool
-//         '(' e_bool ')'
+expr: expr PLUS expr
+        | expr MINUS expr
+        | expr MUL expr
+        | expr DIV expr
+        | expr MOD expr
+        | var  
+        | INT
+        | '(' expr ')'
+        ;
 
-
-expr: expr AND t { $$ = ($1 && $3); cout << "e && e" << " : " <<$$ <<endl; }
-    | expr OR t {($1 || $3); cout << "e || e" << " : " <<$$ <<endl; }
-    | t { $$ = $1;}
+var : ID
     ;
 
+e_bool: expr EQ expr
+        | expr NEQ expr
+        | expr LT expr
+        | expr LE expr
+        | expr GT expr
+        | expr GE expr
+        | e_bool AND e_bool
+        | e_bool OR e_bool
+        | '(' e_bool ')'
+        ;
 
-
-
-
-t : t EQ f { $$ = ($1 == $3); cout << "e == e" << ": " <<$$ <<endl; }
-    | t NEQ f { $$ = ($1 != $3); cout << "e != e" << ": " <<$$ <<endl; }
-    | f { $$ = $1;}
-    ;
-f : f LT g { $$ = ($1 < $3); cout << "e < e" << ": " <<$$ <<endl; }
-    | f LE g { $$ = ($1 <= $3); cout << "e <= e" << ": " <<$$ <<endl; }
-    | f GT g { $$ = ($1 > $3); cout << "e > e" << ": " <<$$ <<endl; }
-    | f GE g { $$ = ($1 >= $3); cout << "e >= e" << ": " <<$$ <<endl; }
-    | g { $$ = $1;}
-    ;
-g : g PLUS h { $$ = ($1 + $3); cout << "e + e" << " : " <<$$ <<endl; }
-    | g MINUS h { $$ = ($1 - $3); cout << "e - e" << " : " <<$$ <<endl; }
-    | h { $$ = $1;}
-    ;
-h : h MUL i { $$ = ($1 * $3); cout << "e * e" << " : " <<$$ <<endl; }
-    | h DIV i { $$ = ($1 / $3); cout << "e / e" << " : " <<$$ <<endl; }
-    | h MOD i { $$ = (float)((int)$1 % (int)$3); cout << "e % e" << " : " <<$$ <<endl; }
-    | i { $$ = $1;}
-    ;
-i : NOT j { $$ = !$2; cout << "!e" << " : " <<$$ <<endl; }
-    | j { $$ = $1;}
-    ;
-j : var { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
-    | INT { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
-    | FLOAT { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
-    | BOOL { $$ = $1; cout << "e->" <<$1<< " : " <<$$ <<endl; }
-    | '(' expr ')' { $$ = $2; cout << "e->(e)" <<$2<< " : " <<$$ <<endl; }
-    ;
-
-
-var : ID {$$ = 0 /* add code to retreive variable value */; cout << "e->" <<$1<< " : " <<$$ <<endl; }
-    ;
 
 special_function: SPECIAL_FUNCTION '(' ')' '{' statements '}'
 %%

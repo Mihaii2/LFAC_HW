@@ -6,6 +6,7 @@
 %%
 "usr_type" { return USR_TYPE; }
 "bool"|"int"|"float"|"char"|"string" {yylval.string = strdup(yytext);return TYPE;}
+"const" {return CONST;}
 "==" {return EQ;}
 "!=" {return NEQ;}
 "<" {return LT;}

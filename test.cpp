@@ -1,10 +1,18 @@
 #include <iostream>
 using namespace std;
 
+struct mystr {
+    int a;
+    
+    int b = 100;
+    
+};
 
 
 
 int main() {
-    cout <<  !(23)  << endl;
+    struct mystr s;
+    cout << s.b << endl;
+
     return 0;
 }
