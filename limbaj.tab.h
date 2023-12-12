@@ -95,15 +95,17 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 16 "limbaj.y"
+#line 44 "limbaj.y"
 
     int intValue;
     float floatValue;
     char charValue;
     bool boolValue;
     char* string;
+    //class VarInfo * PtrVarInfo;
+    //class ListParam * PtrListParam;
 
-#line 107 "limbaj.tab.h"
+#line 109 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

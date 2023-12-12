@@ -42,7 +42,7 @@
     return BOOL;
 }
 "=" {return ASSIGN;}
-[a-zA-Z][a-zA-Z0-9]* {yylval.string = strdup(yytext); return ID;}
+[a-zA-Z_][a-zA-Z0-9_]* {yylval.string = strdup(yytext); return ID;}
 [ \t] ;
 \n {yylineno++;}
 . {return yytext[0];}

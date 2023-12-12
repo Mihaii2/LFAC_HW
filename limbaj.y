@@ -11,6 +11,34 @@ void yyerror(const char * s);
 
 // void globalFunction(int param);
 
+// class VarInfo {
+//     string type
+//     string name;
+//     string scope 
+//     Value val;
+// }
+
+// class FunctionInfo {
+//     string type;
+//     string name;
+//     string scope;
+//     ListParam params;
+
+// }
+
+// class ListParam {
+//     vector<VarInfo> params;
+// }
+
+// class IdList {
+//     vector<string> vars;
+
+//     public:
+//         bool existsVar(const char* s);
+//         void addVar(const char* s);
+//         //...
+// }   
+
 %}
 
 %union {
@@ -19,7 +47,11 @@ void yyerror(const char * s);
     char charValue;
     bool boolValue;
     char* string;
+    //class VarInfo * PtrVarInfo;
+    //class ListParam * PtrListParam;
 }
+
+
 
 
 %token <intValue> INT
@@ -32,6 +64,8 @@ void yyerror(const char * s);
 %token SPECIAL_FUNCTION END_USR_TYPES END_GLOBAL_VARS END_GLOBAL_FUNCS
 %token CONST USR_TYPE
 %token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV MOD AND OR GEQ LEQ
+//%type<PtrListParam> list_param
+
 
 %type <intValue> expr
 
@@ -69,6 +103,7 @@ declarations : decl ';'
                 ;
 
 decl: TYPE ID 
+        | TYPE ID ASSIGN const_val
         | CONST TYPE ID ASSIGN const_val
         ;
 
@@ -106,6 +141,7 @@ statements: /* epsilon */
             ;
 
 statement: assignment_statement
+            | decl ';'
             | control_statement
             | function_call_statement
             ;
