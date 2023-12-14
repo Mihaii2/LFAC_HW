@@ -21,9 +21,10 @@
 "!" {return NOT;}
 "&&" {return AND;}
 "||" {return OR;}
-"END_USR_TYPES" {return END_USR_TYPES;}
-"END_GLOBAL_VARS" {return END_GLOBAL_VARS;}
-"END_GLOBAL_FUNCS" {return END_GLOBAL_FUNCS;}
+"#END_USR_TYPE_VARS" {return END_USR_TYPE_VARS;}
+"#END_USR_TYPES" {return END_USR_TYPES;}
+"#END_GLOBAL_VARS" {return END_GLOBAL_VARS;}
+"#END_GLOBAL_FUNCS" {return END_GLOBAL_FUNCS;}
 "if" {return IF;}
 "while" {return WHILE;}
 "for" {return FOR;}

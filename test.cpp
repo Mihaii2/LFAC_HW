@@ -1,18 +1,24 @@
 #include <iostream>
+#include <vector>
 using namespace std;
 
-struct mystr {
+class myClass {
+    public:
     int a;
+    int someFunc() {
+        return 0;
+    }
     
     int b = 100;
+
     
 };
 
 
 
 int main() {
-    struct mystr s;
-    cout << s.b << endl;
+    auto a = vector<int>();
 
+    cout<<a.size()<<endl;
     return 0;
 }
