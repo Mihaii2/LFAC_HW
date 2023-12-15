@@ -20,6 +20,9 @@ char myChar;
 const int myBool = 3;
 const int declv = 11;
 int ce = 11;
+int awdwa[10];
+int bbq[15] = {1, 2, 5, 8, 655};
+int qps[2][2];
 
 #END_GLOBAL_VARS
 

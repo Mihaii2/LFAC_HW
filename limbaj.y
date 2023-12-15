@@ -175,7 +175,15 @@ declarations : decl ';'
 decl: TYPE ID 
     | TYPE ID ASSIGN const_val 
     | CONST TYPE ID ASSIGN const_val
-    ;
+    | TYPE ID '[' INT ']' {
+
+    }
+    | TYPE ID '[' INT ']' ASSIGN '{' const_vals '}'
+    | TYPE ID '[' INT ']' '[' INT ']' 
+    | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' const_vals '}'
+
+const_vals : const_vals ',' const_val{}
+           | const_val
 
 const_val: INT
     | FLOAT
