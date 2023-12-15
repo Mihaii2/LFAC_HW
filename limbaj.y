@@ -10,16 +10,15 @@ extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
 
-
-
 class VarInfo {
 public:
     string type;
     string name;
     string scope;
+    int size = 0;
+    // pointer to the memory location of variable
+    void* memoryLocation;
 };
-
-
 
 class FunctionInfo {
 public:
@@ -27,22 +26,6 @@ public:
     string name;
     string scope;
     vector<VarInfo> params;
-};
-
-struct IdInfo {
-public:
-    string type;
-    string name;
-};
-
-class IdList {
-    vector<IdInfo> vars;
-
-public:
-    bool existsVar(const char* s);
-    void addVar(const char* type, const char* name);
-    void printVars();
-    ~IdList();
 };
 
 class UserType {
@@ -61,8 +44,12 @@ class SymbolTable {
 private:
     unordered_map<string, VarInfo> variables;
     unordered_map<string, FunctionInfo> functions;
+    std::string currentScope = "::";
 
 public:
+    void enterScope(const std::string& scopeName);
+    void exitScope();
+    string getCurrentScope() { return currentScope; }
     void addVariable(const string& name, const string& type, const string& scope);
     void addFunction(const string& name, const string& returnType, const vector<VarInfo>& paramTypes, const string& scope);
     bool variableExists(const string& name);
@@ -71,9 +58,8 @@ public:
     FunctionInfo getFunction(const string& name);
 };
 
-string currentScope = "::";
-vector<UserType> userTypes;
 SymbolTable symbolTable;
+vector<UserType> userTypes;
 
 %}
 
@@ -134,7 +120,7 @@ user_defined_types: /* epsilon */
                     | user_defined_types user_defined_type
                     ;
 
-user_defined_type: USR_TYPE ID '{' { currentScope = string($2) + "::"; } usr_type_vars END_USR_TYPE_VARS usr_type_methods '}' {
+user_defined_type: USR_TYPE ID '{' { symbolTable.enterScope(string($2)); } usr_type_vars END_USR_TYPE_VARS usr_type_methods '}' { symbolTable.exitScope(); } {
                         UserType userType;
                         userType.name = string($2);
                         userType.vars = *$5;
@@ -157,7 +143,7 @@ usr_type_var: TYPE ID {
                     VarInfo* var = new VarInfo();
                     var->type = string($1);
                     var->name = string($2);
-                    var->scope = currentScope;
+                    var->scope = symbolTable.getCurrentScope();
                     $$ = var;
                 }
                 ;
@@ -177,7 +163,7 @@ usr_type_method: TYPE ID '(' func_param ')' '{' statements '}' {
                     func->type = string($1);
                     func->name = string($2);
                     func->params = *$4;
-                    func->scope = currentScope;
+                    func->scope = symbolTable.getCurrentScope();
                     $$ = func;
                 }
                 ;
@@ -229,7 +215,7 @@ param: TYPE ID {
             VarInfo* var = new VarInfo();
             var->type = string($1);
             var->name = string($2);
-            var->scope = currentScope;
+            var->scope = symbolTable.getCurrentScope();
             $$ = var;
         }
         ;
@@ -314,6 +300,19 @@ void yyerror(const char * s){
 
 // SYMBOL TABLE IMPLEMENTATION
 
+void SymbolTable::enterScope(const std::string& scopeName) {
+    currentScope += scopeName + "::";
+}
+
+void SymbolTable::exitScope() {
+    size_t lastScopePos = currentScope.rfind("::");
+    if (lastScopePos != std::string::npos) {
+        currentScope.erase(lastScopePos);
+    } else {
+        currentScope = "::";  // Reset to global scope
+    }
+}
+
 void SymbolTable::addVariable(const string& name, const string& type, const string& scope) {
     VarInfo var;
     var.name = name;
@@ -348,36 +347,6 @@ FunctionInfo SymbolTable::getFunction(const string& name) {
 }
 
 // SYMBOL TABLE IMPLEMENTATION ENDS
-
-// ID LIST IMPLEMENTATION
-
-void IdList::addVar(const char* type, const char*name) {
-    IdInfo var = {string(type), string(name)};
-    vars.push_back(var);
-}
-
-
-bool IdList::existsVar(const char* var) {
-    string strvar = string(var);
-    for (const IdInfo& v : vars) {
-        if (var == v.name) { 
-            return true;
-        }
-    }
-    return false;
-}
-
-void IdList::printVars() {
-    for (const IdInfo& v : vars) {
-        cout << "name: " << v.name << " type:" << v.type << endl; 
-    }
-}
-
-IdList::~IdList() {
-    vars.clear();
-}
-
-// ID LIST IMPLEMENTATION ENDS
 
 // USER TYPE IMPLEMENTATION
 
