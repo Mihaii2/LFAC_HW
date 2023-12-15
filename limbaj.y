@@ -10,16 +10,16 @@ extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
 
+
 class VarInfo {
 public:
     string type;
     string name;
     string scope;
     int size = 0;
-    // pointer to the memory location of variable
     void* memoryLocation;
-};
 
+};
 class FunctionInfo {
 public:
     string type;
@@ -50,16 +50,69 @@ public:
     void enterScope(const std::string& scopeName);
     void exitScope();
     string getCurrentScope() { return currentScope; }
-    void addVariable(const string& name, const string& type, const string& scope);
-    void addFunction(const string& name, const string& returnType, const vector<VarInfo>& paramTypes, const string& scope);
+    void addVariable(VarInfo var);
+    void addFunction(FunctionInfo func);
     bool variableExists(const string& name);
     bool functionExists(const string& name);
     VarInfo getVariable(const string& name);
     FunctionInfo getFunction(const string& name);
+    void printTable();
 };
 
 SymbolTable symbolTable;
 vector<UserType> userTypes;
+
+// USEFUL FUNCTIONS IMPLEMENTATION
+
+VarInfo* createVarInfo(string type, string name, string scope, int arraySize = 0, void* memoryLocation = nullptr) {
+    VarInfo* var = new VarInfo();
+    var->type = type;
+    var->name = name;
+    var->scope = scope;
+    // Deduct the size from the type
+    if (type == "int") {
+        var->size = 4;
+    } else if (type == "float") {
+        var->size = 4;
+    } else if (type == "char") {
+        var->size = 1;
+    } else if (type == "bool") {
+        var->size = 1;
+    } else if (type == "string") {
+        var->size = 1;
+    } else {
+        // User defined type
+        for (const UserType& userType : userTypes) {
+            if (userType.name == type) {
+                var->size = 0;
+                for (const VarInfo& v : userType.vars) {
+                    var->size += v.size;
+                }
+                break;
+            }
+        }
+    }
+    // Allocate memory for the variable
+    if (arraySize == 0) {
+        var->memoryLocation = malloc(var->size);
+    }
+    else {
+        var->memoryLocation = malloc(var->size * arraySize);
+        var->size = var->size * arraySize;
+    }
+    return var;
+}
+
+FunctionInfo* createFunctionInfo(string type, string name, string scope, vector<VarInfo> params) {
+    FunctionInfo* func = new FunctionInfo();
+    func->type = type;
+    func->name = name;
+    func->scope = scope;
+    func->params = params;
+    return func;
+}
+
+// USEFUL FUNCTIONS IMPLEMENTATION ENDS
 
 %}
 
@@ -68,8 +121,11 @@ vector<UserType> userTypes;
 
 %code requires {
     #include <vector>
+    #include <string>
+    using namespace std;
     class VarInfo;
     class FunctionInfo;
+    VarInfo* createVarInfo(string type, string name, string scope, int arraySize, void* memoryLocation);
 }
 
 %union {
@@ -97,10 +153,9 @@ vector<UserType> userTypes;
 %token CONST USR_TYPE
 %token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV MOD AND OR GEQ LEQ
 
-%type<vars> usr_type_vars list_param
+%type<vars> usr_type_vars list_param func_param
 %type<funcs> usr_type_methods
-%type<func_params> func_param
-%type<var> usr_type_var param
+%type<var> usr_type_var param decl
 %type<func> usr_type_method
 
 
@@ -120,7 +175,10 @@ user_defined_types: /* epsilon */
                     | user_defined_types user_defined_type
                     ;
 
-user_defined_type: USR_TYPE ID '{' { symbolTable.enterScope(string($2)); } usr_type_vars END_USR_TYPE_VARS usr_type_methods '}' { symbolTable.exitScope(); } {
+user_defined_type: USR_TYPE ID '{' { symbolTable.enterScope(string($2)); 
+    cout<<"Current scope: "<<symbolTable.getCurrentScope()<<endl;
+ } usr_type_vars END_USR_TYPE_VARS usr_type_methods '}' { symbolTable.exitScope(); 
+    cout<<"Current scope: "<<symbolTable.getCurrentScope()<<endl; } {
                         UserType userType;
                         userType.name = string($2);
                         userType.vars = *$5;
@@ -140,11 +198,9 @@ usr_type_vars: /* epsilon */ {
                 ;
 
 usr_type_var: TYPE ID {
-                    VarInfo* var = new VarInfo();
-                    var->type = string($1);
-                    var->name = string($2);
-                    var->scope = symbolTable.getCurrentScope();
+                    VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
                     $$ = var;
+                    symbolTable.addVariable(*var);
                 }
                 ;
 
@@ -159,12 +215,9 @@ usr_type_methods: /* epsilon */ {
                 ;
 
 usr_type_method: TYPE ID '(' func_param ')' '{' statements '}' {
-                    FunctionInfo* func = new FunctionInfo();
-                    func->type = string($1);
-                    func->name = string($2);
-                    func->params = *$4;
-                    func->scope = symbolTable.getCurrentScope();
+                    FunctionInfo* func = createFunctionInfo($1, $2, symbolTable.getCurrentScope(), *$4);
                     $$ = func;
+                    symbolTable.addFunction(*func);
                 }
                 ;
 
@@ -172,15 +225,46 @@ declarations : decl ';'
     | declarations  decl ';'
     ;
 
-decl: TYPE ID 
-    | TYPE ID ASSIGN const_val 
-    | CONST TYPE ID ASSIGN const_val
+decl: TYPE ID {
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
+    | CONST TYPE ID {
+            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope());
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
+    | TYPE ID ASSIGN const_val {
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
+    | CONST TYPE ID ASSIGN const_val {
+            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope());
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
     | TYPE ID '[' INT ']' {
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), $4);
+            $$ = var;
+            symbolTable.addVariable(*var);
 
     }
-    | TYPE ID '[' INT ']' ASSIGN '{' const_vals '}'
-    | TYPE ID '[' INT ']' '[' INT ']' 
-    | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' const_vals '}'
+    | TYPE ID '[' INT ']' ASSIGN '{' const_vals '}' {
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), $4);
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
+    | TYPE ID '[' INT ']' '[' INT ']' {
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), $4 * $7);
+            $$ = var;
+            symbolTable.addVariable(*var);}
+    | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' const_vals '}' {
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), $4 * $7);
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
 
 const_vals : const_vals ',' const_val{}
            | const_val
@@ -220,9 +304,7 @@ list_param: param {
                 ;
 
 param: TYPE ID {
-            VarInfo* var = new VarInfo();
-            var->type = string($1);
-            var->name = string($2);
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
             var->scope = symbolTable.getCurrentScope();
             $$ = var;
         }
@@ -314,28 +396,23 @@ void SymbolTable::enterScope(const std::string& scopeName) {
 
 void SymbolTable::exitScope() {
     size_t lastScopePos = currentScope.rfind("::");
+
     if (lastScopePos != std::string::npos) {
-        currentScope.erase(lastScopePos);
-    } else {
-        currentScope = "::";  // Reset to global scope
+        size_t secondLastScopePos = currentScope.rfind("::", lastScopePos - 1);
+        if (secondLastScopePos != std::string::npos) {
+            currentScope.erase(secondLastScopePos + 2);  // +2 to keep the "::"
+        } else {
+            currentScope = "::";  // Reset to global scope
+        }
     }
 }
 
-void SymbolTable::addVariable(const string& name, const string& type, const string& scope) {
-    VarInfo var;
-    var.name = name;
-    var.type = type;
-    var.scope = scope;
-    variables[name] = var;
+void SymbolTable::addVariable(VarInfo var) {
+    variables[var.name] = var;
 }
 
-void SymbolTable::addFunction(const string& name, const string& returnType, const vector<VarInfo>& paramTypes, const string& scope) {
-    FunctionInfo func;
-    func.name = name;
-    func.type = returnType;
-    func.params = paramTypes;
-    func.scope = scope;
-    functions[name] = func;
+void SymbolTable::addFunction(FunctionInfo func) {
+    functions[func.name] = func;
 }
 
 bool SymbolTable::variableExists(const string& name) {
@@ -352,6 +429,17 @@ VarInfo SymbolTable::getVariable(const string& name) {
 
 FunctionInfo SymbolTable::getFunction(const string& name) {
     return functions[name];
+}
+
+void SymbolTable::printTable() {
+    cout << "Variables: " << endl;
+    for (const auto& var : variables) {
+        cout << "name: " << var.second.name << "\ntype:" << var.second.type  << "\nscope: " << var.second.scope << "\nsize in bytes: " << var.second.size << "\n\n";
+    }
+    cout << "Functions: " << endl;
+    for (const auto& func : functions) {
+        cout << "name: " << func.second.name << "\ntype:" << func.second.type  << "\nscope: " << func.second.scope << "\n\n";
+    }
 }
 
 // SYMBOL TABLE IMPLEMENTATION ENDS
@@ -378,7 +466,7 @@ void UserType::printMembers() {
     cout << "User type name: " << name << endl;
     cout << "Variables: " << endl;
     for (const VarInfo& v : vars) {
-        cout << "name: " << v.name << " type:" << v.type << endl; 
+        cout << "name: " << v.name << " type:" << v.type << endl;
     }
     cout << "Methods: " << endl;
     for (const FunctionInfo& m : methods) {
@@ -396,4 +484,8 @@ int main(int argc, char** argv){
     for (UserType& userType : userTypes) {
         userType.printMembers();
     }
+
+    cout<<"\n\nSymbol Table: \n\n";
+    // Print symbol table
+    symbolTable.printTable();
 }
