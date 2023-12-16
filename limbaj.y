@@ -231,7 +231,7 @@ decl: TYPE ID {
             $$ = var;
             symbolTable.addVariable(*var);
     }
-    | TYPE ID ASSIGN const_val {
+    | TYPE ID ASSIGN expr {
             VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
             //var->memoryLocation = malloc(sizeof(int)) // Hmm, am putea sa luam 4 octeti ca sa pastram orice tip de variabila? 
             // int/char/bool/float/string * name = (respectiv int/char/bool/float/string *) memoryLocation;
@@ -245,11 +245,7 @@ decl: TYPE ID {
             $$ = var;
             symbolTable.addVariable(*var);
     }
-    | CONST TYPE ID ASSIGN const_val {
-            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope(), true);
-            $$ = var;
-            symbolTable.addVariable(*var);
-    }
+    
     | CONST TYPE ID ASSIGN expr { // Ne da un warning din cauza ca ambele expr si const_val pot fi INT, dar nu cred ca e o problema
             VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope(), true);
             $$ = var;
@@ -385,6 +381,10 @@ expr: expr PLUS expr {/*$$ = $1 + $3*/}
     | expr MOD expr {/*$$ = $1 % $3*/}
     | variable  {/*if(strstr($1.scope, symbolTable.getCurrentScope()) != NULL) $$ = $1*/}
     | INT {/*$$ = $1*/}
+    | FLOAT {/*$$ = $1*/}
+    | CHAR {/*$$ = $1*/}
+    | STRING {/*$$ = $1*/}
+    | BOOL {/*$$ = $1*/}
     | '(' expr ')'
     ;
 
