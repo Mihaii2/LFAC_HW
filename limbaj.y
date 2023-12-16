@@ -75,7 +75,7 @@ VarInfo* createVarInfo(string type, string name, string scope, bool is_const = f
     var->scope = scope;
     var->isConst = is_const;
     // Deduct the size from the type
-    if (type == "int" | type == "float") {
+    if (type == "int" || type == "float") {
         var->size = 4;
     } 
     else if (type == "char" || type == "bool" || type == "string") {

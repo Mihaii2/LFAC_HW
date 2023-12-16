@@ -22,17 +22,13 @@ VarInfo* createVarInfo(bool is_const = false, string type, string name, string s
     var->scope = scope;
     var->isConst = is_const;
     // Deduct the size from the type
-    if (type == "int") {
+    if (type == "int" || type == "float") {
         var->size = 4;
-    } else if (type == "float") {
-        var->size = 4;
-    } else if (type == "char") {
+    } 
+    else if (type == "char" || type == "bool" || type == "string") {
         var->size = 1;
-    } else if (type == "bool") {
-        var->size = 1;
-    } else if (type == "string") {
-        var->size = 1;
-    } else {
+    }
+    else {
         // User defined type
         for (const UserType& userType : userTypes) {
             if (userType.name == type) {
