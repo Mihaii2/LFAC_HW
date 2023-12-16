@@ -1,0 +1,88 @@
+Variables:
+name: asd
+type: int
+const: 0
+scope: ::
+size in bytes: 4
+
+name: jj
+type: int
+const: 0
+scope: ::
+size in bytes: 4
+
+name: bbq
+type: int
+const: 0
+scope: ::
+size in bytes: l
+
+name: awdwa
+type: int
+const: 0
+scope: ::
+size in bytes: X
+
+name: ce
+type: int
+const: 0
+scope: ::
+size in bytes: 4
+
+name: declv
+type: int
+const: 1
+scope: ::
+size in bytes: 4
+
+name: myBool
+type: int
+const: 1
+scope: ::
+size in bytes: 4
+
+name: myint
+type: int
+const: 0
+scope: ::
+size in bytes: 4
+
+name: qps
+type: int
+const: 0
+scope: ::
+size in bytes: @
+
+name: n_ajdwadwh
+type: int
+const: 0
+scope: ::myType::
+size in bytes: 4
+
+name: gender
+type: char
+const: 0
+scope: ::myType::
+size in bytes: 1
+
+name: myChar
+type: char
+const: 0
+scope: ::
+size in bytes: 1
+
+name: a
+type: int
+const: 0
+scope: ::myType::
+size in bytes: 4
+
+Functions:
+name: if1
+type: if
+scope: ::
+
+name: someMethod
+type: int
+scope: ::myType::
+

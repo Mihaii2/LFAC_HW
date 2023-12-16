@@ -8,18 +8,19 @@
 #include "functionInfo.h"
 using namespace std;
 
-VarInfo* createVarInfo(std::string type, std::string name, std::string scope, const std::vector<UserType>& userTypes, int arraySize = 0, void* memoryLocation = nullptr);
+VarInfo* createVarInfo(std::string type, std::string name, std::string scope, const std::vector<UserType>& userTypes, int arraySize = 1, void* memoryLocation = nullptr);
 FunctionInfo* createFunctionInfo(std::string type, std::string name, std::string scope, std::vector<VarInfo> params);
 
 #endif // USEFUL_FUNCTIONS_H
 
 extern vector<UserType> userTypes;
 
-VarInfo* createVarInfo(string type, string name, string scope, int arraySize = 0, void* memoryLocation = nullptr) {
+VarInfo* createVarInfo(bool is_const = false, string type, string name, string scope, int arraySize = 1, void* memoryLocation = nullptr) {
     VarInfo* var = new VarInfo();
     var->type = type;
     var->name = name;
     var->scope = scope;
+    var->isConst = is_const;
     // Deduct the size from the type
     if (type == "int") {
         var->size = 4;
@@ -44,13 +45,9 @@ VarInfo* createVarInfo(string type, string name, string scope, int arraySize = 0
         }
     }
     // Allocate memory for the variable
-    if (arraySize == 0) {
-        var->memoryLocation = malloc(var->size);
-    }
-    else {
-        var->memoryLocation = malloc(var->size * arraySize);
-        var->size = var->size * arraySize;
-    }
+    var->memoryLocation = malloc(var->size * arraySize);
+    var->size = var->size * arraySize;
+
     return var;
 }
 

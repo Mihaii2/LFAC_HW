@@ -1,5 +1,7 @@
 %{
 #include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -16,6 +18,7 @@ public:
     string type;
     string name;
     string scope;
+    bool isConst = false;
     int size = 0;
     void* memoryLocation;
 
@@ -57,6 +60,7 @@ public:
     VarInfo getVariable(const string& name);
     FunctionInfo getFunction(const string& name);
     void printTable();
+    void saveInFile();
 };
 
 SymbolTable symbolTable;
@@ -64,23 +68,20 @@ vector<UserType> userTypes;
 
 // USEFUL FUNCTIONS IMPLEMENTATION
 
-VarInfo* createVarInfo(string type, string name, string scope, int arraySize = 0, void* memoryLocation = nullptr) {
+VarInfo* createVarInfo(string type, string name, string scope, bool is_const = false, int arraySize = 1, void* memoryLocation = nullptr) {
     VarInfo* var = new VarInfo();
     var->type = type;
     var->name = name;
     var->scope = scope;
+    var->isConst = is_const;
     // Deduct the size from the type
-    if (type == "int") {
+    if (type == "int" | type == "float") {
         var->size = 4;
-    } else if (type == "float") {
-        var->size = 4;
-    } else if (type == "char") {
+    } 
+    else if (type == "char" || type == "bool" || type == "string") {
         var->size = 1;
-    } else if (type == "bool") {
-        var->size = 1;
-    } else if (type == "string") {
-        var->size = 1;
-    } else {
+    }
+    else {
         // User defined type
         for (const UserType& userType : userTypes) {
             if (userType.name == type) {
@@ -93,13 +94,8 @@ VarInfo* createVarInfo(string type, string name, string scope, int arraySize = 0
         }
     }
     // Allocate memory for the variable
-    if (arraySize == 0) {
-        var->memoryLocation = malloc(var->size);
-    }
-    else {
-        var->memoryLocation = malloc(var->size * arraySize);
-        var->size = var->size * arraySize;
-    }
+    var->memoryLocation = malloc(var->size * arraySize);
+    var->size = var->size * arraySize;
     return var;
 }
 
@@ -125,7 +121,7 @@ FunctionInfo* createFunctionInfo(string type, string name, string scope, vector<
     using namespace std;
     class VarInfo;
     class FunctionInfo;
-    VarInfo* createVarInfo(string type, string name, string scope, int arraySize, void* memoryLocation);
+    VarInfo* createVarInfo(string type, string name, string scope, bool is_const, int arraySize, void* memoryLocation);
 }
 
 %union {
@@ -157,8 +153,8 @@ FunctionInfo* createFunctionInfo(string type, string name, string scope, vector<
 %type<funcs> usr_type_methods
 %type<var> usr_type_var param decl
 %type<func> usr_type_method
-
-
+//%type<boolValue> e_bool
+%type<var> variable
 
 %left AND OR
 %left LT LE GT GE EQ NEQ
@@ -169,7 +165,7 @@ FunctionInfo* createFunctionInfo(string type, string name, string scope, vector<
 
 %%
 
-program: user_defined_types END_USR_TYPES declarations END_GLOBAL_VARS global_function_definitions END_GLOBAL_FUNCS special_function {printf("The programme is correct!\n");}
+program: user_defined_types END_USR_TYPES declarations END_GLOBAL_VARS global_function_definitions END_GLOBAL_FUNCS special_function {printf("The programm is correct!\n");}
 
 user_defined_types: /* epsilon */
                     | user_defined_types user_defined_type
@@ -231,37 +227,51 @@ decl: TYPE ID {
             symbolTable.addVariable(*var);
     }
     | CONST TYPE ID {
-            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope());
+            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope(), true);
             $$ = var;
             symbolTable.addVariable(*var);
     }
     | TYPE ID ASSIGN const_val {
             VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
+            //var->memoryLocation = malloc(sizeof(int)) // Hmm, am putea sa luam 4 octeti ca sa pastram orice tip de variabila? 
+            // int/char/bool/float/string * name = (respectiv int/char/bool/float/string *) memoryLocation;
+            // name = const_val;
+
+            // Probabil va trebui sa inlocuim const_val cu fiecare tip de date?
+            // Ex: TYPE ID ASSIGN INT {...} 
+            //     | TYPE ID ASSIGN BOOL {...} // Si in asa mod pentru fiecare regula.
+            // Pentru ca trebuie sa stim ce tip de valoare asignam variabilei,
+            // dar problema e ca si nu putem atribui neterminalului const_val un tip concret (cred).
             $$ = var;
             symbolTable.addVariable(*var);
     }
     | CONST TYPE ID ASSIGN const_val {
-            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope());
+            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope(), true);
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
+    | CONST TYPE ID ASSIGN expr { // Ne da un warning din cauza ca ambele expr si const_val pot fi INT, dar nu cred ca e o problema
+            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope(), true);
             $$ = var;
             symbolTable.addVariable(*var);
     }
     | TYPE ID '[' INT ']' {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), $4);
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), false, $4);
             $$ = var;
             symbolTable.addVariable(*var);
 
     }
     | TYPE ID '[' INT ']' ASSIGN '{' const_vals '}' {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), $4);
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), false, $4);
             $$ = var;
             symbolTable.addVariable(*var);
     }
     | TYPE ID '[' INT ']' '[' INT ']' {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), $4 * $7);
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), false, $4 * $7);
             $$ = var;
             symbolTable.addVariable(*var);}
     | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' const_vals '}' {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), $4 * $7);
+            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), false, $4 * $7);
             $$ = var;
             symbolTable.addVariable(*var);
     }
@@ -334,14 +344,25 @@ control_statement: if_statement
     | while_statement 
     ;
 
-if_statement: IF '(' expr ')' '{' statements '}'
-    | IF '(' e_bool ')' '{' statements '}' 
+if_statement: IF '[' ID ']' '(' expr ')' '{' statements '}' {
+        std::vector<VarInfo> no_params;
+        FunctionInfo* func = createFunctionInfo("if", $3, symbolTable.getCurrentScope(), no_params);
+        symbolTable.addFunction(*func);
+    }
+    | IF '[' ID ']' '(' e_bool ')' '{' statements '}' {
+        std::vector<VarInfo> no_params;
+        FunctionInfo* func = createFunctionInfo("if", $3, symbolTable.getCurrentScope(), no_params);
+        symbolTable.addFunction(*func);
+        //if($6){
+            //exec statements
+        //}
+    }
     ;
 
-for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' statements '}'
+for_statement: FOR '[' ID ']' '(' assignment_statement ';' expr ';' assignment_statement ')' '{' statements '}'
     ;
 
-while_statement: WHILE '(' expr ')' '{' statements '}'
+while_statement: WHILE '[' ID ']' '(' expr ')' '{' statements '}'
     ;
 
 function_call_statement: function_call ';' 
@@ -357,17 +378,21 @@ arg_list: expr
     | arg_list ',' expr 
     ;
 
-expr: expr PLUS expr
-    | expr MINUS expr
-    | expr MUL expr
-    | expr DIV expr
-    | expr MOD expr
-    | var  
-    | INT
+expr: expr PLUS expr {/*$$ = $1 + $3*/}
+    | expr MINUS expr {/*$$ = $1 - $3*/}
+    | expr MUL expr {/*$$ = $1 * $3*/}
+    | expr DIV expr {/*$$ = $1 / $3*/}
+    | expr MOD expr {/*$$ = $1 % $3*/}
+    | variable  {/*if(strstr($1.scope, symbolTable.getCurrentScope()) != NULL) $$ = $1*/}
+    | INT {/*$$ = $1*/}
     | '(' expr ')'
     ;
 
-var : ID
+variable : ID { // va returna un VarInfo
+        /*for (const auto& var : variables) {
+            if(var.second.name == $1) $$ = var; // verificam daca se afla in scope-ul necesar deja in expr
+        }*/
+    }
     ;
 
 e_bool: expr EQ expr
@@ -434,12 +459,45 @@ FunctionInfo SymbolTable::getFunction(const string& name) {
 void SymbolTable::printTable() {
     cout << "Variables: " << endl;
     for (const auto& var : variables) {
-        cout << "name: " << var.second.name << "\ntype:" << var.second.type  << "\nscope: " << var.second.scope << "\nsize in bytes: " << var.second.size << "\n\n";
+        cout << "name: " << var.second.name << "\ntype: " << var.second.type  << "\nconst: " << var.second.isConst << "\nscope: " << var.second.scope << "\nsize in bytes: " << var.second.size << "\n\n";
     }
     cout << "Functions: " << endl;
     for (const auto& func : functions) {
         cout << "name: " << func.second.name << "\ntype:" << func.second.type  << "\nscope: " << func.second.scope << "\n\n";
     }
+
+}
+
+void SymbolTable::saveInFile(){
+    int fd;
+    if((fd = open("symbolTable.txt", O_RDWR | O_CREAT | O_TRUNC, 0666)) == -1){
+        perror("Eroare la open fisier symbol table\n");
+    }
+    std::string st_data = "Variables:\n";
+    for (const auto& var : variables) {
+        st_data += "name: ";
+        st_data += var.second.name;
+        st_data += "\ntype: ";
+        st_data += var.second.type;
+        st_data += "\nconst: ";
+        st_data += var.second.isConst + '0';
+        st_data += "\nscope: ";
+        st_data += var.second.scope;
+        st_data += "\nsize in bytes: ";
+        st_data += var.second.size + '0';
+        st_data += "\n\n";
+    }
+    st_data += "Functions:\n";
+    for (const auto& func : functions) {
+        st_data += "name: ";
+        st_data += func.second.name;
+        st_data += "\ntype: ";
+        st_data += func.second.type; 
+        st_data += "\nscope: ";
+        st_data += func.second.scope;
+        st_data += "\n\n";
+    }
+    if(write(fd, st_data.c_str(), st_data.length()) == -1) perror("Eroare la write in fisier symbol table\n");
 }
 
 // SYMBOL TABLE IMPLEMENTATION ENDS
@@ -466,7 +524,7 @@ void UserType::printMembers() {
     cout << "User type name: " << name << endl;
     cout << "Variables: " << endl;
     for (const VarInfo& v : vars) {
-        cout << "name: " << v.name << " type:" << v.type << endl;
+        cout << "name: " << v.name << " type:" << v.type << "const: " << v.isConst << endl;
     }
     cout << "Methods: " << endl;
     for (const FunctionInfo& m : methods) {
@@ -488,4 +546,5 @@ int main(int argc, char** argv){
     cout<<"\n\nSymbol Table: \n\n";
     // Print symbol table
     symbolTable.printTable();
+    symbolTable.saveInFile();
 }

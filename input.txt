@@ -7,7 +7,7 @@ usr_type myType {
     int someMethod(int boy, char ch) {
         int n_ajdwadwh = 15;
         boy = 3;
-        while(1) {
+        while [wh0](1) {
             myint = 200+3;
         }
     }
@@ -30,7 +30,7 @@ int qps[2][2];
 int globalMethod(int a, char b) {
     a = 32;
     int jj = 1;
-    while(1) {
+    while [wh1](1) {
         b = 200+3;
     }
 }
@@ -39,7 +39,7 @@ int globalMethod(int a, char b) {
 
 clean_code_executer() {
     int asd;
-    if(1 < 3 && 3 > 2) {
+    if [if1] (1 < 3 && 3 > 2) {
         a = 3;
     }
 }

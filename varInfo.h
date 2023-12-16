@@ -9,6 +9,7 @@ public:
     std::string name;
     std::string scope;
     int size = 0;
+    bool isConst = false;
     void* memoryLocation;
 };
 
