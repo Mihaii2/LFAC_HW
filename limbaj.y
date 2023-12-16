@@ -3,10 +3,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "usefulFunctions.h"
-#include "varInfo.h"
-#include "functionInfo.h"
-#include "symbolTable.h"
 using namespace std;
 extern FILE* yyin;
 extern char* yytext;
@@ -14,8 +10,109 @@ extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
 
+
+class VarInfo {
+public:
+    string type;
+    string name;
+    string scope;
+    int size = 0;
+    void* memoryLocation;
+
+};
+class FunctionInfo {
+public:
+    string type;
+    string name;
+    string scope;
+    vector<VarInfo> params;
+};
+
+class UserType {
+public:
+    string name;
+    vector<VarInfo> vars;
+    vector<FunctionInfo> methods;
+
+    void addVar(const char* type, const char* name, const char* scope);
+    void addMethod(const char* type, const char* name, const char* scope);
+    void printMembers();
+};
+
+
+class SymbolTable {
+private:
+    unordered_map<string, VarInfo> variables;
+    unordered_map<string, FunctionInfo> functions;
+    std::string currentScope = "::";
+
+public:
+    void enterScope(const std::string& scopeName);
+    void exitScope();
+    string getCurrentScope() { return currentScope; }
+    void addVariable(VarInfo var);
+    void addFunction(FunctionInfo func);
+    bool variableExists(const string& name);
+    bool functionExists(const string& name);
+    VarInfo getVariable(const string& name);
+    FunctionInfo getFunction(const string& name);
+    void printTable();
+};
+
 SymbolTable symbolTable;
 vector<UserType> userTypes;
+
+// USEFUL FUNCTIONS IMPLEMENTATION
+
+VarInfo* createVarInfo(string type, string name, string scope, int arraySize = 0, void* memoryLocation = nullptr) {
+    VarInfo* var = new VarInfo();
+    var->type = type;
+    var->name = name;
+    var->scope = scope;
+    // Deduct the size from the type
+    if (type == "int") {
+        var->size = 4;
+    } else if (type == "float") {
+        var->size = 4;
+    } else if (type == "char") {
+        var->size = 1;
+    } else if (type == "bool") {
+        var->size = 1;
+    } else if (type == "string") {
+        var->size = 1;
+    } else {
+        // User defined type
+        for (const UserType& userType : userTypes) {
+            if (userType.name == type) {
+                var->size = 0;
+                for (const VarInfo& v : userType.vars) {
+                    var->size += v.size;
+                }
+                break;
+            }
+        }
+    }
+    // Allocate memory for the variable
+    if (arraySize == 0) {
+        var->memoryLocation = malloc(var->size);
+    }
+    else {
+        var->memoryLocation = malloc(var->size * arraySize);
+        var->size = var->size * arraySize;
+    }
+    return var;
+}
+
+FunctionInfo* createFunctionInfo(string type, string name, string scope, vector<VarInfo> params) {
+    FunctionInfo* func = new FunctionInfo();
+    func->type = type;
+    func->name = name;
+    func->scope = scope;
+    func->params = params;
+    return func;
+}
+
+// USEFUL FUNCTIONS IMPLEMENTATION ENDS
 
 %}
 
@@ -291,7 +388,93 @@ void yyerror(const char * s){
     printf("error: %s at line:%d\n",s,yylineno);
 }
 
+// SYMBOL TABLE IMPLEMENTATION
 
+void SymbolTable::enterScope(const std::string& scopeName) {
+    currentScope += scopeName + "::";
+}
+
+void SymbolTable::exitScope() {
+    size_t lastScopePos = currentScope.rfind("::");
+
+    if (lastScopePos != std::string::npos) {
+        size_t secondLastScopePos = currentScope.rfind("::", lastScopePos - 1);
+        if (secondLastScopePos != std::string::npos) {
+            currentScope.erase(secondLastScopePos + 2);  // +2 to keep the "::"
+        } else {
+            currentScope = "::";  // Reset to global scope
+        }
+    }
+}
+
+void SymbolTable::addVariable(VarInfo var) {
+    variables[var.name] = var;
+}
+
+void SymbolTable::addFunction(FunctionInfo func) {
+    functions[func.name] = func;
+}
+
+bool SymbolTable::variableExists(const string& name) {
+    return variables.find(name) != variables.end();
+}
+
+bool SymbolTable::functionExists(const string& name) {
+    return functions.find(name) != functions.end();
+}
+
+VarInfo SymbolTable::getVariable(const string& name) {
+    return variables[name];
+}
+
+FunctionInfo SymbolTable::getFunction(const string& name) {
+    return functions[name];
+}
+
+void SymbolTable::printTable() {
+    cout << "Variables: " << endl;
+    for (const auto& var : variables) {
+        cout << "name: " << var.second.name << "\ntype:" << var.second.type  << "\nscope: " << var.second.scope << "\nsize in bytes: " << var.second.size << "\n\n";
+    }
+    cout << "Functions: " << endl;
+    for (const auto& func : functions) {
+        cout << "name: " << func.second.name << "\ntype:" << func.second.type  << "\nscope: " << func.second.scope << "\n\n";
+    }
+}
+
+// SYMBOL TABLE IMPLEMENTATION ENDS
+
+// USER TYPE IMPLEMENTATION
+
+void UserType::addVar(const char* type, const char* name, const char* scope) {
+    VarInfo var;
+    var.type = type;
+    var.name = name;
+    var.scope = scope;
+    vars.push_back(var);
+}
+
+void UserType::addMethod(const char* type, const char* name, const char* scope) {
+    FunctionInfo method;
+    method.type = type;
+    method.name = name;
+    method.scope = scope;
+    methods.push_back(method);
+}
+
+void UserType::printMembers() {
+    cout << "User type name: " << name << endl;
+    cout << "Variables: " << endl;
+    for (const VarInfo& v : vars) {
+        cout << "name: " << v.name << " type:" << v.type << endl;
+    }
+    cout << "Methods: " << endl;
+    for (const FunctionInfo& m : methods) {
+        cout << "name: " << m.name << " type:" << m.type << endl;
+    }
+}
+
+// USER TYPE IMPLEMENTATION ENDS
 
 int main(int argc, char** argv){
     yyin=fopen(argv[1],"r");
