@@ -22,6 +22,7 @@ public:
     int size = 0;
     void* memoryLocation;
 
+    VarInfo(string type, string name, string scope, bool is_const = false, int arraySize = 1, void* memoryLocation = nullptr);
 };
 class FunctionInfo {
 public:
@@ -68,37 +69,6 @@ vector<UserType> userTypes;
 
 // USEFUL FUNCTIONS IMPLEMENTATION
 
-VarInfo* createVarInfo(string type, string name, string scope, bool is_const = false, int arraySize = 1, void* memoryLocation = nullptr) {
-    VarInfo* var = new VarInfo();
-    var->type = type;
-    var->name = name;
-    var->scope = scope;
-    var->isConst = is_const;
-    // Deduct the size from the type
-    if (type == "int" || type == "float") {
-        var->size = 4;
-    } 
-    else if (type == "char" || type == "bool" || type == "string") {
-        var->size = 1;
-    }
-    else {
-        // User defined type
-        for (const UserType& userType : userTypes) {
-            if (userType.name == type) {
-                var->size = 0;
-                for (const VarInfo& v : userType.vars) {
-                    var->size += v.size;
-                }
-                break;
-            }
-        }
-    }
-    // Allocate memory for the variable
-    var->memoryLocation = malloc(var->size * arraySize);
-    var->size = var->size * arraySize;
-    return var;
-}
-
 FunctionInfo* createFunctionInfo(string type, string name, string scope, vector<VarInfo> params) {
     FunctionInfo* func = new FunctionInfo();
     func->type = type;
@@ -121,7 +91,7 @@ FunctionInfo* createFunctionInfo(string type, string name, string scope, vector<
     using namespace std;
     class VarInfo;
     class FunctionInfo;
-    VarInfo* createVarInfo(string type, string name, string scope, bool is_const, int arraySize, void* memoryLocation);
+    
 }
 
 %union {
@@ -194,9 +164,10 @@ usr_type_vars: /* epsilon */ {
                 ;
 
 usr_type_var: TYPE ID {
-                    VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
+                    VarInfo* var = new VarInfo($1, $2, symbolTable.getCurrentScope());
                     $$ = var;
-                    symbolTable.addVariable(*var);
+                    //exista variabila -> throw error
+                    symbolTable.addVariable(var);
                 }
                 ;
 
@@ -222,65 +193,69 @@ declarations : decl ';'
     ;
 
 decl: TYPE ID {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
+            VarInfo var($1, $2, symbolTable.getCurrentScope());
             $$ = var;
-            symbolTable.addVariable(*var);
+            symbolTable.addVariable(var);
     }
     | CONST TYPE ID {
-            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope(), true);
+            VarInfo var($2, $3, symbolTable.getCurrentScope(), true);
             $$ = var;
-            symbolTable.addVariable(*var);
+            symbolTable.addVariable(var);
     }
     | TYPE ID ASSIGN expr {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
-            //var->memoryLocation = malloc(sizeof(int)) // Hmm, am putea sa luam 4 octeti ca sa pastram orice tip de variabila? 
+            //var->memoryLocation = malloc(sizeof(int)) 
             // int/char/bool/float/string * name = (respectiv int/char/bool/float/string *) memoryLocation;
             // name = const_val;
 
-            // Probabil va trebui sa inlocuim const_val cu fiecare tip de date?
-            // Ex: TYPE ID ASSIGN INT {...} 
-            //     | TYPE ID ASSIGN BOOL {...} // Si in asa mod pentru fiecare regula.
-            // Pentru ca trebuie sa stim ce tip de valoare asignam variabilei,
-            // dar problema e ca si nu putem atribui neterminalului const_val un tip concret (cred).
+
+
+            if($1 == "string"){
+            
+            }
+            else if($1 == "bool"){
+
+            }
+            else if($1 == "float"){
+
+            } 
+            else if($1 == "int"){
+
+            }
+            else if($1 == "char"){
+
+            }
+            VarInfo var($1, $2, symbolTable.getCurrentScope());
+
             $$ = var;
-            symbolTable.addVariable(*var);
+            symbolTable.addVariable(var);
     }
     
     | CONST TYPE ID ASSIGN expr { // Ne da un warning din cauza ca ambele expr si const_val pot fi INT, dar nu cred ca e o problema
-            VarInfo* var = createVarInfo($2, $3, symbolTable.getCurrentScope(), true);
+            VarInfo var($2, $3, symbolTable.getCurrentScope(), true);
             $$ = var;
-            symbolTable.addVariable(*var);
+            symbolTable.addVariable(var);
     }
     | TYPE ID '[' INT ']' {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), false, $4);
+            VarInfo var($1, $2, symbolTable.getCurrentScope(), false, $4);
             $$ = var;
-            symbolTable.addVariable(*var);
+            symbolTable.addVariable(var);
 
     }
-    | TYPE ID '[' INT ']' ASSIGN '{' const_vals '}' {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), false, $4);
+    | TYPE ID '[' INT ']' ASSIGN '{' expr_list '}' {
+            VarInfo var($1, $2, symbolTable.getCurrentScope(), false, $4);
             $$ = var;
-            symbolTable.addVariable(*var);
+            symbolTable.addVariable(var);
     }
     | TYPE ID '[' INT ']' '[' INT ']' {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), false, $4 * $7);
+            VarInfo var($1, $2, symbolTable.getCurrentScope(), false, $4 * $7);
             $$ = var;
-            symbolTable.addVariable(*var);}
-    | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' const_vals '}' {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope(), false, $4 * $7);
+            symbolTable.addVariable(var);}
+    | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' expr_list '}' {
+            VarInfo var($1, $2, symbolTable.getCurrentScope(), false, $4 * $7);
             $$ = var;
-            symbolTable.addVariable(*var);
+            symbolTable.addVariable(var);
     }
 
-const_vals : const_vals ',' const_val{}
-           | const_val
-
-const_val: INT
-    | FLOAT
-    | CHAR
-    | STRING
-    | BOOL
-    ;
 
 global_function_definitions: /* epsilon */
     | global_function_definitions global_function_definition
@@ -310,7 +285,7 @@ list_param: param {
                 ;
 
 param: TYPE ID {
-            VarInfo* var = createVarInfo($1, $2, symbolTable.getCurrentScope());
+            VarInfo var($1, $2, symbolTable.getCurrentScope());
             var->scope = symbolTable.getCurrentScope();
             $$ = var;
         }
@@ -340,25 +315,18 @@ control_statement: if_statement
     | while_statement 
     ;
 
-if_statement: IF '[' ID ']' '(' expr ')' '{' statements '}' {
-        std::vector<VarInfo> no_params;
-        FunctionInfo* func = createFunctionInfo("if", $3, symbolTable.getCurrentScope(), no_params);
-        symbolTable.addFunction(*func);
+if_statement: IF '(' expr ')' '{' statements '}' {
+        
     }
-    | IF '[' ID ']' '(' e_bool ')' '{' statements '}' {
-        std::vector<VarInfo> no_params;
-        FunctionInfo* func = createFunctionInfo("if", $3, symbolTable.getCurrentScope(), no_params);
-        symbolTable.addFunction(*func);
-        //if($6){
-            //exec statements
-        //}
+    | IF '(' e_bool ')' '{' statements '}' {
+        
     }
     ;
 
-for_statement: FOR '[' ID ']' '(' assignment_statement ';' expr ';' assignment_statement ')' '{' statements '}'
+for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' statements '}'
     ;
 
-while_statement: WHILE '[' ID ']' '(' expr ')' '{' statements '}'
+while_statement: WHILE '(' expr ')' '{' statements '}'
     ;
 
 function_call_statement: function_call ';' 
@@ -373,6 +341,10 @@ arg_list: expr
     | function_call
     | arg_list ',' expr 
     ;
+
+expr_list : expr 
+          | expr_list ',' expr 
+          ;
 
 expr: expr PLUS expr {/*$$ = $1 + $3*/}
     | expr MINUS expr {/*$$ = $1 - $3*/}
@@ -533,6 +505,39 @@ void UserType::printMembers() {
 }
 
 // USER TYPE IMPLEMENTATION ENDS
+
+// VARINFO IMPLEMENTATION STARTS
+
+VarInfo::VarInfo(const char* type, const char* name, const char* scope, bool isConst, int size) {
+    this.type = type;
+    this.name = name;
+    this.scope = scope;
+    this.isConst = is_const;
+    // Deduct the size from the type
+    if (type == "int" || type == "float") {
+        this.size = 4;
+    } 
+    else if (type == "char" || type == "bool" || type == "string") {
+        this.size = 1;
+    }
+    else {
+        // User defined type
+        for (const UserType& userType : userTypes) {
+            if (userType.name == type) {
+                this.size = 0;
+                for (const VarInfo& v : userType.vars) {
+                    this.size += v.size;
+                }
+                break;
+            }
+        }
+    }
+    // Allocate memory for the variable
+    this.memoryLocation = malloc(this.size * arraySize);
+    this.size = this.size * arraySize;}
+
+// VARINFO IMPLEMENTATION ENDS
+
 
 int main(int argc, char** argv){
     yyin=fopen(argv[1],"r");
