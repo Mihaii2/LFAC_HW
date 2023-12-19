@@ -45,14 +45,14 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 88 "limbaj.y"
+#line 118 "limbaj.y"
 
     #include <vector>
     #include <string>
     using namespace std;
     class VarInfo;
     class FunctionInfo;
-    
+    VarInfo* createVarInfo(string type, string name, string scope, bool is_const, int arraySize, void* memoryLocation);
 
 #line 58 "limbaj.tab.h"
 
@@ -107,7 +107,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 97 "limbaj.y"
+#line 127 "limbaj.y"
 
     int intValue;
     float floatValue;
