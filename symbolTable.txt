@@ -1,5 +1,15 @@
 -----------------Variables-----------------
 --------Scope: 
+name: a
+type: int
+const: 0
+size in bytes: 4
+
+name: o
+type: int
+const: 0
+size in bytes: 4
+
 name: awdwa
 type: int
 const: 0
@@ -10,12 +20,25 @@ type: int
 const: 0
 size in bytes: 4
 
---------Scope: myType::
+--------Scope: myType::someMethod::while1::
+name: omegalul
+type: int
+const: 1
+size in bytes: 4
+
+--------Scope: myType::someMethod::while0::
+name: something
+type: int
+const: 0
+size in bytes: 4
+
+--------Scope: myType::someMethod::
 name: n_ajdwadwh
 type: int
 const: 0
 size in bytes: 4
 
+--------Scope: myType::
 name: gender
 type: char
 const: 0
@@ -27,8 +50,13 @@ const: 0
 size in bytes: 4
 
 -----------------Functions-----------------
+--------Scope: 
+name: globalMethod
+type: int
+params: int a, char b
+
 --------Scope: myType::
 name: someMethod
 type: int
-params: int boy, char ch, 
+params: int boy, char ch
 

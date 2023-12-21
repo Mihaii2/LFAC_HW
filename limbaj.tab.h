@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 91 "limbaj.y"
+#line 93 "limbaj.y"
 
     #include <vector>
     #include <string>
@@ -71,10 +71,10 @@ extern int yydebug;
     BOOL = 262,                    /* BOOL  */
     ID = 263,                      /* ID  */
     TYPE = 264,                    /* TYPE  */
-    IF = 265,                      /* IF  */
-    WHILE = 266,                   /* WHILE  */
-    FOR = 267,                     /* FOR  */
-    SPECIAL_FUNCTION = 268,        /* SPECIAL_FUNCTION  */
+    SPECIAL_FUNCTION = 265,        /* SPECIAL_FUNCTION  */
+    IF = 266,                      /* IF  */
+    WHILE = 267,                   /* WHILE  */
+    FOR = 268,                     /* FOR  */
     END_USR_TYPES = 269,           /* END_USR_TYPES  */
     END_USR_TYPE_VARS = 270,       /* END_USR_TYPE_VARS  */
     END_GLOBAL_VARS = 271,         /* END_GLOBAL_VARS  */
@@ -106,7 +106,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 99 "limbaj.y"
+#line 101 "limbaj.y"
 
     int intValue;
     float floatValue;

@@ -9,6 +9,11 @@ usr_type myType {
         boy = 3;
         while(1) {
             myint = 200+3;
+            int something = 3;
+        }
+        while(1) {
+            myint = 200+3;
+            const int omegalul = 3;
         }
     }
 }
@@ -30,7 +35,8 @@ int globalMethod(int a, char b) {
 #END_GLOBAL_FUNCS
 
 clean_code_executer() {
+    int o;
     if (1 < 3 && 3 > 2) {
-        a = 3;
+        int a = 3;
     }
 }

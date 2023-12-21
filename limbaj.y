@@ -81,7 +81,9 @@ public:
 
 SymbolTable symbolTable;
 vector<UserType> userTypes;
-
+unsigned long long ifCounter = 0;
+unsigned long long forCounter = 0;
+unsigned long long whileCounter = 0;
 
 %}
 
@@ -115,9 +117,9 @@ vector<UserType> userTypes;
 %token <charValue> CHAR
 %token <string> STRING
 %token <boolValue> BOOL
-%token <string> ID TYPE
+%token <string> ID TYPE SPECIAL_FUNCTION
 %token IF WHILE FOR  
-%token SPECIAL_FUNCTION END_USR_TYPES END_USR_TYPE_VARS END_GLOBAL_VARS END_GLOBAL_FUNCS
+%token END_USR_TYPES END_USR_TYPE_VARS END_GLOBAL_VARS END_GLOBAL_FUNCS
 %token CONST USR_TYPE
 %token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV MOD AND OR GEQ LEQ
 
@@ -143,10 +145,7 @@ user_defined_types: /* epsilon */
                     | user_defined_types user_defined_type
                     ;
 
-user_defined_type: USR_TYPE ID '{' { symbolTable.enterScope(string($2)); 
-    cout<<"Current scope: "<<symbolTable.getCurrentScope()<<endl;
- } usr_type_vars END_USR_TYPE_VARS usr_type_methods '}' { symbolTable.exitScope(); 
-    cout<<"Current scope: "<<symbolTable.getCurrentScope()<<endl; } {
+user_defined_type: USR_TYPE ID '{' {symbolTable.enterScope(string($2));} usr_type_vars END_USR_TYPE_VARS usr_type_methods '}' { symbolTable.exitScope();} {
                         UserType userType = UserType($2, *$5, *$7);
                         userTypes.push_back(userType);
                     }
@@ -179,7 +178,7 @@ usr_type_methods: /* epsilon */ {
                 }
                 ;
 
-usr_type_method: TYPE ID '(' func_param ')' '{' statements '}' {
+usr_type_method: TYPE ID '(' func_param ')' '{' {symbolTable.enterScope(string($2));} statements '}' {symbolTable.exitScope();} {
                     FunctionInfo* func = new FunctionInfo($1, $2, *$4);
                     $$ = func;
                     symbolTable.addFunction(*func);
@@ -202,15 +201,6 @@ decl: TYPE ID {
     }
     | TYPE ID ASSIGN expr {
             VarInfo* var = new VarInfo($1, $2);
-            //var->memoryLocation = malloc(sizeof(int)) // Hmm, am putea sa luam 4 octeti ca sa pastram orice tip de variabila? 
-            // int/char/bool/float/string * name = (respectiv int/char/bool/float/string *) memoryLocation;
-            // name = const_val;
-
-            // Probabil va trebui sa inlocuim const_val cu fiecare tip de date?
-            // Ex: TYPE ID ASSIGN INT {...} 
-            //     | TYPE ID ASSIGN BOOL {...} // Si in asa mod pentru fiecare regula.
-            // Pentru ca trebuie sa stim ce tip de valoare asignam variabilei,
-            // dar problema e ca si nu putem atribui neterminalului const_val un tip concret (cred).
             $$ = var;
             symbolTable.addVariable(*var);
     }
@@ -255,7 +245,11 @@ global_function_definitions: /* epsilon */
     | global_function_definitions global_function_definition
     ;
 
-global_function_definition: TYPE ID '(' func_param ')' '{' statements '}' 
+global_function_definition: TYPE ID '(' func_param ')' '{' {symbolTable.enterScope(string($2));} statements '}' {symbolTable.exitScope();} {
+                            FunctionInfo* func = new FunctionInfo($1, $2, *$4);
+                            symbolTable.addFunction(*func);
+                        }
+
     ;
 
 func_param: /* epsilon */ {
@@ -308,14 +302,15 @@ control_statement: if_statement
     | while_statement 
     ;
 
-if_statement: IF '(' expr ')' '{' statements '}' 
+if_statement: IF '(' expr ')' '{' {symbolTable.enterScope("if" + std::to_string(ifCounter++));}
+ statements '}' {symbolTable.exitScope();}
     | IF '(' e_bool ')' '{' statements '}' 
     ;
 
-for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' statements '}'
+for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' { symbolTable.enterScope("for" + std::to_string(forCounter++));} statements '}' {symbolTable.exitScope();}
     ;
 
-while_statement: WHILE '(' expr ')' '{' statements '}'
+while_statement: WHILE '(' expr ')' '{' {symbolTable.enterScope("while" + std::to_string(whileCounter++));} statements '}' {symbolTable.exitScope();}
     ;
 
 function_call_statement: function_call ';' 
@@ -364,6 +359,7 @@ e_bool: expr EQ expr
     ;
 
 special_function: SPECIAL_FUNCTION '(' ')' '{' statements '}'
+    ;
 %%
 
 void yyerror(const char * s){
@@ -538,11 +534,14 @@ void FunctionInfo::write_to_string(string& str) const {
     str += "\ntype: ";
     str += type;
     str += "\nparams: ";
-    for (const VarInfo& v : params) {
-        str += v.getType();
-        str += " ";
-        str += v.getName();
-        str += ", ";
+    if(params.size() != 0) {
+        
+        for (const VarInfo& v : params) {
+            str += v.getType();
+            str += " ";
+            str += v.getName();
+            if(&v != &params.back()) str += ", ";
+        }
     }
     str += "\n\n";
 }
