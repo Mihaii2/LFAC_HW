@@ -14,6 +14,7 @@ void yyerror(const char * s);
 
 
 class VarInfo {
+private:
     string type;
     string name;
     bool isConst = false;
@@ -29,6 +30,7 @@ public:
 
 };
 class FunctionInfo {
+private:
     string type;
     string name;
     vector<VarInfo> params;
@@ -41,16 +43,19 @@ public:
 };
 
 class UserType {
-public:
+private:
     string name;
     vector<VarInfo> vars;
     vector<FunctionInfo> methods;
+public:
 
+    UserType() {}
+    UserType(string name, vector<VarInfo> vars, vector<FunctionInfo> methods);
     void addVar(const char* type, const char* name, const char* scope);
     void addMethod(const char* type, const char* name, const char* scope);
     void printMembers();
-    UserType() {}
-    UserType(string name, vector<VarInfo> vars, vector<FunctionInfo> methods);
+    string getName() const { return name; }
+    vector<VarInfo> getVars() const { return vars; }
 };
 
 
@@ -489,9 +494,9 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* m
     else {
         // User defined type
         for (const UserType& userType : userTypes) {
-            if (userType.name == type) {
+            if (userType.getName() == type) {
                 this->size = 0;
-                for (const VarInfo& v : userType.vars) {
+                for (const VarInfo& v : userType.getVars()) {
                     this->size += v.size;
                 }
                 break;
