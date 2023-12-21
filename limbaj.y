@@ -14,29 +14,30 @@ void yyerror(const char * s);
 
 
 class VarInfo {
-public:
     string type;
     string name;
     bool isConst = false;
     int size = 0;
     void* memoryLocation;
+public:
 
     VarInfo() {}
     VarInfo(string type, string name, bool is_const = false, int arraySize = 1, void* memoryLocation = nullptr);
-    string getType() { return type; }
-    string getName() { return name; }
-    bool getIsConst() { return isConst; }
-    int getSize() { return size; }
-    void* getMemoryLocation() { return memoryLocation; }
+    string getName() const { return name; }
+    string getType() const { return type; }
+    void write_to_string(string &str) const;
 
 };
 class FunctionInfo {
-public:
     string type;
     string name;
     vector<VarInfo> params;
+public:
     FunctionInfo() {}
     FunctionInfo(string type, string name, vector<VarInfo> params);
+    string getName() const { return name; }
+    string getType() const { return type; }
+    void write_to_string(string &str) const;
 };
 
 class UserType {
@@ -385,11 +386,11 @@ string SymbolTable::getCurrentScope() {
 }
 
 void SymbolTable::addVariable(VarInfo var) {
-    variables[symbolTable.getCurrentScope()][var.name] = var;
+    variables[symbolTable.getCurrentScope()][var.getName()] = var;
 }
 
 void SymbolTable::addFunction(FunctionInfo func) {
-    functions[symbolTable.getCurrentScope()][func.name] = func;
+    functions[symbolTable.getCurrentScope()][func.getName()] = func;
 }
 
 bool SymbolTable::variableExists(const string& name) {
@@ -419,17 +420,7 @@ void SymbolTable::saveInFile() {
         st_data += scope.first;
         st_data += "\n";
         for (const auto& var : scope.second) {
-            st_data += "name: ";
-            st_data += var.second.name;
-            st_data += "\ntype: ";
-            st_data += var.second.type;
-            st_data += "\nconst: ";
-            std::string is_const = std::to_string(var.second.isConst);
-            st_data += is_const;
-            st_data += "\nsize in bytes: ";
-            std::string size = std::to_string(var.second.size);
-            st_data += size;
-            st_data += "\n\n";
+            var.second.write_to_string(st_data);
         }
     }
     st_data += "-----------------Functions-----------------\n";
@@ -438,10 +429,7 @@ void SymbolTable::saveInFile() {
         st_data += scope.first;
         st_data += "\n";
         for (const auto& func : scope.second) {
-            st_data += "name: ";
-            st_data += func.second.name;
-            st_data += "\ntype: ";
-            st_data += func.second.type; 
+            func.second.write_to_string(st_data);
         }
     }
     if(write(fd, st_data.c_str(), st_data.length()) == -1) perror("Eroare la write in fisier symbol table\n");
@@ -452,16 +440,12 @@ void SymbolTable::saveInFile() {
 // USERTYPE IMPLEMENTATION
 
 void UserType::addVar(const char* type, const char* name, const char* scope) {
-    VarInfo var;
-    var.type = type;
-    var.name = name;
+    VarInfo var = VarInfo(type, name);
     vars.push_back(var);
 }
 
 void UserType::addMethod(const char* type, const char* name, const char* scope) {
-    FunctionInfo method;
-    method.type = type;
-    method.name = name;
+    FunctionInfo method = FunctionInfo(type, name, vector<VarInfo>());
     methods.push_back(method);
 }
 
@@ -469,11 +453,15 @@ void UserType::printMembers() {
     cout << "User type name: " << name << endl;
     cout << "Variables: " << endl;
     for (const VarInfo& v : vars) {
-        cout << "name: " << v.name << " type:" << v.type << "const: " << v.isConst << endl;
+        std::string var_data;
+        v.write_to_string(var_data);
+        cout << var_data;
     }
     cout << "Methods: " << endl;
     for (const FunctionInfo& m : methods) {
-        cout << "name: " << m.name << " type:" << m.type << endl;
+        std::string method_data;
+        m.write_to_string(method_data);
+        cout << method_data;
     }
 }
 
@@ -515,6 +503,20 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* m
     this->size = this->size * arraySize;
 }
 
+void VarInfo::write_to_string(string& str) const {
+    str += "name: ";
+    str += name;
+    str += "\ntype: ";
+    str += type;
+    str += "\nconst: ";
+    string is_const = std::to_string(this->isConst);
+    str += is_const;
+    str += "\nsize in bytes: ";
+    string size = std::to_string(this->size);
+    str += size;
+    str += "\n\n";
+}
+
 // VARINFO IMPLEMENTATION ENDS
 
 // FUNCTIONINFO IMPLEMENTATION
@@ -523,6 +525,21 @@ FunctionInfo::FunctionInfo(string type, string name, vector<VarInfo> params) {
     this->type = type;
     this->name = name;
     this->params = params;
+}
+
+void FunctionInfo::write_to_string(string& str) const {
+    str += "name: ";
+    str += name;
+    str += "\ntype: ";
+    str += type;
+    str += "\nparams: ";
+    for (const VarInfo& v : params) {
+        str += v.getType();
+        str += " ";
+        str += v.getName();
+        str += ", ";
+    }
+    str += "\n\n";
 }
 
 // FUNCTIONINFO IMPLEMENTATION ENDS

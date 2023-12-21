@@ -30,3 +30,5 @@ size in bytes: 4
 --------Scope: myType::
 name: someMethod
 type: int
+params: int boy, char ch, 
+

@@ -84,29 +84,30 @@ void yyerror(const char * s);
 
 
 class VarInfo {
-public:
     string type;
     string name;
     bool isConst = false;
     int size = 0;
     void* memoryLocation;
+public:
 
     VarInfo() {}
     VarInfo(string type, string name, bool is_const = false, int arraySize = 1, void* memoryLocation = nullptr);
-    string getType() { return type; }
-    string getName() { return name; }
-    bool getIsConst() { return isConst; }
-    int getSize() { return size; }
-    void* getMemoryLocation() { return memoryLocation; }
+    string getName() const { return name; }
+    string getType() const { return type; }
+    void write_to_string(string &str) const;
 
 };
 class FunctionInfo {
-public:
     string type;
     string name;
     vector<VarInfo> params;
+public:
     FunctionInfo() {}
     FunctionInfo(string type, string name, vector<VarInfo> params);
+    string getName() const { return name; }
+    string getType() const { return type; }
+    void write_to_string(string &str) const;
 };
 
 class UserType {
@@ -148,7 +149,7 @@ vector<UserType> userTypes;
 
 
 
-#line 152 "limbaj.tab.c"
+#line 153 "limbaj.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -646,15 +647,15 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   134,   134,   136,   137,   140,   142,   140,   149,   152,
-     159,   166,   169,   176,   183,   184,   187,   192,   197,   212,
-     217,   223,   228,   232,   238,   239,   241,   242,   243,   244,
-     245,   248,   249,   252,   255,   258,   263,   268,   275,   281,
-     282,   285,   286,   287,   288,   291,   293,   294,   297,   300,
-     301,   302,   305,   306,   309,   312,   315,   317,   319,   320,
-     323,   324,   325,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337,   338,   339,   342,   349,   350,   351,   352,
-     353,   354,   355,   356,   357,   360
+       0,   135,   135,   137,   138,   141,   143,   141,   150,   153,
+     160,   167,   170,   177,   184,   185,   188,   193,   198,   213,
+     218,   224,   229,   233,   239,   240,   242,   243,   244,   245,
+     246,   249,   250,   253,   256,   259,   264,   269,   276,   282,
+     283,   286,   287,   288,   289,   292,   294,   295,   298,   301,
+     302,   303,   306,   307,   310,   313,   316,   318,   320,   321,
+     324,   325,   326,   329,   330,   331,   332,   333,   334,   335,
+     336,   337,   338,   339,   340,   343,   350,   351,   352,   353,
+     354,   355,   356,   357,   358,   361
 };
 #endif
 
@@ -1622,113 +1623,113 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: user_defined_types END_USR_TYPES declarations END_GLOBAL_VARS global_function_definitions END_GLOBAL_FUNCS special_function  */
-#line 134 "limbaj.y"
+#line 135 "limbaj.y"
                                                                                                                                      {printf("The programm is correct!\n");}
-#line 1628 "limbaj.tab.c"
+#line 1629 "limbaj.tab.c"
     break;
 
   case 5: /* $@1: %empty  */
-#line 140 "limbaj.y"
+#line 141 "limbaj.y"
                                    { symbolTable.enterScope(string((yyvsp[-1].string))); 
     cout<<"Current scope: "<<symbolTable.getCurrentScope()<<endl;
  }
-#line 1636 "limbaj.tab.c"
+#line 1637 "limbaj.tab.c"
     break;
 
   case 6: /* $@2: %empty  */
-#line 142 "limbaj.y"
+#line 143 "limbaj.y"
                                                         { symbolTable.exitScope(); 
     cout<<"Current scope: "<<symbolTable.getCurrentScope()<<endl; }
-#line 1643 "limbaj.tab.c"
+#line 1644 "limbaj.tab.c"
     break;
 
   case 7: /* user_defined_type: USR_TYPE ID '{' $@1 usr_type_vars END_USR_TYPE_VARS usr_type_methods '}' $@2  */
-#line 143 "limbaj.y"
+#line 144 "limbaj.y"
                                                                     {
                         UserType userType = UserType((yyvsp[-7].string), *(yyvsp[-4].vars), *(yyvsp[-2].funcs));
                         userTypes.push_back(userType);
                     }
-#line 1652 "limbaj.tab.c"
+#line 1653 "limbaj.tab.c"
     break;
 
   case 8: /* usr_type_vars: %empty  */
-#line 149 "limbaj.y"
+#line 150 "limbaj.y"
                              {
                     (yyval.vars) = new vector<VarInfo>();
                 }
-#line 1660 "limbaj.tab.c"
+#line 1661 "limbaj.tab.c"
     break;
 
   case 9: /* usr_type_vars: usr_type_vars usr_type_var ';'  */
-#line 152 "limbaj.y"
+#line 153 "limbaj.y"
                                                 {
                     (yyval.vars) = (yyvsp[-2].vars);
                     (yyval.vars)->push_back(*(yyvsp[-1].var));
                     delete((yyvsp[-1].var));
                 }
-#line 1670 "limbaj.tab.c"
+#line 1671 "limbaj.tab.c"
     break;
 
   case 10: /* usr_type_var: TYPE ID  */
-#line 159 "limbaj.y"
+#line 160 "limbaj.y"
                       {
                     VarInfo* var = new VarInfo((yyvsp[-1].string), (yyvsp[0].string));
                     (yyval.var) = var;
                     symbolTable.addVariable(*var);
                 }
-#line 1680 "limbaj.tab.c"
+#line 1681 "limbaj.tab.c"
     break;
 
   case 11: /* usr_type_methods: %empty  */
-#line 166 "limbaj.y"
+#line 167 "limbaj.y"
                                 {
                     (yyval.funcs) = new vector<FunctionInfo>();
                 }
-#line 1688 "limbaj.tab.c"
+#line 1689 "limbaj.tab.c"
     break;
 
   case 12: /* usr_type_methods: usr_type_methods usr_type_method  */
-#line 169 "limbaj.y"
+#line 170 "limbaj.y"
                                                    {
                     (yyval.funcs) = (yyvsp[-1].funcs);
                     (yyval.funcs)->push_back(*(yyvsp[0].func));
                     delete((yyvsp[0].func));
                 }
-#line 1698 "limbaj.tab.c"
+#line 1699 "limbaj.tab.c"
     break;
 
   case 13: /* usr_type_method: TYPE ID '(' func_param ')' '{' statements '}'  */
-#line 176 "limbaj.y"
+#line 177 "limbaj.y"
                                                                {
                     FunctionInfo* func = new FunctionInfo((yyvsp[-7].string), (yyvsp[-6].string), *(yyvsp[-4].vars));
                     (yyval.func) = func;
                     symbolTable.addFunction(*func);
                 }
-#line 1708 "limbaj.tab.c"
+#line 1709 "limbaj.tab.c"
     break;
 
   case 16: /* decl: TYPE ID  */
-#line 187 "limbaj.y"
+#line 188 "limbaj.y"
               {
             VarInfo* var = new VarInfo((yyvsp[-1].string), (yyvsp[0].string));
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1718 "limbaj.tab.c"
+#line 1719 "limbaj.tab.c"
     break;
 
   case 17: /* decl: CONST TYPE ID  */
-#line 192 "limbaj.y"
+#line 193 "limbaj.y"
                     {
             VarInfo* var = new VarInfo((yyvsp[-1].string), (yyvsp[0].string), true);
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1728 "limbaj.tab.c"
+#line 1729 "limbaj.tab.c"
     break;
 
   case 18: /* decl: TYPE ID ASSIGN expr  */
-#line 197 "limbaj.y"
+#line 198 "limbaj.y"
                           {
             VarInfo* var = new VarInfo((yyvsp[-3].string), (yyvsp[-2].string));
             //var->memoryLocation = malloc(sizeof(int)) // Hmm, am putea sa luam 4 octeti ca sa pastram orice tip de variabila? 
@@ -1743,188 +1744,188 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1747 "limbaj.tab.c"
+#line 1748 "limbaj.tab.c"
     break;
 
   case 19: /* decl: CONST TYPE ID ASSIGN expr  */
-#line 212 "limbaj.y"
+#line 213 "limbaj.y"
                                 { 
             VarInfo* var = new VarInfo((yyvsp[-3].string), (yyvsp[-2].string), true);
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1757 "limbaj.tab.c"
+#line 1758 "limbaj.tab.c"
     break;
 
   case 20: /* decl: TYPE ID '[' INT ']'  */
-#line 217 "limbaj.y"
+#line 218 "limbaj.y"
                           {
             VarInfo* var = new VarInfo((yyvsp[-4].string), (yyvsp[-3].string), false, (yyvsp[-1].intValue));
             (yyval.var) = var;
             symbolTable.addVariable(*var);
 
     }
-#line 1768 "limbaj.tab.c"
+#line 1769 "limbaj.tab.c"
     break;
 
   case 21: /* decl: TYPE ID '[' INT ']' ASSIGN '{' const_vals '}'  */
-#line 223 "limbaj.y"
+#line 224 "limbaj.y"
                                                     {
             VarInfo* var = new VarInfo((yyvsp[-8].string), (yyvsp[-7].string), false, (yyvsp[-5].intValue));
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1778 "limbaj.tab.c"
+#line 1779 "limbaj.tab.c"
     break;
 
   case 22: /* decl: TYPE ID '[' INT ']' '[' INT ']'  */
-#line 228 "limbaj.y"
+#line 229 "limbaj.y"
                                       {
             VarInfo* var = new VarInfo((yyvsp[-7].string), (yyvsp[-6].string), false, (yyvsp[-4].intValue) * (yyvsp[-1].intValue));
             (yyval.var) = var;
             symbolTable.addVariable(*var);}
-#line 1787 "limbaj.tab.c"
+#line 1788 "limbaj.tab.c"
     break;
 
   case 23: /* decl: TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' const_vals '}'  */
-#line 232 "limbaj.y"
+#line 233 "limbaj.y"
                                                                 {
             VarInfo* var = new VarInfo((yyvsp[-11].string), (yyvsp[-10].string), false, (yyvsp[-8].intValue) * (yyvsp[-5].intValue));
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1797 "limbaj.tab.c"
+#line 1798 "limbaj.tab.c"
     break;
 
   case 24: /* const_vals: const_vals ',' const_val  */
-#line 238 "limbaj.y"
+#line 239 "limbaj.y"
                                      {}
-#line 1803 "limbaj.tab.c"
+#line 1804 "limbaj.tab.c"
     break;
 
   case 34: /* func_param: %empty  */
-#line 255 "limbaj.y"
+#line 256 "limbaj.y"
                           {
                 (yyval.vars) = new vector<VarInfo>();
             }
-#line 1811 "limbaj.tab.c"
+#line 1812 "limbaj.tab.c"
     break;
 
   case 35: /* func_param: list_param  */
-#line 258 "limbaj.y"
+#line 259 "limbaj.y"
                          {
                 (yyval.vars) = (yyvsp[0].vars);
             }
-#line 1819 "limbaj.tab.c"
+#line 1820 "limbaj.tab.c"
     break;
 
   case 36: /* list_param: param  */
-#line 263 "limbaj.y"
+#line 264 "limbaj.y"
                   {
                     (yyval.vars) = new vector<VarInfo>();
                     (yyval.vars)->push_back(*(yyvsp[0].var));
                     delete((yyvsp[0].var));
                 }
-#line 1829 "limbaj.tab.c"
+#line 1830 "limbaj.tab.c"
     break;
 
   case 37: /* list_param: list_param ',' param  */
-#line 268 "limbaj.y"
+#line 269 "limbaj.y"
                                        {
                     (yyval.vars) = (yyvsp[-2].vars);
                     (yyval.vars)->push_back(*(yyvsp[0].var));
                     delete((yyvsp[0].var));
                 }
-#line 1839 "limbaj.tab.c"
+#line 1840 "limbaj.tab.c"
     break;
 
   case 38: /* param: TYPE ID  */
-#line 275 "limbaj.y"
+#line 276 "limbaj.y"
                {
             VarInfo* var = new VarInfo((yyvsp[-1].string), (yyvsp[0].string));
             (yyval.var) = var;
         }
-#line 1848 "limbaj.tab.c"
+#line 1849 "limbaj.tab.c"
     break;
 
   case 63: /* expr: expr PLUS expr  */
-#line 328 "limbaj.y"
+#line 329 "limbaj.y"
                      {/*$$ = $1 + $3*/}
-#line 1854 "limbaj.tab.c"
+#line 1855 "limbaj.tab.c"
     break;
 
   case 64: /* expr: expr MINUS expr  */
-#line 329 "limbaj.y"
+#line 330 "limbaj.y"
                       {/*$$ = $1 - $3*/}
-#line 1860 "limbaj.tab.c"
+#line 1861 "limbaj.tab.c"
     break;
 
   case 65: /* expr: expr MUL expr  */
-#line 330 "limbaj.y"
+#line 331 "limbaj.y"
                     {/*$$ = $1 * $3*/}
-#line 1866 "limbaj.tab.c"
+#line 1867 "limbaj.tab.c"
     break;
 
   case 66: /* expr: expr DIV expr  */
-#line 331 "limbaj.y"
+#line 332 "limbaj.y"
                     {/*$$ = $1 / $3*/}
-#line 1872 "limbaj.tab.c"
+#line 1873 "limbaj.tab.c"
     break;
 
   case 67: /* expr: expr MOD expr  */
-#line 332 "limbaj.y"
+#line 333 "limbaj.y"
                     {/*$$ = $1 % $3*/}
-#line 1878 "limbaj.tab.c"
+#line 1879 "limbaj.tab.c"
     break;
 
   case 68: /* expr: variable  */
-#line 333 "limbaj.y"
+#line 334 "limbaj.y"
                 {/*if(strstr($1.scope, symbolTable.getCurrentScope()) != NULL) $$ = $1*/}
-#line 1884 "limbaj.tab.c"
+#line 1885 "limbaj.tab.c"
     break;
 
   case 69: /* expr: INT  */
-#line 334 "limbaj.y"
+#line 335 "limbaj.y"
           {/*$$ = $1*/}
-#line 1890 "limbaj.tab.c"
+#line 1891 "limbaj.tab.c"
     break;
 
   case 70: /* expr: FLOAT  */
-#line 335 "limbaj.y"
+#line 336 "limbaj.y"
             {/*$$ = $1*/}
-#line 1896 "limbaj.tab.c"
+#line 1897 "limbaj.tab.c"
     break;
 
   case 71: /* expr: CHAR  */
-#line 336 "limbaj.y"
+#line 337 "limbaj.y"
            {/*$$ = $1*/}
-#line 1902 "limbaj.tab.c"
+#line 1903 "limbaj.tab.c"
     break;
 
   case 72: /* expr: STRING  */
-#line 337 "limbaj.y"
+#line 338 "limbaj.y"
              {/*$$ = $1*/}
-#line 1908 "limbaj.tab.c"
+#line 1909 "limbaj.tab.c"
     break;
 
   case 73: /* expr: BOOL  */
-#line 338 "limbaj.y"
+#line 339 "limbaj.y"
            {/*$$ = $1*/}
-#line 1914 "limbaj.tab.c"
+#line 1915 "limbaj.tab.c"
     break;
 
   case 75: /* variable: ID  */
-#line 342 "limbaj.y"
+#line 343 "limbaj.y"
               { // va returna un VarInfo
         /*for (const auto& var : variables) {
             if(var.second.name == $1) $$ = var; // verificam daca se afla in scope-ul necesar deja in expr
         }*/
     }
-#line 1924 "limbaj.tab.c"
+#line 1925 "limbaj.tab.c"
     break;
 
 
-#line 1928 "limbaj.tab.c"
+#line 1929 "limbaj.tab.c"
 
       default: break;
     }
@@ -2148,7 +2149,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 361 "limbaj.y"
+#line 362 "limbaj.y"
 
 
 void yyerror(const char * s){
@@ -2176,11 +2177,11 @@ string SymbolTable::getCurrentScope() {
 }
 
 void SymbolTable::addVariable(VarInfo var) {
-    variables[symbolTable.getCurrentScope()][var.name] = var;
+    variables[symbolTable.getCurrentScope()][var.getName()] = var;
 }
 
 void SymbolTable::addFunction(FunctionInfo func) {
-    functions[symbolTable.getCurrentScope()][func.name] = func;
+    functions[symbolTable.getCurrentScope()][func.getName()] = func;
 }
 
 bool SymbolTable::variableExists(const string& name) {
@@ -2210,17 +2211,7 @@ void SymbolTable::saveInFile() {
         st_data += scope.first;
         st_data += "\n";
         for (const auto& var : scope.second) {
-            st_data += "name: ";
-            st_data += var.second.name;
-            st_data += "\ntype: ";
-            st_data += var.second.type;
-            st_data += "\nconst: ";
-            std::string is_const = std::to_string(var.second.isConst);
-            st_data += is_const;
-            st_data += "\nsize in bytes: ";
-            std::string size = std::to_string(var.second.size);
-            st_data += size;
-            st_data += "\n\n";
+            var.second.write_to_string(st_data);
         }
     }
     st_data += "-----------------Functions-----------------\n";
@@ -2229,10 +2220,7 @@ void SymbolTable::saveInFile() {
         st_data += scope.first;
         st_data += "\n";
         for (const auto& func : scope.second) {
-            st_data += "name: ";
-            st_data += func.second.name;
-            st_data += "\ntype: ";
-            st_data += func.second.type; 
+            func.second.write_to_string(st_data);
         }
     }
     if(write(fd, st_data.c_str(), st_data.length()) == -1) perror("Eroare la write in fisier symbol table\n");
@@ -2243,16 +2231,12 @@ void SymbolTable::saveInFile() {
 // USERTYPE IMPLEMENTATION
 
 void UserType::addVar(const char* type, const char* name, const char* scope) {
-    VarInfo var;
-    var.type = type;
-    var.name = name;
+    VarInfo var = VarInfo(type, name);
     vars.push_back(var);
 }
 
 void UserType::addMethod(const char* type, const char* name, const char* scope) {
-    FunctionInfo method;
-    method.type = type;
-    method.name = name;
+    FunctionInfo method = FunctionInfo(type, name, vector<VarInfo>());
     methods.push_back(method);
 }
 
@@ -2260,11 +2244,15 @@ void UserType::printMembers() {
     cout << "User type name: " << name << endl;
     cout << "Variables: " << endl;
     for (const VarInfo& v : vars) {
-        cout << "name: " << v.name << " type:" << v.type << "const: " << v.isConst << endl;
+        std::string var_data;
+        v.write_to_string(var_data);
+        cout << var_data;
     }
     cout << "Methods: " << endl;
     for (const FunctionInfo& m : methods) {
-        cout << "name: " << m.name << " type:" << m.type << endl;
+        std::string method_data;
+        m.write_to_string(method_data);
+        cout << method_data;
     }
 }
 
@@ -2306,6 +2294,20 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* m
     this->size = this->size * arraySize;
 }
 
+void VarInfo::write_to_string(string& str) const {
+    str += "name: ";
+    str += name;
+    str += "\ntype: ";
+    str += type;
+    str += "\nconst: ";
+    string is_const = std::to_string(this->isConst);
+    str += is_const;
+    str += "\nsize in bytes: ";
+    string size = std::to_string(this->size);
+    str += size;
+    str += "\n\n";
+}
+
 // VARINFO IMPLEMENTATION ENDS
 
 // FUNCTIONINFO IMPLEMENTATION
@@ -2314,6 +2316,21 @@ FunctionInfo::FunctionInfo(string type, string name, vector<VarInfo> params) {
     this->type = type;
     this->name = name;
     this->params = params;
+}
+
+void FunctionInfo::write_to_string(string& str) const {
+    str += "name: ";
+    str += name;
+    str += "\ntype: ";
+    str += type;
+    str += "\nparams: ";
+    for (const VarInfo& v : params) {
+        str += v.getType();
+        str += " ";
+        str += v.getName();
+        str += ", ";
+    }
+    str += "\n\n";
 }
 
 // FUNCTIONINFO IMPLEMENTATION ENDS
