@@ -9,7 +9,7 @@ value: 3
 name: stringValue
 type: string
 const: 0
-size in bytes: 1
+size in bytes: 12
 value: abracadabra
 
 name: charValue

@@ -20,13 +20,18 @@ private:
     string name;
     bool isConst = false;
     int size = 0;
+    void* memoryLocation;
+
 public:
 
-    void* memoryLocation;
     VarInfo() {}
     VarInfo(string type, string name, bool is_const = false, int arraySize = 1, void* memoryLocation = nullptr);
     string getName() const { return name; }
     string getType() const { return type; }
+    void setValue(void* value);
+    void setSize(int size); 
+    int getSize() const { return this->size; }
+    void* getValue();
     //string getValue() const;
     void write_to_string(string &str) const;
 
@@ -203,13 +208,15 @@ decl: TYPE ID {
     }
     | TYPE ID ASSIGN expr {
             VarInfo* var = new VarInfo($1, $2);
-            var->memoryLocation = $4->memoryLocation;
+            var->setSize($4->getSize());
+            var->setValue($4->getValue());
             $$ = var;
             symbolTable.addVariable(*var);
     }
     | CONST TYPE ID ASSIGN expr { 
             VarInfo* var = new VarInfo($2, $3, true);
-            var->memoryLocation = $5->memoryLocation;
+            var->setSize($5->getSize());
+            var->setValue($5->getValue());
             $$ = var;
             symbolTable.addVariable(*var);
     }
@@ -332,36 +339,36 @@ expr: expr PLUS expr {/*$$ = $1 + $3*/}
     | variable  {/*if(strstr($1.scope, symbolTable.getCurrentScope()) != NULL) $$ = $1*/}
     | INT {
         VarInfo* var = new VarInfo();
-        var->memoryLocation = malloc(sizeof(int));
-        int* intValue = (int*)var->memoryLocation;
+        var->setSize(sizeof(int));
+        int* intValue = (int*)var->getValue();
         *intValue = $1;
         $$ = var;
     }
     | FLOAT {
         VarInfo* var = new VarInfo();
-        var->memoryLocation = malloc(sizeof(float));
-        float* floatValue = (float*)var->memoryLocation;
+        var->setSize(sizeof(float));
+        float* floatValue = (float*)var->getValue();
         *floatValue = $1;
         $$ = var;
     }
     | CHAR {
         VarInfo* var = new VarInfo();
-        var->memoryLocation = malloc(sizeof(char));
-        char* charValue = (char*)var->memoryLocation;
+        var->setSize(sizeof(char));
+        char* charValue = (char*)var->getValue();
         *charValue = $1;
         $$ = var;
     }
     | BOOL {
         VarInfo* var = new VarInfo();
-        var->memoryLocation = malloc(sizeof(bool));
-        bool* boolValue = (bool*)var->memoryLocation;
+        var->setSize(sizeof(bool));
+        bool* boolValue = (bool*)var->getValue();
         *boolValue = $1;
         $$ = var;
     }
     | STRING {
         VarInfo* var = new VarInfo();
-        var->memoryLocation = malloc(strlen($1) - 1);
-        strncpy((char*)var->memoryLocation, $1 + 1, strlen($1) - 2);
+        var->setSize(strlen($1) - 1);
+        strncpy((char*)var->getValue(), $1 + 1, strlen($1) - 2);
         $$ = var;
     }
 
@@ -514,8 +521,11 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* m
     if (type == "int" || type == "float") {
         this->size = 4;
     } 
-    else if (type == "char" || type == "bool" || type == "string") {
+    else if (type == "char" || type == "bool") {
         this->size = 1;
+    }
+    else if(type == "string") {
+        this->size = arraySize;
     }
     else {
         // User defined type
@@ -534,6 +544,19 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* m
     this->size = this->size * arraySize;
 }
 
+void VarInfo::setSize(int size) {
+    this->memoryLocation = malloc(size);
+    this->size = size;
+}
+
+void VarInfo::setValue(void* value){
+    this->memoryLocation = value;
+}
+
+void* VarInfo::getValue(){
+    return this->memoryLocation;
+}
+
 void VarInfo::write_to_string(string& str) const {
     str += "name: ";
     str += name;
@@ -543,7 +566,6 @@ void VarInfo::write_to_string(string& str) const {
     string is_const = std::to_string(this->isConst);
     str += is_const;
     str += "\nsize in bytes: ";
-    //string size = std::to_string(this->size);
     str += std::to_string(this->size);
     str += "\nvalue: ";
     if(this->type == "int"){
