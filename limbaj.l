@@ -44,6 +44,7 @@
 }
 "=" {return ASSIGN;}
 [a-zA-Z_][a-zA-Z0-9_]* {yylval.string = strdup(yytext); return ID;}
+"//".* ;
 [ \t] ;
 \n {yylineno++;}
 . {return yytext[0];}

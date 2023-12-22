@@ -1,8 +1,8 @@
 usr_type myType {
     int a;
-    char gender;
+    char gender; // comentariu
 
-    #END_USR_TYPE_VARS
+    #END_USR_TYPE_VARS 
 
     int someMethod(int boy, char ch) {
         int n_ajdwadwh = 15;
@@ -12,7 +12,7 @@ usr_type myType {
             int something = 3;
         }
         while(1) {
-            myint = 200+3;
+            myint = 200+3; 
             const int omegalul = 3;
         }
     }
@@ -20,8 +20,13 @@ usr_type myType {
 
 #END_USR_TYPES
 
-int myint;
+int myint = 8889; // int PearlAbyss = 15;
+// int absawdhjawgdvwahgdvhgawd = 1;
 int awdwa[10];
+bool boolValue = true;
+float vloatValue = 0.85191;
+char charValue = 'a';
+string stringValue = "abracadabra";
 
 #END_GLOBAL_VARS
 

@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 93 "limbaj.y"
+#line 95 "limbaj.y"
 
     #include <vector>
     #include <string>
@@ -106,7 +106,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 101 "limbaj.y"
+#line 103 "limbaj.y"
 
     int intValue;
     float floatValue;

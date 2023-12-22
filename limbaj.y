@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <unordered_map>
 using namespace std;
@@ -19,13 +20,14 @@ private:
     string name;
     bool isConst = false;
     int size = 0;
-    void* memoryLocation;
 public:
 
+    void* memoryLocation;
     VarInfo() {}
     VarInfo(string type, string name, bool is_const = false, int arraySize = 1, void* memoryLocation = nullptr);
     string getName() const { return name; }
     string getType() const { return type; }
+    //string getValue() const;
     void write_to_string(string &str) const;
 
 };
@@ -128,7 +130,7 @@ unsigned long long whileCounter = 0;
 %type<var> usr_type_var param decl
 %type<func> usr_type_method
 //%type<boolValue> e_bool
-%type<var> variable
+%type<var> variable expr
 
 %left AND OR
 %left LT LE GT GE EQ NEQ
@@ -201,12 +203,13 @@ decl: TYPE ID {
     }
     | TYPE ID ASSIGN expr {
             VarInfo* var = new VarInfo($1, $2);
+            var->memoryLocation = $4->memoryLocation;
             $$ = var;
             symbolTable.addVariable(*var);
     }
-    
     | CONST TYPE ID ASSIGN expr { 
             VarInfo* var = new VarInfo($2, $3, true);
+            var->memoryLocation = $5->memoryLocation;
             $$ = var;
             symbolTable.addVariable(*var);
     }
@@ -216,8 +219,9 @@ decl: TYPE ID {
             symbolTable.addVariable(*var);
 
     }
-    | TYPE ID '[' INT ']' ASSIGN '{' const_vals '}' {
+    | TYPE ID '[' INT ']' ASSIGN '{' expressions '}' {
             VarInfo* var = new VarInfo($1, $2, false, $4);
+
             $$ = var;
             symbolTable.addVariable(*var);
     }
@@ -225,21 +229,11 @@ decl: TYPE ID {
             VarInfo* var = new VarInfo($1, $2, false, $4 * $7);
             $$ = var;
             symbolTable.addVariable(*var);}
-    | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' const_vals '}' {
+    | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' expressions '}' {
             VarInfo* var = new VarInfo($1, $2, false, $4 * $7);
             $$ = var;
             symbolTable.addVariable(*var);
     }
-
-const_vals : const_vals ',' const_val{}
-           | const_val
-
-const_val: INT
-    | FLOAT
-    | CHAR
-    | STRING
-    | BOOL
-    ;
 
 global_function_definitions: /* epsilon */
     | global_function_definitions global_function_definition
@@ -326,18 +320,52 @@ arg_list: expr
     | arg_list ',' expr 
     ;
 
+expressions: expr
+           | expressions ',' expr
+           ;
+
 expr: expr PLUS expr {/*$$ = $1 + $3*/}
     | expr MINUS expr {/*$$ = $1 - $3*/}
     | expr MUL expr {/*$$ = $1 * $3*/}
     | expr DIV expr {/*$$ = $1 / $3*/}
     | expr MOD expr {/*$$ = $1 % $3*/}
     | variable  {/*if(strstr($1.scope, symbolTable.getCurrentScope()) != NULL) $$ = $1*/}
-    | INT {/*$$ = $1*/}
-    | FLOAT {/*$$ = $1*/}
-    | CHAR {/*$$ = $1*/}
-    | STRING {/*$$ = $1*/}
-    | BOOL {/*$$ = $1*/}
-    | '(' expr ')'
+    | INT {
+        VarInfo* var = new VarInfo();
+        var->memoryLocation = malloc(sizeof(int));
+        int* intValue = (int*)var->memoryLocation;
+        *intValue = $1;
+        $$ = var;
+    }
+    | FLOAT {
+        VarInfo* var = new VarInfo();
+        var->memoryLocation = malloc(sizeof(float));
+        float* floatValue = (float*)var->memoryLocation;
+        *floatValue = $1;
+        $$ = var;
+    }
+    | CHAR {
+        VarInfo* var = new VarInfo();
+        var->memoryLocation = malloc(sizeof(char));
+        char* charValue = (char*)var->memoryLocation;
+        *charValue = $1;
+        $$ = var;
+    }
+    | BOOL {
+        VarInfo* var = new VarInfo();
+        var->memoryLocation = malloc(sizeof(bool));
+        bool* boolValue = (bool*)var->memoryLocation;
+        *boolValue = $1;
+        $$ = var;
+    }
+    | STRING {
+        VarInfo* var = new VarInfo();
+        var->memoryLocation = malloc(strlen($1) - 1);
+        strncpy((char*)var->memoryLocation, $1 + 1, strlen($1) - 2);
+        $$ = var;
+    }
+
+    //| '(' expr ')'
     ;
 
 variable : ID { // va returna un VarInfo
@@ -413,7 +441,7 @@ FunctionInfo SymbolTable::getFunction(const string& name) {
 void SymbolTable::saveInFile() {
     int fd;
     if((fd = open("symbolTable.txt", O_RDWR | O_CREAT | O_TRUNC, 0666)) == -1){
-        perror("Eroare la open fisier symbol table\n");
+        perror("Eroare la open fisier symbolTable.txt\n");
     }
     std::string st_data = "-----------------Variables-----------------\n";
     for (const auto& scope : variables) {
@@ -422,6 +450,8 @@ void SymbolTable::saveInFile() {
         st_data += "\n";
         for (const auto& var : scope.second) {
             var.second.write_to_string(st_data);
+            //st_data += "\nvalue: ";
+            //st_data += var.second.getValue();
         }
     }
     st_data += "-----------------Functions-----------------\n";
@@ -433,7 +463,7 @@ void SymbolTable::saveInFile() {
             func.second.write_to_string(st_data);
         }
     }
-    if(write(fd, st_data.c_str(), st_data.length()) == -1) perror("Eroare la write in fisier symbol table\n");
+    if(write(fd, st_data.c_str(), st_data.length()) == -1) perror("Eroare la write in fisier symbolTable.txt\n");
 }
 
 // SYMBOLTABLE IMPLEMENTATION ENDS
@@ -513,8 +543,28 @@ void VarInfo::write_to_string(string& str) const {
     string is_const = std::to_string(this->isConst);
     str += is_const;
     str += "\nsize in bytes: ";
-    string size = std::to_string(this->size);
-    str += size;
+    //string size = std::to_string(this->size);
+    str += std::to_string(this->size);
+    str += "\nvalue: ";
+    if(this->type == "int"){
+        str += std::to_string(*(int*)this->memoryLocation);
+    }
+    else if (this->type == "char"){
+        str += (char*)this->memoryLocation;
+    }
+    else if (this->type == "float"){
+        str += std::to_string(*(float*)this->memoryLocation);
+    }
+    else if (this->type == "bool"){
+        //bool boolValue = *(bool*)this->memoryLocation;
+        str += std::to_string(*(bool*)this->memoryLocation);
+        //printf("%d", *(bool*)this->memoryLocation);
+    }
+    else if (this->type == "string"){
+        //char* str = (char*)this->memoryLocation;
+        //printf("%s", str);
+        str += (char*)this->memoryLocation;
+    }
     str += "\n\n";
 }
 

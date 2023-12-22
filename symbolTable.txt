@@ -4,50 +4,83 @@ name: a
 type: int
 const: 0
 size in bytes: 4
+value: 3
+
+name: stringValue
+type: string
+const: 0
+size in bytes: 1
+value: abracadabra
+
+name: charValue
+type: char
+const: 0
+size in bytes: 1
+value: a
+
+name: vloatValue
+type: float
+const: 0
+size in bytes: 4
+value: 0.851910
 
 name: o
 type: int
 const: 0
 size in bytes: 4
+value: 0
+
+name: boolValue
+type: bool
+const: 0
+size in bytes: 1
+value: 1
 
 name: awdwa
 type: int
 const: 0
 size in bytes: 40
+value: 0
 
 name: myint
 type: int
 const: 0
 size in bytes: 4
+value: 8889
 
 --------Scope: myType::someMethod::while1::
 name: omegalul
 type: int
 const: 1
 size in bytes: 4
+value: 3
 
 --------Scope: myType::someMethod::while0::
 name: something
 type: int
 const: 0
 size in bytes: 4
+value: 3
 
 --------Scope: myType::someMethod::
 name: n_ajdwadwh
 type: int
 const: 0
 size in bytes: 4
+value: 15
 
 --------Scope: myType::
 name: gender
 type: char
 const: 0
 size in bytes: 1
+value: 
 
 name: a
 type: int
 const: 0
 size in bytes: 4
+value: 0
 
 -----------------Functions-----------------
 --------Scope: 
