@@ -16,6 +16,10 @@ extern int yylex();
 void yyerror(const char * s);
 
 class ASTNode;
+class SymbolTable;
+class UserType;
+class VarInfo;
+class FunctionInfo;
 
 class VarInfo {
 private:
@@ -69,6 +73,7 @@ public:
     vector<VarInfo> getVars() const { return vars; }
 };
 
+vector<UserType> userTypes;
 
 class SymbolTable {
 private:
@@ -90,8 +95,7 @@ public:
     void saveInFile();
 };
 
-#include <variant>
-#include <tuple>
+SymbolTable symbolTable;
 
 enum class ExprType {
     FLOAT,
@@ -99,21 +103,16 @@ enum class ExprType {
     BOOLEAN,
     STRING,
     CHAR,
-    FUNCTION,
 };
 
 class ASTNode {
 public:
-    using ReturnValue = variant<int, float, bool>;
+    using ReturnValue = variant<int, float, bool, char*, char>;
 
     virtual ~ASTNode() {}
     virtual ReturnValue evaluate() const = 0;
     virtual ExprType type() const = 0;
-
-    virtual bool isLeaf() const { return false; }
-    virtual void* getLeafValueCopy() const { return nullptr; }
 };
-
 
 class FloatNode : public ASTNode {
 private:
@@ -151,10 +150,7 @@ private:
 public:
     CharNode(char val) : value(val) {}
 
-    bool isLeaf() const override { return true; }
-    void* getLeafValueCopy() const override { return new char(value); }
-
-    ReturnValue evaluate() const override { return ReturnValue(0); }
+    ReturnValue evaluate() const override { return ReturnValue(value); }
     ExprType type() const override { return ExprType::CHAR; }
 };
 
@@ -164,15 +160,11 @@ private:
 public:
     StringNode(char* val) : value(val) {}
 
-    bool isLeaf() const override { return true; }
-    void* getLeafValueCopy() const override {
+    ReturnValue evaluate() const override { 
         char* copy = new char[strlen(value) + 1];
         strcpy(copy, value);
-        return copy;
+        return ReturnValue(copy);
     }
-
-    ReturnValue evaluate() const override { return ReturnValue(0); }
-
     ExprType type() const override { return ExprType::STRING; }
 };
 
@@ -183,33 +175,18 @@ private:
 public:
     IdentifierNode(const std::string& id) : name(id) {}
 
-    ReturnValue evaluate() const override {
-        // Implement logic to get the value of the identifier
-        // and return it
-        return ReturnValue(0.0f); // Placeholder value, replace with actual logic
-    }
-
-    ExprType type() const override {
-        // Implement logic to get the type of the identifier
-        // and return it
-        return ExprType::FLOAT; // Placeholder value, replace with actual logic
-    }
+    ReturnValue evaluate() const override;
+    ExprType type() const override;
 };
 
 class FunctionCallNode : public ASTNode {
 private:
-
+    std::string name;
 public:
-    FunctionCallNode() {}
+    FunctionCallNode(const std::string& id) : name(id) {}
 
-    ReturnValue evaluate() const override {
-        return ReturnValue(0);
-    }
-
-    ExprType type() const override {
-        // implement logic to get return type of the function
-        return ExprType::INT; // Placeholder value, replace with actual logic
-    }
+    ReturnValue evaluate() const override;
+    ExprType type() const override;
 };
 
 class VectorElementNode : public ASTNode {
@@ -224,7 +201,7 @@ public:
     ReturnValue evaluate() const override {
         // Implement logic to get the value of the vector element
         // and return it
-        return variant<int, float, bool>(0.0f); // Placeholder value, replace with actual logic
+        return ReturnValue(0.0f); // Placeholder value, replace with actual logic
     }
 
     ExprType type() const override {
@@ -249,8 +226,7 @@ public:
     ExprType type() const override;
 };
 
-SymbolTable symbolTable;
-vector<UserType> userTypes;
+
 unsigned long long ifCounter = 0;
 unsigned long long forCounter = 0;
 unsigned long long whileCounter = 0;
@@ -311,7 +287,7 @@ unsigned long long whileCounter = 0;
 %type<var> usr_type_var param decl
 %type<func> usr_type_method
 //%type<boolValue> e_bool
-%type<node> expr
+%type<node> expr function_call 
 
 %left CHAR
 
@@ -383,20 +359,11 @@ decl: TYPE ID {
             symbolTable.addVariable(*var);
     }
     | TYPE ID ASSIGN expr {
-            if($4->isLeaf()) {
-                char* value = (char*)$4->getLeafValueCopy();
-                VarInfo* var = new VarInfo($1, $2, false, strlen(value), value);
-                $$ = var;
-                symbolTable.addVariable(*var);
-                free(value);
-            }
-            else {
-                VarInfo* var = new VarInfo($1, $2, false);
-                var->assign_expr($4);
-                free($4);
-                $$ = var;
-                symbolTable.addVariable(*var);
-            }
+            VarInfo* var = new VarInfo($1, $2, false);
+            var->assign_expr($4);
+            free($4);
+            $$ = var;
+            symbolTable.addVariable(*var);
             
     }
     | CONST TYPE ID ASSIGN expr { 
@@ -418,7 +385,7 @@ decl: TYPE ID {
             $$ = var;
             symbolTable.addVariable(*var);
     }
-    // | TYPE ID '[' INT ']' '[' INT ']' {
+    // | TYPE ID '[' INT ']' '[' INT ']' {   nu cred ca trebuie sa avem si matrici
     //         VarInfo* var = new VarInfo($1, $2, false, $4 * $7);
     //         $$ = var;
     //         symbolTable.addVariable(*var);}
@@ -472,7 +439,7 @@ statements: /* epsilon */
 statement: assignment_statement 
     | decl ';' 
     | control_statement
-    | function_call
+    | function_call ';'
     | eval_statement
     | type_of_statement
     ;
@@ -502,7 +469,9 @@ for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')
 while_statement: WHILE '(' expr ')' '{' {symbolTable.enterScope("while" + std::to_string(whileCounter++));} statements '}' {symbolTable.exitScope();}
     ;
 
-function_call: ID '(' arguments ')' ';' 
+function_call: ID '(' arguments ')' {
+        $$ = new FunctionCallNode($1);
+    }
     ;
 
 arguments: /* epsilon */
@@ -510,7 +479,6 @@ arguments: /* epsilon */
     ;
 
 arg_list: expr 
-    | function_call
     | arg_list ',' expr 
     ;
 
@@ -538,7 +506,7 @@ eval_statement: EVAL '(' expr ')' ';' {
             break;
     }
     free($3); // free the memory allocated for the expression
- }
+}
     ;
 
 type_of_statement: TYPEOF '(' expr ')' ';' { 
@@ -558,9 +526,6 @@ type_of_statement: TYPEOF '(' expr ')' ';' {
             case ExprType::CHAR:
                 printf("Type of expression: char\n");
                 break;
-            case ExprType::FUNCTION:
-                printf("Type of expression: function\n");
-                break;
             default:
                 printf("Type of expression: unknown\n");
                 break;
@@ -568,7 +533,6 @@ type_of_statement: TYPEOF '(' expr ')' ';' {
     free($3); // free the memory allocated for the expression
     }
     ;
-
 
 expr: expr PLUS expr { $$ = new BinaryOpNode('+', $1, $3); }
     | expr MINUS expr { $$ = new BinaryOpNode('-', $1, $3); }
@@ -581,7 +545,7 @@ expr: expr PLUS expr { $$ = new BinaryOpNode('+', $1, $3); }
     | CHAR { $$ = new CharNode($1); }
     | BOOL { $$ = new BoolNode($1); }
     | STRING { $$ = new StringNode($1); }
-    
+    | function_call { $$ = $1; }
     | '(' expr ')' { $$ = $2; }
     ;
 
@@ -654,11 +618,19 @@ bool SymbolTable::functionExists(const string& name) {
 }
 
 VarInfo SymbolTable::getVariable(const string& name) {
-    return variables[symbolTable.getCurrentScope()][name];
+    //search for variable in current scope
+    if (variables[symbolTable.getCurrentScope()].find(name) != variables[symbolTable.getCurrentScope()].end()) {
+        return variables[symbolTable.getCurrentScope()][name];
+    }
+    //search for variable in global scope
+    else {
+        return variables[""][name];
+    }
 }
 
 FunctionInfo SymbolTable::getFunction(const string& name) {
-    return functions[symbolTable.getCurrentScope()][name];
+    //search for function in global scope
+    return functions[""][name];
 }
 
 void SymbolTable::saveInFile() {
@@ -854,12 +826,20 @@ void VarInfo::assign_expr(ASTNode* expr) {
         this->setValue(value);
         break;
     }
-    case ExprType::STRING: {
-        this->setSize(1);
+    case ExprType::CHAR: {
+        this->setSize(sizeof(char));
+        void* value = malloc(sizeof(char));
+        char temp4 = std::get<char>(expr->evaluate());
+        memcpy(value, &temp4, sizeof(char));
+        this->setValue(value);
         break;
     }
-    case ExprType::CHAR: {
-        this->setSize(1);
+    case ExprType::STRING: {
+        this->setSize(strlen((char*)(std::get<char*>(expr->evaluate()))) + 1);
+        void* value = malloc(strlen((char*)(std::get<char*>(expr->evaluate()))) + 1);
+        memset(value, 0, strlen((char*)(std::get<char*>(expr->evaluate()))) + 1);
+        strcpy((char*)value, (char*)(std::get<char*>(expr->evaluate())));
+        this->setValue(value);
         break;
     }
     default: {
@@ -899,7 +879,7 @@ void FunctionInfo::write_to_string(string& str) const {
 
 // FUNCTIONINFO IMPLEMENTATION ENDS
 
-// ASTNODE IMPLEMENTATION
+// BINARYOPNODE IMPLEMENTATION
 
 template <typename T>
 ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
@@ -955,7 +935,87 @@ ExprType BinaryOpNode::type() const {
     return left->type();
 }
 
-// ASTNODE IMPLEMENTATION ENDS
+// BINARYOPNODE IMPLEMENTATION ENDS
+
+// IDENTIFIERNODE IMPLEMENTATION
+
+ASTNode::ReturnValue IdentifierNode::evaluate() const {
+    VarInfo var = symbolTable.getVariable(name);
+    switch (var.getType()[0]) {
+        case 'i':
+            return ReturnValue(*(int*)var.getValueCopy());
+        case 'f':
+            return ReturnValue(*(float*)var.getValueCopy());
+        case 'b':
+            return ReturnValue(*(bool*)var.getValueCopy());
+        case 'c':
+            return ReturnValue(*(char*)var.getValueCopy());
+        case 's':
+            return ReturnValue((char*)var.getValueCopy());
+        default:
+            return ReturnValue(0);
+    }
+}
+
+ExprType IdentifierNode::type() const {
+    VarInfo var = symbolTable.getVariable(name);
+    switch (var.getType()[0]) {
+        case 'i':
+            return ExprType::INT;
+        case 'f':
+            return ExprType::FLOAT;
+        case 'b':
+            return ExprType::BOOLEAN;
+        case 'c':
+            return ExprType::CHAR;
+        case 's':
+            return ExprType::STRING;
+        default:
+            return ExprType::INT;
+    }
+}
+
+// IDENTIFIERNODE IMPLEMENTATION ENDS
+
+// FUNCTIONCALLNODE IMPLEMENTATION
+
+ASTNode::ReturnValue FunctionCallNode::evaluate() const {
+    FunctionInfo func = symbolTable.getFunction(name);
+    switch (func.getType()[0]) {
+        case 'i':
+            return ReturnValue(0);
+        case 'f':
+            return ReturnValue(0.0f);
+        case 'b':
+            return ReturnValue(false);
+        case 'c':
+            return ReturnValue('0');
+        case 's':
+            return ReturnValue('0');
+        default:
+            return ReturnValue(0);
+    }
+}
+
+ExprType FunctionCallNode::type() const {
+    FunctionInfo func = symbolTable.getFunction(name);
+    switch (func.getType()[0]) {
+        case 'i':
+            return ExprType::INT;
+        case 'f':
+            return ExprType::FLOAT;
+        case 'b':
+            return ExprType::BOOLEAN;
+        case 'c':
+            return ExprType::CHAR;
+        case 's':
+            return ExprType::STRING;
+        default:
+            return ExprType::INT;
+    }
+}
+
+// FUNCTIONCALLNODE IMPLEMENTATION ENDS
 
 int main(int argc, char** argv){
     yyin=fopen(argv[1],"r");

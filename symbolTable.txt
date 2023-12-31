@@ -1,5 +1,11 @@
 -----------------Variables-----------------
 --------Scope: clean_code_executer::
+name: intTest
+type: int
+const: 0
+size in bytes: 4
+value: 16
+
 name: a
 type: int
 const: 0
@@ -16,7 +22,7 @@ value: 103
 name: stringValue
 type: string
 const: 0
-size in bytes: 11
+size in bytes: 12
 value: abracadabra
 
 name: charValue
