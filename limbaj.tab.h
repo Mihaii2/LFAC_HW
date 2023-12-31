@@ -45,15 +45,16 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 100 "limbaj.y"
+#line 274 "limbaj.y"
 
     #include <vector>
     #include <string>
     using namespace std;
     class VarInfo;
     class FunctionInfo;
+    class ASTNode;
 
-#line 57 "limbaj.tab.h"
+#line 58 "limbaj.tab.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -81,23 +82,25 @@ extern int yydebug;
     END_GLOBAL_FUNCS = 272,        /* END_GLOBAL_FUNCS  */
     CONST = 273,                   /* CONST  */
     USR_TYPE = 274,                /* USR_TYPE  */
-    NOT = 275,                     /* NOT  */
-    EQ = 276,                      /* EQ  */
-    NEQ = 277,                     /* NEQ  */
-    LT = 278,                      /* LT  */
-    LE = 279,                      /* LE  */
-    GT = 280,                      /* GT  */
-    GE = 281,                      /* GE  */
-    ASSIGN = 282,                  /* ASSIGN  */
-    PLUS = 283,                    /* PLUS  */
-    MINUS = 284,                   /* MINUS  */
-    MUL = 285,                     /* MUL  */
-    DIV = 286,                     /* DIV  */
-    MOD = 287,                     /* MOD  */
-    AND = 288,                     /* AND  */
-    OR = 289,                      /* OR  */
-    GEQ = 290,                     /* GEQ  */
-    LEQ = 291                      /* LEQ  */
+    EVAL = 275,                    /* EVAL  */
+    TYPEOF = 276,                  /* TYPEOF  */
+    NOT = 277,                     /* NOT  */
+    EQ = 278,                      /* EQ  */
+    NEQ = 279,                     /* NEQ  */
+    LT = 280,                      /* LT  */
+    LE = 281,                      /* LE  */
+    GT = 282,                      /* GT  */
+    GE = 283,                      /* GE  */
+    ASSIGN = 284,                  /* ASSIGN  */
+    PLUS = 285,                    /* PLUS  */
+    MINUS = 286,                   /* MINUS  */
+    MUL = 287,                     /* MUL  */
+    DIV = 288,                     /* DIV  */
+    MOD = 289,                     /* MOD  */
+    AND = 290,                     /* AND  */
+    OR = 291,                      /* OR  */
+    GEQ = 292,                     /* GEQ  */
+    LEQ = 293                      /* LEQ  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -106,7 +109,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 108 "limbaj.y"
+#line 283 "limbaj.y"
 
     int intValue;
     float floatValue;
@@ -118,9 +121,10 @@ union YYSTYPE
     std::vector<VarInfo>* func_params;
     VarInfo* var;
     FunctionInfo* func;
+    ASTNode* node;
 
 
-#line 124 "limbaj.tab.h"
+#line 128 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

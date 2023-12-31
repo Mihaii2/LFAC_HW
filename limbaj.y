@@ -6,6 +6,8 @@
 #include <cstring>
 #include <vector>
 #include <unordered_map>
+#include <cmath>
+#include <variant>
 using namespace std;
 extern FILE* yyin;
 extern char* yytext;
@@ -13,6 +15,7 @@ extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
 
+class ASTNode;
 
 class VarInfo {
 private:
@@ -20,20 +23,21 @@ private:
     string name;
     bool isConst = false;
     int size = 0;
-    void* memoryLocation;
+    void* memoryLocation = nullptr;
 
 public:
 
     VarInfo() {}
-    VarInfo(string type, string name, bool is_const = false, int arraySize = 1, void* memoryLocation = nullptr);
+    VarInfo(string type, string name, bool is_const = false, int arraySize = 1, void* value = nullptr);
     string getName() const { return name; }
     string getType() const { return type; }
     void setValue(void* value);
     void setSize(int size); 
     int getSize() const { return this->size; }
-    void* getValue();
-    //string getValue() const;
+    void* getValueCopy();
+    void assign_expr(ASTNode* expr);
     void write_to_string(string &str) const;
+    void printMembers();
 
 };
 class FunctionInfo {
@@ -86,11 +90,181 @@ public:
     void saveInFile();
 };
 
+#include <variant>
+#include <tuple>
+
+enum class ExprType {
+    FLOAT,
+    INT,
+    BOOLEAN,
+    STRING,
+    CHAR,
+    FUNCTION,
+};
+
+class ASTNode {
+public:
+    using ReturnValue = variant<int, float, bool>;
+
+    virtual ~ASTNode() {}
+    virtual ReturnValue evaluate() const = 0;
+    virtual ExprType type() const = 0;
+
+    virtual bool isLeaf() const { return false; }
+    virtual void* getLeafValueCopy() const { return nullptr; }
+};
+
+
+class FloatNode : public ASTNode {
+private:
+    float value;
+
+public:
+    FloatNode(float val) : value(val) {}
+    ReturnValue evaluate() const override { return ReturnValue(value); }
+    ExprType type() const override { return ExprType::FLOAT; }
+};
+
+class IntNode : public ASTNode {
+private:
+    int value;
+
+public:
+    IntNode(int val) : value(val) {}
+    ReturnValue evaluate() const override { return ReturnValue(value); }
+    ExprType type() const override { return ExprType::INT; }
+};
+
+class BoolNode : public ASTNode {
+private:
+    bool value;
+
+public:
+    BoolNode(bool val) : value(val) {}
+    ReturnValue evaluate() const override { return ReturnValue(value); }
+    ExprType type() const override { return ExprType::BOOLEAN; }
+};
+
+class CharNode : public ASTNode {
+private:
+    char value;
+public:
+    CharNode(char val) : value(val) {}
+
+    bool isLeaf() const override { return true; }
+    void* getLeafValueCopy() const override { return new char(value); }
+
+    ReturnValue evaluate() const override { return ReturnValue(0); }
+    ExprType type() const override { return ExprType::CHAR; }
+};
+
+class StringNode : public ASTNode {
+private:
+    char* value;
+public:
+    StringNode(char* val) : value(val) {}
+
+    bool isLeaf() const override { return true; }
+    void* getLeafValueCopy() const override {
+        char* copy = new char[strlen(value) + 1];
+        strcpy(copy, value);
+        return copy;
+    }
+
+    ReturnValue evaluate() const override { return ReturnValue(0); }
+
+    ExprType type() const override { return ExprType::STRING; }
+};
+
+class IdentifierNode : public ASTNode {
+private:
+    std::string name;
+
+public:
+    IdentifierNode(const std::string& id) : name(id) {}
+
+    ReturnValue evaluate() const override {
+        // Implement logic to get the value of the identifier
+        // and return it
+        return ReturnValue(0.0f); // Placeholder value, replace with actual logic
+    }
+
+    ExprType type() const override {
+        // Implement logic to get the type of the identifier
+        // and return it
+        return ExprType::FLOAT; // Placeholder value, replace with actual logic
+    }
+};
+
+class FunctionCallNode : public ASTNode {
+private:
+
+public:
+    FunctionCallNode() {}
+
+    ReturnValue evaluate() const override {
+        return ReturnValue(0);
+    }
+
+    ExprType type() const override {
+        // implement logic to get return type of the function
+        return ExprType::INT; // Placeholder value, replace with actual logic
+    }
+};
+
+class VectorElementNode : public ASTNode {
+private:
+    const ASTNode* vector;
+    const ASTNode* index;
+
+public:
+    VectorElementNode(const ASTNode* vec, const ASTNode* idx)
+        : vector(vec), index(idx) {}
+
+    ReturnValue evaluate() const override {
+        // Implement logic to get the value of the vector element
+        // and return it
+        return variant<int, float, bool>(0.0f); // Placeholder value, replace with actual logic
+    }
+
+    ExprType type() const override {
+        // Implement logic to get the type of the vector element
+        // and return it
+        return ExprType::FLOAT; // Placeholder value, replace with actual logic
+    }
+};
+
+class BinaryOpNode : public ASTNode {
+private:
+    char op;
+    const ASTNode* left;
+    const ASTNode* right;
+
+public:
+    BinaryOpNode(char oper, const ASTNode* l, const ASTNode* r)
+        : op(oper), left(l), right(r) {}
+
+    ReturnValue evaluate() const override;
+
+    ExprType type() const override;
+};
+
 SymbolTable symbolTable;
 vector<UserType> userTypes;
 unsigned long long ifCounter = 0;
 unsigned long long forCounter = 0;
 unsigned long long whileCounter = 0;
+
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 
 %}
 
@@ -103,6 +277,7 @@ unsigned long long whileCounter = 0;
     using namespace std;
     class VarInfo;
     class FunctionInfo;
+    class ASTNode;
 }
 
 %union {
@@ -116,6 +291,7 @@ unsigned long long whileCounter = 0;
     std::vector<VarInfo>* func_params;
     VarInfo* var;
     FunctionInfo* func;
+    ASTNode* node;
 
 }
 
@@ -127,7 +303,7 @@ unsigned long long whileCounter = 0;
 %token <string> ID TYPE SPECIAL_FUNCTION
 %token IF WHILE FOR  
 %token END_USR_TYPES END_USR_TYPE_VARS END_GLOBAL_VARS END_GLOBAL_FUNCS
-%token CONST USR_TYPE
+%token CONST USR_TYPE EVAL TYPEOF
 %token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV MOD AND OR GEQ LEQ
 
 %type<vars> usr_type_vars list_param func_param
@@ -135,7 +311,9 @@ unsigned long long whileCounter = 0;
 %type<var> usr_type_var param decl
 %type<func> usr_type_method
 //%type<boolValue> e_bool
-%type<var> variable expr
+%type<node> expr
+
+%left CHAR
 
 %left AND OR
 %left LT LE GT GE EQ NEQ
@@ -171,7 +349,6 @@ usr_type_vars: /* epsilon */ {
 usr_type_var: TYPE ID {
                     VarInfo* var = new VarInfo($1, $2);
                     $$ = var;
-                    symbolTable.addVariable(*var);
                 }
                 ;
 
@@ -188,7 +365,6 @@ usr_type_methods: /* epsilon */ {
 usr_type_method: TYPE ID '(' func_param ')' '{' {symbolTable.enterScope(string($2));} statements '}' {symbolTable.exitScope();} {
                     FunctionInfo* func = new FunctionInfo($1, $2, *$4);
                     $$ = func;
-                    symbolTable.addFunction(*func);
                 }
                 ;
 
@@ -207,16 +383,26 @@ decl: TYPE ID {
             symbolTable.addVariable(*var);
     }
     | TYPE ID ASSIGN expr {
-            VarInfo* var = new VarInfo($1, $2);
-            var->setSize($4->getSize());
-            var->setValue($4->getValue());
-            $$ = var;
-            symbolTable.addVariable(*var);
+            if($4->isLeaf()) {
+                char* value = (char*)$4->getLeafValueCopy();
+                VarInfo* var = new VarInfo($1, $2, false, strlen(value), value);
+                $$ = var;
+                symbolTable.addVariable(*var);
+                free(value);
+            }
+            else {
+                VarInfo* var = new VarInfo($1, $2, false);
+                var->assign_expr($4);
+                free($4);
+                $$ = var;
+                symbolTable.addVariable(*var);
+            }
+            
     }
     | CONST TYPE ID ASSIGN expr { 
             VarInfo* var = new VarInfo($2, $3, true);
-            var->setSize($5->getSize());
-            var->setValue($5->getValue());
+            var->assign_expr($5);
+            free($5);
             $$ = var;
             symbolTable.addVariable(*var);
     }
@@ -232,15 +418,15 @@ decl: TYPE ID {
             $$ = var;
             symbolTable.addVariable(*var);
     }
-    | TYPE ID '[' INT ']' '[' INT ']' {
-            VarInfo* var = new VarInfo($1, $2, false, $4 * $7);
-            $$ = var;
-            symbolTable.addVariable(*var);}
-    | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' expressions '}' {
-            VarInfo* var = new VarInfo($1, $2, false, $4 * $7);
-            $$ = var;
-            symbolTable.addVariable(*var);
-    }
+    // | TYPE ID '[' INT ']' '[' INT ']' {
+    //         VarInfo* var = new VarInfo($1, $2, false, $4 * $7);
+    //         $$ = var;
+    //         symbolTable.addVariable(*var);}
+    // | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' expressions '}' {
+    //         VarInfo* var = new VarInfo($1, $2, false, $4 * $7);
+    //         $$ = var;
+    //         symbolTable.addVariable(*var);
+    // }
 
 global_function_definitions: /* epsilon */
     | global_function_definitions global_function_definition
@@ -286,7 +472,9 @@ statements: /* epsilon */
 statement: assignment_statement 
     | decl ';' 
     | control_statement
-    | function_call_statement 
+    | function_call
+    | eval_statement
+    | type_of_statement
     ;
 
 assignment_statement: left_value ASSIGN expr ';' 
@@ -314,9 +502,8 @@ for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')
 while_statement: WHILE '(' expr ')' '{' {symbolTable.enterScope("while" + std::to_string(whileCounter++));} statements '}' {symbolTable.exitScope();}
     ;
 
-function_call_statement: function_call ';' 
-
-function_call: ID '(' arguments ')' 
+function_call: ID '(' arguments ')' ';' 
+    ;
 
 arguments: /* epsilon */
     | arg_list
@@ -331,58 +518,74 @@ expressions: expr
            | expressions ',' expr
            ;
 
-expr: expr PLUS expr {/*$$ = $1 + $3*/}
-    | expr MINUS expr {/*$$ = $1 - $3*/}
-    | expr MUL expr {/*$$ = $1 * $3*/}
-    | expr DIV expr {/*$$ = $1 / $3*/}
-    | expr MOD expr {/*$$ = $1 % $3*/}
-    | variable  {/*if(strstr($1.scope, symbolTable.getCurrentScope()) != NULL) $$ = $1*/}
-    | INT {
-        VarInfo* var = new VarInfo();
-        var->setSize(sizeof(int));
-        int* intValue = (int*)var->getValue();
-        *intValue = $1;
-        $$ = var;
+eval_statement: EVAL '(' expr ')' ';' { 
+    switch($3->type()) {
+        case ExprType::INT:
+            printf("Evaluated expression: %d\n", std::get<int>($3->evaluate()));
+            break;
+        case ExprType::FLOAT:
+            printf("Evaluated expression: %f\n", std::get<float>($3->evaluate()));
+            break;
+        case ExprType::BOOLEAN:
+            printf("Evaluated expression: %d\n", std::get<bool>($3->evaluate()));
+            break;
+        case ExprType::STRING:
+        case ExprType::CHAR:
+            printf("Evaluated expression: %d\n", 0);
+            break;
+        default:
+            printf("Unknown type\n");
+            break;
     }
-    | FLOAT {
-        VarInfo* var = new VarInfo();
-        var->setSize(sizeof(float));
-        float* floatValue = (float*)var->getValue();
-        *floatValue = $1;
-        $$ = var;
-    }
-    | CHAR {
-        VarInfo* var = new VarInfo();
-        var->setSize(sizeof(char));
-        char* charValue = (char*)var->getValue();
-        *charValue = $1;
-        $$ = var;
-    }
-    | BOOL {
-        VarInfo* var = new VarInfo();
-        var->setSize(sizeof(bool));
-        bool* boolValue = (bool*)var->getValue();
-        *boolValue = $1;
-        $$ = var;
-    }
-    | STRING {
-        VarInfo* var = new VarInfo();
-        var->setSize(strlen($1) - 1);
-        strncpy((char*)var->getValue(), $1 + 1, strlen($1) - 2);
-        $$ = var;
-    }
-
-    //| '(' expr ')'
+    free($3); // free the memory allocated for the expression
+ }
     ;
 
-variable : ID { // va returna un VarInfo
-        /*for (const auto& var : variables) {
-            if(var.second.name == $1) $$ = var; // verificam daca se afla in scope-ul necesar deja in expr
-        }*/
+type_of_statement: TYPEOF '(' expr ')' ';' { 
+        switch ($3->type()) {
+            case ExprType::INT:
+                printf("Type of expression: int\n");
+                break;
+            case ExprType::FLOAT:
+                printf("Type of expression: float\n");
+                break;
+            case ExprType::BOOLEAN:
+                printf("Type of expression: bool\n");
+                break;
+            case ExprType::STRING:
+                printf("Type of expression: string\n");
+                break;
+            case ExprType::CHAR:
+                printf("Type of expression: char\n");
+                break;
+            case ExprType::FUNCTION:
+                printf("Type of expression: function\n");
+                break;
+            default:
+                printf("Type of expression: unknown\n");
+                break;
+        }
+    free($3); // free the memory allocated for the expression
     }
     ;
 
-e_bool: expr EQ expr
+
+expr: expr PLUS expr { $$ = new BinaryOpNode('+', $1, $3); }
+    | expr MINUS expr { $$ = new BinaryOpNode('-', $1, $3); }
+    | expr MUL expr { $$ = new BinaryOpNode('*', $1, $3); }
+    | expr DIV expr { $$ = new BinaryOpNode('/', $1, $3); }
+    | expr MOD expr { $$ = new BinaryOpNode('%', $1, $3); }
+    | ID { $$ = new IdentifierNode($1); }
+    | INT { $$ = new IntNode($1); }
+    | FLOAT { $$ = new FloatNode($1); }
+    | CHAR { $$ = new CharNode($1); }
+    | BOOL { $$ = new BoolNode($1); }
+    | STRING { $$ = new StringNode($1); }
+    
+    | '(' expr ')' { $$ = $2; }
+    ;
+
+e_bool: expr EQ expr 
     | expr NEQ expr
     | expr LT expr
     | expr LE expr
@@ -393,12 +596,25 @@ e_bool: expr EQ expr
     | '(' e_bool ')'
     ;
 
-special_function: SPECIAL_FUNCTION '(' ')' '{' statements '}'
+special_function: SPECIAL_FUNCTION '(' ')' '{' { symbolTable.enterScope("clean_code_executer"); } statements '}' { symbolTable.exitScope(); }
     ;
+
 %%
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
 
 void yyerror(const char * s){
     printf("error: %s at line:%d\n",s,yylineno);
+    exit(1);
 }
 
 // SYMBOLTABLE IMPLEMENTATION
@@ -457,8 +673,6 @@ void SymbolTable::saveInFile() {
         st_data += "\n";
         for (const auto& var : scope.second) {
             var.second.write_to_string(st_data);
-            //st_data += "\nvalue: ";
-            //st_data += var.second.getValue();
         }
     }
     st_data += "-----------------Functions-----------------\n";
@@ -513,7 +727,7 @@ UserType::UserType(string name, vector<VarInfo> vars, vector<FunctionInfo> metho
 
 // VARINFO IMPLEMENTATION
 
-VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* memoryLocation) {
+VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* value) {
     this->type = type;
     this->name = name;
     this->isConst = is_const;
@@ -521,11 +735,8 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* m
     if (type == "int" || type == "float") {
         this->size = 4;
     } 
-    else if (type == "char" || type == "bool") {
+    else if (type == "char" || type == "bool" || type == "string") {
         this->size = 1;
-    }
-    else if(type == "string") {
-        this->size = arraySize;
     }
     else {
         // User defined type
@@ -541,10 +752,14 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* m
     }
     // Allocate memory for the variable
     this->memoryLocation = malloc(this->size * arraySize);
+    if (value != nullptr) {
+        memcpy(this->memoryLocation, value, this->size * arraySize);
+    }
     this->size = this->size * arraySize;
 }
 
 void VarInfo::setSize(int size) {
+    free(this->memoryLocation);
     this->memoryLocation = malloc(size);
     this->size = size;
 }
@@ -553,8 +768,10 @@ void VarInfo::setValue(void* value){
     this->memoryLocation = value;
 }
 
-void* VarInfo::getValue(){
-    return this->memoryLocation;
+void* VarInfo::getValueCopy(){
+    void* copy = malloc(this->size);
+    memcpy(copy, this->memoryLocation, this->size);
+    return copy;
 }
 
 void VarInfo::write_to_string(string& str) const {
@@ -578,16 +795,78 @@ void VarInfo::write_to_string(string& str) const {
         str += std::to_string(*(float*)this->memoryLocation);
     }
     else if (this->type == "bool"){
-        //bool boolValue = *(bool*)this->memoryLocation;
         str += std::to_string(*(bool*)this->memoryLocation);
-        //printf("%d", *(bool*)this->memoryLocation);
     }
     else if (this->type == "string"){
-        //char* str = (char*)this->memoryLocation;
-        //printf("%s", str);
         str += (char*)this->memoryLocation;
     }
     str += "\n\n";
+}
+
+void VarInfo::printMembers() {
+    cout << "Variable name: " << name << endl;
+    cout << "Type: " << type << endl;
+    cout << "Is const: " << isConst << endl;
+    cout << "Size in bytes: " << size << endl;
+    cout << "Value: ";
+    if (type == "int") {
+        cout << *(int*)memoryLocation << endl;
+    }
+    else if (type == "char") {
+        cout << *(char*)memoryLocation << endl;
+    }
+    else if (type == "float") {
+        cout << *(float*)memoryLocation << endl;
+    }
+    else if (type == "bool") {
+        cout << *(bool*)memoryLocation << endl;
+    }
+    else if (type == "string") {
+        cout << (char*)memoryLocation << endl;
+    }
+    cout << endl;
+}
+
+void VarInfo::assign_expr(ASTNode* expr) {
+    void* value;
+    switch(expr->type()) {
+    case ExprType::INT: {
+        this->setSize(sizeof(int));
+        void* value = malloc(sizeof(int));
+        int temp = std::get<int>(expr->evaluate());
+        memcpy(value, &temp, sizeof(int));
+        this->setValue(value);
+        break;
+    }
+    case ExprType::FLOAT: {
+        this->setSize(sizeof(float));
+        void* value = malloc(sizeof(float));
+        float temp2 = std::get<float>(expr->evaluate());
+        memcpy(value, &temp2, sizeof(float));
+        this->setValue(value);
+        break;
+    }
+    case ExprType::BOOLEAN: {
+        this->setSize(sizeof(bool));
+        void* value = malloc(sizeof(bool));
+        bool temp3 = std::get<bool>(expr->evaluate());
+        memcpy(value, &temp3, sizeof(bool));
+        this->setValue(value);
+        break;
+    }
+    case ExprType::STRING: {
+        this->setSize(1);
+        break;
+    }
+    case ExprType::CHAR: {
+        this->setSize(1);
+        break;
+    }
+    default: {
+        printf("Unknown type\n");
+        break;
+    }
+}
 }
 
 // VARINFO IMPLEMENTATION ENDS
@@ -619,6 +898,64 @@ void FunctionInfo::write_to_string(string& str) const {
 }
 
 // FUNCTIONINFO IMPLEMENTATION ENDS
+
+// ASTNODE IMPLEMENTATION
+
+template <typename T>
+ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
+    switch (op) {
+        case '+':
+            return ASTNode::ReturnValue(leftValue + rightValue);
+        case '-':
+            return ASTNode::ReturnValue(leftValue - rightValue);
+        case '*':
+            return ASTNode::ReturnValue(leftValue * rightValue);
+        case '/':
+            return ASTNode::ReturnValue(leftValue / rightValue);
+        case '%':
+            if constexpr (std::is_same_v<T, int>) {
+                return ASTNode::ReturnValue(leftValue % rightValue);
+            } else {
+                yyerror("Cannot use modulo on float");
+            }
+            break;
+        default:
+            return ASTNode::ReturnValue(0);
+    }
+    return ASTNode::ReturnValue(0); //safety return
+}
+
+ASTNode::ReturnValue BinaryOpNode::evaluate() const {
+    // Implement logic to evaluate the binary operation
+    // based on the operator and return the result
+    if(left->type() != right->type()) {
+        yyerror("Incompatible typesss");
+    }
+    ExprType type = left->type();
+    switch (type) {
+        case ExprType::INT:
+            return handleOperation(op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
+        case ExprType::FLOAT:
+            return handleOperation(op, std::get<float>(left->evaluate()), std::get<float>(right->evaluate()));
+        case ExprType::BOOLEAN:
+            return ReturnValue((bool)((bool)std::get<bool>(left->evaluate()) + (bool)std::get<bool>(right->evaluate())));
+        case ExprType::STRING:
+        case ExprType::CHAR:
+            return ReturnValue(0);
+        default:
+            return ReturnValue(0);
+    }
+    return ReturnValue(0); //safety return
+}
+
+ExprType BinaryOpNode::type() const {
+    if(left->type() != right->type()) {
+        yyerror("Incompatible typesss");
+    }
+    return left->type();
+}
+
+// ASTNODE IMPLEMENTATION ENDS
 
 int main(int argc, char** argv){
     yyin=fopen(argv[1],"r");

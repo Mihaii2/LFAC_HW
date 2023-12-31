@@ -28,11 +28,13 @@
 "if" {return IF;}
 "while" {return WHILE;}
 "for" {return FOR;}
+"Eval" {return EVAL;}
+"TypeOf" {return TYPEOF;}
 "clean_code_executer" {return SPECIAL_FUNCTION;}
 [0-9]+ {yylval.intValue = atoi(yytext); return INT;}
 [0-9]+"."[0-9]+ {yylval.floatValue = atof(yytext); return FLOAT;}
 \'[^\']\' {yylval.charValue = yytext[1]; return CHAR;}
-\"[^\"]*\" {yylval.string = strdup(yytext); return STRING;}
+\"[^\"]*\" {yytext[strlen(yytext) - 1] = 0; yylval.string = strdup(yytext + 1); return STRING;}
 "true"|"false" {
     if(yytext[0] == 't') {
         yylval.boolValue = 1;
@@ -44,7 +46,7 @@
 }
 "=" {return ASSIGN;}
 [a-zA-Z_][a-zA-Z0-9_]* {yylval.string = strdup(yytext); return ID;}
-"//".* ;
+"//".*\n ;
 [ \t] ;
 \n {yylineno++;}
 . {return yytext[0];}

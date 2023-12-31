@@ -23,6 +23,7 @@ usr_type myType {
 int myint = 8889; // int PearlAbyss = 15;
 // int absawdhjawgdvwahgdvhgawd = 1;
 int awdwa[10];
+int expressionINTEGER = 1 + 2 + 3;
 bool boolValue = true;
 float vloatValue = 0.85191;
 char charValue = 'a';
@@ -40,8 +41,14 @@ int globalMethod(int a, char b) {
 #END_GLOBAL_FUNCS
 
 clean_code_executer() {
-    int o;
+    int o = 100 + 3;
     if (1 < 3 && 3 > 2) {
         int a = 3;
     }
+    Eval(2+3 + 4* 4 / 5);
+    Eval(1.5+0.7);
+
+    Eval((true + true * false) / true );
+
+    TypeOf(1.5+0.7);
 }

@@ -1,15 +1,22 @@
 -----------------Variables-----------------
---------Scope: 
+--------Scope: clean_code_executer::
 name: a
 type: int
 const: 0
 size in bytes: 4
 value: 3
 
+name: o
+type: int
+const: 0
+size in bytes: 4
+value: 103
+
+--------Scope: 
 name: stringValue
 type: string
 const: 0
-size in bytes: 12
+size in bytes: 11
 value: abracadabra
 
 name: charValue
@@ -24,11 +31,11 @@ const: 0
 size in bytes: 4
 value: 0.851910
 
-name: o
+name: expressionINTEGER
 type: int
 const: 0
 size in bytes: 4
-value: 0
+value: 6
 
 name: boolValue
 type: bool
@@ -69,27 +76,9 @@ const: 0
 size in bytes: 4
 value: 15
 
---------Scope: myType::
-name: gender
-type: char
-const: 0
-size in bytes: 1
-value: 
-
-name: a
-type: int
-const: 0
-size in bytes: 4
-value: 0
-
 -----------------Functions-----------------
 --------Scope: 
 name: globalMethod
 type: int
 params: int a, char b
-
---------Scope: myType::
-name: someMethod
-type: int
-params: int boy, char ch
 
