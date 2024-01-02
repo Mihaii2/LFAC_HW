@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 317 "limbaj.y"
+#line 268 "limbaj.y"
 
     #include <vector>
     #include <string>
@@ -109,7 +109,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 326 "limbaj.y"
+#line 277 "limbaj.y"
 
     int intValue;
     float floatValue;
@@ -122,7 +122,7 @@ union YYSTYPE
     VarInfo* var;
     FunctionInfo* func;
     ASTNode* node;
-
+    std::vector<ASTNode*>* nodes;
 
 #line 128 "limbaj.tab.h"
 

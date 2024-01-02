@@ -4,6 +4,7 @@
 %}
 %option noyywrap
 %%
+"//".* ;
 "usr_type" { return USR_TYPE; }
 "bool"|"int"|"float"|"char"|"string" {yylval.string = strdup(yytext);return TYPE;}
 "const" {return CONST;}
@@ -46,7 +47,6 @@
 }
 "=" {return ASSIGN;}
 [a-zA-Z_][a-zA-Z0-9_]* {yylval.string = strdup(yytext); return ID;}
-"//".*\n ;
 [ \t] ;
 \n {yylineno++;}
 . {return yytext[0];}
