@@ -14,6 +14,8 @@ extern char* yytext;
 extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
+void error_variable_exists(const char* name);
+void error_different_types(const char* left , const char* right);
 
 class ASTNode;
 class SymbolTable;
@@ -27,7 +29,6 @@ private:
     string name;
     bool isConst = false;
     int size = 0;
-    int elements = 0;
     void* memoryLocation = nullptr;
 
 public:
@@ -36,8 +37,6 @@ public:
     VarInfo(string type, string name, bool is_const = false, int arraySize = 1, void* value = nullptr);
     string getName() const { return name; }
     string getType() const { return type; }
-    void setElementsCount(int count) { this->elements = count; }
-    int getElementsCount() const { return this->elements; }
     void setValue(void* value);
     void setSize(int size); 
     int getSize() const { return this->size; }
@@ -93,7 +92,7 @@ public:
     void addFunction(FunctionInfo func);
     bool variableExists(const string& name);
     bool functionExists(const string& name);
-    VarInfo getVariable(const string& name);
+    VarInfo& getVariable(const string& name);
     FunctionInfo getFunction(const string& name);
     void printTable();
     void saveInFile();
@@ -231,20 +230,6 @@ public:
     string string_type() const override;
 };
 
-// class boolBinaryOpNode : public ASTNode {
-//     private:
-//     char op;
-//     const ASTNode* left;
-//     const ASTNode* right;
-
-// public:
-//     boolBinaryOpNode(char oper, const ASTNode* l, const ASTNode* r)
-//         : op(oper), left(l), right(r) {}
-//     ReturnValue evaluate() const override;
-//     ExprType type() const override {return ExprType::BOOLEAN;}
-//     string string_type() const override {return "bool";}
-// };
-
 unsigned long long ifCounter = 0;
 unsigned long long forCounter = 0;
 unsigned long long whileCounter = 0;
@@ -367,54 +352,39 @@ declarations : decl ';'
     ;
 
 decl: TYPE ID {
-            string to_return = "Variable already exists (";
-            to_return += $2;
-            to_return += ")";
-            if(symbolTable.variableExists($2)) yyerror(to_return.c_str());
+            if(symbolTable.variableExists($2)) {
+                error_variable_exists($2);
+            }
             VarInfo* var = new VarInfo($1, $2);
             $$ = var;
             symbolTable.addVariable(*var);
     }
     | CONST TYPE ID {
-            string to_return = "Variable already exists (";
-            to_return += $3;
-            to_return += ")";
-            if(symbolTable.variableExists($3)) yyerror(to_return.c_str());
+            if(symbolTable.variableExists($3)) { 
+                error_variable_exists($3);
+            }
             VarInfo* var = new VarInfo($2, $3, true);
             $$ = var;
             symbolTable.addVariable(*var);
     }
     | TYPE ID ASSIGN expr {
-            string to_return = "Variable already exists (";
-            to_return += $2;
-            to_return += ")";
-            if(symbolTable.variableExists($2)) yyerror(to_return.c_str());
+            if(symbolTable.variableExists($2)) {
+                error_variable_exists($2);   
+            }
             if (strcmp($4->string_type().c_str(), $1) != 0){
-                string to_return = "";
-                to_return += "Different types assignment(";
-                to_return += $1;
-                to_return += "<-";
-                to_return += $4->string_type();
-                to_return += ")";
-                yyerror(to_return.c_str()); 
+                error_different_types($1, $4->string_type().c_str());
             }
             VarInfo* var = new VarInfo($1, $2, false);
-            if(strcmp($4->string_type().c_str(), "string") == 0) var->setSize(strlen(std::get<char*>($4->evaluate())));
-            else if (strcmp($4->string_type().c_str(), "int") == 0) var->setSize(sizeof(int));
-            else if (strcmp($4->string_type().c_str(), "float") == 0) var->setSize(sizeof(float));
-            else if (strcmp($4->string_type().c_str(), "bool") == 0) var->setSize(sizeof(bool));
-            else if (strcmp($4->string_type().c_str(), "char") == 0) var->setSize(sizeof(char));
             var->assign_expr($4);
-            var->setElementsCount(1);
             free($4);
             $$ = var;
             symbolTable.addVariable(*var);
     }
     | CONST TYPE ID ASSIGN expr { 
-            string to_return = "Variable already exists (";
-            to_return += $3;
-            to_return += ")";
-            if(symbolTable.variableExists($3)) yyerror(to_return.c_str());            VarInfo* var = new VarInfo($2, $3, true);
+            if(symbolTable.variableExists($3)) {
+                error_variable_exists($3);
+            }
+            VarInfo* var = new VarInfo($2, $3, true);
             var->assign_expr($5);
             free($5);
             $$ = var;
@@ -422,91 +392,75 @@ decl: TYPE ID {
     }
     | TYPE ID '[' expr ']' {
             if($4->string_type() != "int") yyerror("Array element access number is not an integer");
-            string to_return = "Variable already exists (";
-            to_return += $2;
-            to_return += ")";
-            if(symbolTable.variableExists($2)) yyerror(to_return.c_str());
+            if(symbolTable.variableExists($2)) {
+                error_variable_exists($2);
+            }
             VarInfo* var = new VarInfo($1, $2, false, get<int>($4->evaluate()));
             $$ = var;
             symbolTable.addVariable(*var);
     }
     | TYPE ID '[' expr ']' ASSIGN '{' expressions '}' {
             if($4->string_type() != "int") yyerror("Array element access number is not an integer");
-            string to_return = "Variable already exists (";
-            to_return += $2;
-            to_return += ")";
-            if(symbolTable.variableExists($2)) yyerror(to_return.c_str()); 
-            VarInfo* var = new VarInfo($1, $2, false, get<int>($4->evaluate()));
-            ReturnValue values[$8->size()];
-            //printf("\n{%d} %d - %d\n", (std::get<int>($4->evaluate())) > $8->size(), std::get<int>($4->evaluate()), $8->size());
-            if((std::get<int>($4->evaluate())) < $8->size()) yyerror("Too many values");
-            for(int i = 0; i < $8->size(); ++i){
+            if(symbolTable.variableExists($2)) {
+                error_variable_exists($2);
+            }
+            int nr_elements = $8->size();
+            if((std::get<int>($4->evaluate())) < nr_elements) {
+                yyerror("Array size is smaller than the number of elements provided");
+            }
+            
+            ReturnValue values[nr_elements];
+            
+            for(int i = 0; i < nr_elements; ++i){
                 ASTNode* node = (*$8)[i];
                 if(strcmp(node->string_type().c_str(), $1) != 0){
-                    std::string to_return = "Assignment values type is different from array type (";
-                    to_return += $1;
-                    to_return += "->";
-                    to_return += node->string_type();
-                    to_return += ")";
-                    yyerror(to_return.c_str());
+                    error_different_types($1, node->string_type().c_str());
                 }
                 values[i] = node->evaluate();
             }
-            //printf("\n|%s| == |%s| ? %d\n", "int", $1, strcmp($1, "int"));
+
+            VarInfo* var = new VarInfo($1, $2, false, get<int>($4->evaluate()));
+            
             if(strcmp($1, "int") == 0){
-                    int* intVals = new int[$8->size()];
-                    for(int i = 0; i < $8->size(); ++i){
+                    int* intVals = new int[nr_elements];
+                    for(int i = 0; i < nr_elements; ++i){
                         intVals[i] = std::get<int>(values[i]);
-                        //printf("\n%d = %d\n",i,intVals[i]);
                     }
                     var->setValue((void*)intVals);
-                    //int* someVals = (int*)(var->getValueCopy());
-                    //printf("\nI%dI\n", someVals[0]);
-                    $$ = var;
-                    symbolTable.addVariable(*var);
             }
             else if (strcmp($1, "bool") == 0){
-                    bool* boolVals = new bool[$8->size()];
-                    for(int i = 0; i < $8->size(); ++i){
+                    bool* boolVals = new bool[nr_elements];
+                    for(int i = 0; i < nr_elements; ++i){
                         boolVals[i] = std::get<bool>(values[i]);
                     }
                     var->setValue((void*)boolVals);
-                    $$ = var;
-                    symbolTable.addVariable(*var);
             }               
             else if (strcmp($1, "char") == 0){
-                    char* charVals = new char[$8->size()];
-                    for(int i = 0; i < $8->size(); ++i){
+                    char* charVals = new char[nr_elements];
+                    for(int i = 0; i < nr_elements; ++i){
                         charVals[i] = std::get<char>(values[i]);
                     }
                     var->setValue((void*)charVals);
-                    $$ = var;
-                    symbolTable.addVariable(*var);
             }
             else if (strcmp($1, "float") == 0){    
-                    float* floatVals = new float[$8->size()];
-                    for(int i = 0; i < $8->size(); ++i){
+                    float* floatVals = new float[nr_elements];
+                    for(int i = 0; i < nr_elements; ++i){
                         floatVals[i] = std::get<float>(values[i]);
                     }
                     var->setValue((void*)floatVals);
-                    $$ = var;
-                    symbolTable.addVariable(*var);
             }    
             else if (strcmp($1, "string") == 0){
-                    char* stringVals[$8->size()];
-                    int totalSize = 0;
-                    for(int i = 0; i < $8->size(); ++i){
-                        stringVals[i] = new char[sizeof(std::get<char*>(values[i]))];
-                        strcpy(stringVals[i], std::get<char*>(values[i])); 
-                        stringVals[i][strlen(stringVals[i])] = '\0';
-                        totalSize += (sizeof(stringVals[i]));
+                    char** stringVals = new char*[nr_elements];
+                    for(int i = 0; i < nr_elements; ++i){
+                        stringVals[i] = std::get<char*>(values[i]);
                     }
-                    var->setSize(totalSize);
-                    var->setElementsCount($8->size());
-                    var->setValue((void*)stringVals);         
-                    $$ = var;
-                    symbolTable.addVariable(*var);
+                    var->setValue((void*)stringVals);  
+                    for(int i = 0; i < nr_elements; ++i){
+                        printf("%s\n", stringVals[i]);
+                    }
             }    
+            $$ = var;
+            symbolTable.addVariable(*var);
     }
 
 global_function_definitions: /* epsilon */
@@ -564,12 +518,7 @@ assignment_statement: ID ASSIGN expr ';' {
                             temp.assign_expr($3);
                         }
                         else{
-                            std::string str = "Different types (";
-                            str += temp.getType();
-                            str += ", ";
-                            str += $3->string_type();
-                            str += ")";
-                            yyerror(str.c_str());
+                            error_different_types(temp.getType().c_str(), $3->string_type().c_str());
                         }
                     }
                     | ID '[' expr ']' ASSIGN expr ';' {
@@ -597,22 +546,13 @@ assignment_statement: ID ASSIGN expr ';' {
                                     temp.setValue((void*)charVals);
                                 }
                                 else if(strcmp(temp.getType().c_str(), "string") == 0){
-                                    char* stringVals = (char*)(temp.getValueCopy());
-                                    char* newString = std::get<char*>($6->evaluate());
-                                    temp.setSize(sizeof(newString) + temp.getSize());
-                                    temp.setElementsCount(1);
-                                    //newString[strlen(newString)] = '\0';
-                                    strcpy(&stringVals[std::get<int>($3->evaluate())], newString);
+                                    char** stringVals = (char**)(temp.getValueCopy());
+                                    stringVals[std::get<int>($3->evaluate())] = std::get<char*>($6->evaluate());
                                     temp.setValue((void*)stringVals);
                                 }
                             }
                             else{
-                                std::string str = "Different types (";
-                                str += temp.getType();
-                                str += ", ";
-                                str += $6->string_type();
-                                str += ")";
-                                yyerror(str.c_str());
+                                error_different_types(temp.getType().c_str(), $6->string_type().c_str());
                             }
                         }
                         else yyerror("Array element access number is not an integer");
@@ -779,30 +719,6 @@ expr: expr PLUS expr {
     | function_call { $$ = $1; }
     | '(' expr ')' { $$ = $2; }
     ;
-/*
-e_bool: expr EQ expr {
-        $$ = new BinaryOpNode('=', $1, $3);
-    }
-    | expr NEQ expr {
-        $$ = new BinaryOpNode('n', $1, $3);
-    }
-    | expr LT expr {
-        $$ = new BinaryOpNode('<', $1, $3);
-    }
-    | expr LE expr {
-        $$ = new BinaryOpNode('l', $1, $3);
-    }
-    | expr GT expr {
-        $$ = new BinaryOpNode('>', $1, $3);
-    }
-    | expr GE expr {
-        $$ = new BinaryOpNode('g', $1, $3);
-    }
-    | e_bool AND e_bool {$$ = new BinaryOpNode('&', $1, $3);}
-    | e_bool OR e_bool {$$ = new BinaryOpNode('|', $1, $3);}
-    | '(' e_bool ')'{$$ = $2;}
-    ;
-*/
 special_function: SPECIAL_FUNCTION '(' ')' '{' { symbolTable.enterScope("clean_code_executer"); } statements '}' { symbolTable.exitScope(); }
     ;
 
@@ -823,6 +739,17 @@ void yyerror(const char * s){
     printf("error: %s at line:%d\n",s,yylineno);
     exit(1);
 }
+
+void error_variable_exists(const char* name){
+    printf("error: Variable already exists (%s) at line:%d\n",name,yylineno);
+    exit(1);
+}
+
+void error_different_types(const char* left , const char* right){
+    printf("error: Different types assignment (%s <- %s) at line:%d\n",left, right, yylineno);
+    exit(1);
+}
+
 
 // SYMBOLTABLE IMPLEMENTATION
 
@@ -865,7 +792,7 @@ bool SymbolTable::functionExists(const string& name) {
     return functions[symbolTable.getCurrentScope()].find(name) != functions[symbolTable.getCurrentScope()].end();
 }
 
-VarInfo SymbolTable::getVariable(const string& name) {
+VarInfo& SymbolTable::getVariable(const string& name) {
     //search for variable in current scope
     if (variables[symbolTable.getCurrentScope()].find(name) != variables[symbolTable.getCurrentScope()].end()) {
         return variables[symbolTable.getCurrentScope()][name];
@@ -952,24 +879,31 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* v
     this->name = name;
     this->isConst = is_const;
     // Deduct the size from the type
-    if (type == "int" || type == "float") {
-        this->size = 4;
-    } 
-    else if (type == "char" || type == "bool" || type == "string") {
-        this->size = 1;
+    switch (type[0]) {
+    case 'i': // int
+        this->size = sizeof(int);
+        break;
+    case 'c': // char
+        this->size = sizeof(char);
+        break;
+    case 'f': // float
+        this->size = sizeof(float);
+        break;
+    case 'b': // bool
+        this->size = sizeof(bool);
+        break;
+    case 's': // string
+        this->size = sizeof(char);
+        break;
+    default:
+        this->size = 0;
+        break;
     }
-    else {
-        // User defined type
-        for (const UserType& userType : userTypes) {
-            if (userType.getName() == type) {
-                this->size = 0;
-                for (const VarInfo& v : userType.getVars()) {
-                    this->size += v.size;
-                }
-                break;
-            }
-        }
+
+    if(type == "string" && arraySize > 1) { // string array
+        this->size = sizeof(char*);
     }
+
     // Allocate memory for the variable
     this->memoryLocation = malloc(this->size * arraySize);
     if (value != nullptr) {
@@ -1049,12 +983,11 @@ void VarInfo::write_to_string(string& str) const {
         }
     }
     else if (this->type == "string"){
-        if(this->elements == 1 || this->elements == 0) str += (char*)this->memoryLocation;
-        else {
-            void* temo = this->memoryLocation;
-            char** strins = (char**)temo;
-            for(int i = 0; i < this->getElementsCount(); ++i){
-                str += strins[i];
+        if(this->size == sizeof(char*)) str += (char*)this->memoryLocation;
+        else if (this->size > sizeof(char*) && this->memoryLocation != nullptr){
+            char** arr = (char**)(this->memoryLocation);
+            for(int j = 0; j < this->size/sizeof(char*); ++j){
+                str += arr[j];
                 str += " ";
             }
         }
@@ -1122,11 +1055,10 @@ void VarInfo::assign_expr(ASTNode* expr) {
         break;
     }
     case ExprType::STRING: {
-        char* value = new char[strlen(std::get<char*>(expr->evaluate())) + 1];
-        value = std::get<char*>(expr->evaluate());
-        //if(value[strlen(value) - 1] == '\x05') printf("DA\n");//value[strlen(value)] = '\0';
-        void* to_set = malloc(strlen(value));
-        memcpy(to_set, value, strlen(value));
+        char* value = std::get<char*>(expr->evaluate());
+        void* to_set = malloc(strlen(value) + 1);
+        memcpy(to_set, value, strlen(value) + 1);
+        this->setSize(strlen(value) + 1);
         this->setValue(to_set);
         break;
     }
@@ -1169,30 +1101,6 @@ void FunctionInfo::write_to_string(string& str) const {
 
 // BINARYOPNODE IMPLEMENTATION
 
-
-// ASTNode::ReturnValue boolBinaryOpNode::evaluate() const {
-//     if(left->type() != right->type()) {
-//         yyerror("Incompatible types");
-//     }
-//     if(strcmp(left->string_type().c_str(), "int") == 0){
-//         return handleOperation(op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
-//     }
-//     else if(strcmp(left->string_type().c_str(), "bool") == 0){
-//         return handleOperation(op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
-//     }
-//     else if(strcmp(left->string_type().c_str(), "float") == 0){
-//         return handleOperation(op, std::get<float>(left->evaluate()), std::get<float>(right->evaluate()));
-//     }
-//     else if(strcmp(left->string_type().c_str(), "char") == 0){
-//         ReturnValue(0); // error?
-//         //return handleOperation(op, std::get<char>(left->evaluate()), std::get<char>(right->evaluate()));
-//     }
-//     else if(strcmp(left->string_type().c_str(), "string") == 0){
-//         ReturnValue(0); //error?
-//         //return handleOperation(op, std::get<char*>(left->evaluate()), std::get<char*>(right->evaluate()));
-//     }
-//     return ReturnValue(0);
-// }
 template <typename T>
 ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
     switch (op) {

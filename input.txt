@@ -17,34 +17,34 @@ usr_type myType {
 
 #END_USR_TYPES
 
-int mix = 5;
-float gb = 2.2;
-int myint = 8889; 
-int sing_arr[1] = {1};
-int ints[11] = {0,11,20,52,49,81,16,8,53,93,22};
-char chars[4] = {'a', '0', 'n', '&'};
+//int mix = 5;
+//float gb = 2.2;
+//int myint = 8889; 
+//int sing_arr[1] = {1};
+//int ints[11] = {0,11,20,52,49,81,16,8,53,93,22};
+//char chars[4] = {'a', '0', 'n', '&'};
 //char too_many_chars[2] = {'a', '0', 'n'}; //eroare
-bool bools[2] = {true || false && true, false};
-int expressionINTEGER = 1 + 2 + 3;
-bool boolValue = true;
-bool dmnefereste = true || (false && true);
-float vloatValue = 0.85191;
+//bool bools[2] = {true || false && true, false};
+//int expressionINTEGER = 1 + 2 + 3;
+//bool boolValue = true;
+//bool dmnefereste = true || (false && true);
+//float vloatValue = 0.85191;
 
-char charValue1 = 'a';
-char charValue2 = 'j';
+//char charValue1 = 'a';
+//char charValue2 = 'j';
 //string jojo = 'b';   //eroare diff types
 //int c = 12.8 + 28.5; //eroare diff types
 //bool b = 12 + 0.5;
-bool cpo = ((true || false) && true) && true && ( 1 > 2 );
-bool newcpo = (1 > 2);
+//bool cpo = ((true || false) && true) && true && ( 1 > 2 );
+//bool newcpo = (1 > 2);
 //char charValue = 'b'; // eroare(redefinire)
-string stringValue = "2023 -> 2024";
-string strings[3] = {"abra", "cada", "bra"};
-int shippuden = 2007;
+//string stringValue = "2023 -> 2024";
+string strings[3] = {"abrafaa", "cadagdar", "brarghh"};
+//int shippuden = 2007;
 //int shippuden = 2007 + ints[2];
-char varp[4] = {'2', '0', '2', '3'};
+//char varp[4] = {'2', '0', '2', '3'};
 //nt_exist = 2; // eroare
-bool bools0cpy = bools[0];
+//bool bools0cpy = bools[0];
 
 #END_GLOBAL_VARS
 
@@ -60,26 +60,28 @@ int globalMethod(int a, int b) {
 clean_code_executer() {
     //ints[2] = 1 + 2 + 3.5; //eroare dif types
     //ints[2] = 1>2; //eroare  
-    shippuden = 2017 + ints[1];
-    ints[1] = ints[1] + ints[3];
-    ints[0] = 2024 + shippuden;
-    varp[3] = '4';
-    int oh = myint + 111;
+    //shippuden = 2017 + ints[1];
+    //ints[1] = ints[1] + ints[3];
+    //ints[0] = 2024 + shippuden;
+    //varp[3] = '4';
+    //int oh = myint + 111;
     if (1 < 3 && 3 < 2) {
         int a = 3000;
     }
     char mychhar = 'c';
-    Eval(2+3 + 4* 4 / 5 + globalMethod(oh, oh));
+    mychhar = 'a';
+    //Eval(2+3 + 4* 4 / 5 + globalMethod(oh, oh));
     Eval(2+3 + 4* 4 / 5 + globalMethod(1, 2));
     Eval(1.5+0.7);
 
     Eval((true || true && false) && true );
 
     Eval(1+3 == 6 || 2 > 1  );
-
+    bool myasdfea = 1 < 2;
     int intTest = 10 + expressionINTEGER;
     bool mybool = true;
     Eval(mybool && 2 < 1);
     TypeOf(1.5+0.7);
     TypeOf(mybool);
+    Eval(myasdfea);
 }
