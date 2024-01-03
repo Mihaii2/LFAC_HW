@@ -301,19 +301,19 @@ public:
     string string_type() const override;
 };
 
-class boolBinaryOpNode : public ASTNode {
-    private:
-    char op;
-    const ASTNode* left;
-    const ASTNode* right;
+// class boolBinaryOpNode : public ASTNode {
+//     private:
+//     char op;
+//     const ASTNode* left;
+//     const ASTNode* right;
 
-public:
-    boolBinaryOpNode(char oper, const ASTNode* l, const ASTNode* r)
-        : op(oper), left(l), right(r) {}
-    ReturnValue evaluate() const override;
-    ExprType type() const override {return ExprType::BOOLEAN;}
-    string string_type() const override {return "bool";}
-};
+// public:
+//     boolBinaryOpNode(char oper, const ASTNode* l, const ASTNode* r)
+//         : op(oper), left(l), right(r) {}
+//     ReturnValue evaluate() const override;
+//     ExprType type() const override {return ExprType::BOOLEAN;}
+//     string string_type() const override {return "bool";}
+// };
 
 unsigned long long ifCounter = 0;
 unsigned long long forCounter = 0;
@@ -837,13 +837,13 @@ static const yytype_int16 yyrline[] =
 {
        0,   321,   321,   323,   324,   327,   327,   327,   333,   336,
      343,   349,   352,   359,   359,   359,   365,   366,   369,   378,
-     386,   412,   422,   432,   520,   521,   524,   524,   524,   531,
-     534,   539,   544,   551,   557,   558,   561,   562,   563,   564,
-     565,   566,   569,   583,   643,   644,   645,   648,   648,   658,
-     658,   661,   661,   664,   670,   674,   677,   682,   689,   694,
-     701,   724,   749,   752,   756,   760,   764,   768,   769,   770,
-     771,   772,   773,   774,   785,   789,   790,   794,   795,   796,
-     797,   798,   799,   800,   826,   826
+     387,   413,   423,   433,   512,   513,   516,   516,   516,   523,
+     526,   531,   536,   543,   549,   550,   553,   554,   555,   556,
+     557,   558,   561,   575,   622,   623,   624,   627,   627,   637,
+     637,   640,   640,   643,   649,   653,   656,   661,   668,   673,
+     680,   703,   728,   731,   735,   739,   743,   747,   748,   749,
+     750,   751,   752,   753,   765,   769,   770,   774,   775,   776,
+     777,   778,   779,   780,   806,   806
 };
 #endif
 
@@ -1944,18 +1944,19 @@ yyreduce:
   case 19: /* decl: CONST TYPE ID  */
 #line 378 "limbaj.y"
                     {
-string to_return = "Variable already exists (";
+            string to_return = "Variable already exists (";
             to_return += (yyvsp[0].string);
             to_return += ")";
-            if(symbolTable.variableExists((yyvsp[0].string))) yyerror(to_return.c_str());            VarInfo* var = new VarInfo((yyvsp[-1].string), (yyvsp[0].string), true);
+            if(symbolTable.variableExists((yyvsp[0].string))) yyerror(to_return.c_str());
+            VarInfo* var = new VarInfo((yyvsp[-1].string), (yyvsp[0].string), true);
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1955 "limbaj.tab.c"
+#line 1956 "limbaj.tab.c"
     break;
 
   case 20: /* decl: TYPE ID ASSIGN expr  */
-#line 386 "limbaj.y"
+#line 387 "limbaj.y"
                           {
             string to_return = "Variable already exists (";
             to_return += (yyvsp[-2].string);
@@ -1982,11 +1983,11 @@ string to_return = "Variable already exists (";
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1986 "limbaj.tab.c"
+#line 1987 "limbaj.tab.c"
     break;
 
   case 21: /* decl: CONST TYPE ID ASSIGN expr  */
-#line 412 "limbaj.y"
+#line 413 "limbaj.y"
                                 { 
             string to_return = "Variable already exists (";
             to_return += (yyvsp[-2].string);
@@ -1997,11 +1998,11 @@ string to_return = "Variable already exists (";
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 2001 "limbaj.tab.c"
+#line 2002 "limbaj.tab.c"
     break;
 
   case 22: /* decl: TYPE ID '[' expr ']'  */
-#line 422 "limbaj.y"
+#line 423 "limbaj.y"
                            {
             if((yyvsp[-1].node)->string_type() != "int") yyerror("Array element access number is not an integer");
             string to_return = "Variable already exists (";
@@ -2012,11 +2013,11 @@ string to_return = "Variable already exists (";
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 2016 "limbaj.tab.c"
+#line 2017 "limbaj.tab.c"
     break;
 
   case 23: /* decl: TYPE ID '[' expr ']' ASSIGN '{' expressions '}'  */
-#line 432 "limbaj.y"
+#line 433 "limbaj.y"
                                                       {
             if((yyvsp[-5].node)->string_type() != "int") yyerror("Array element access number is not an integer");
             string to_return = "Variable already exists (";
@@ -2095,77 +2096,77 @@ string to_return = "Variable already exists (";
                     symbolTable.addVariable(*var);
             }    
     }
-#line 2099 "limbaj.tab.c"
+#line 2100 "limbaj.tab.c"
     break;
 
   case 26: /* $@5: %empty  */
-#line 524 "limbaj.y"
+#line 516 "limbaj.y"
                                                            {symbolTable.enterScope(string((yyvsp[-4].string)));}
-#line 2105 "limbaj.tab.c"
+#line 2106 "limbaj.tab.c"
     break;
 
   case 27: /* $@6: %empty  */
-#line 524 "limbaj.y"
+#line 516 "limbaj.y"
                                                                                                                 {symbolTable.exitScope();}
-#line 2111 "limbaj.tab.c"
+#line 2112 "limbaj.tab.c"
     break;
 
   case 28: /* global_function_definition: TYPE ID '(' func_param ')' '{' $@5 statements '}' $@6  */
-#line 524 "limbaj.y"
+#line 516 "limbaj.y"
                                                                                                                                            {
                             FunctionInfo* func = new FunctionInfo((yyvsp[-9].string), (yyvsp[-8].string), *(yyvsp[-6].vars));
                             symbolTable.addFunction(*func);
                         }
-#line 2120 "limbaj.tab.c"
+#line 2121 "limbaj.tab.c"
     break;
 
   case 29: /* func_param: %empty  */
-#line 531 "limbaj.y"
+#line 523 "limbaj.y"
                           {
                 (yyval.vars) = new vector<VarInfo>();
             }
-#line 2128 "limbaj.tab.c"
+#line 2129 "limbaj.tab.c"
     break;
 
   case 30: /* func_param: list_param  */
-#line 534 "limbaj.y"
+#line 526 "limbaj.y"
                          {
                 (yyval.vars) = (yyvsp[0].vars);
             }
-#line 2136 "limbaj.tab.c"
+#line 2137 "limbaj.tab.c"
     break;
 
   case 31: /* list_param: param  */
-#line 539 "limbaj.y"
+#line 531 "limbaj.y"
                   {
                 (yyval.vars) = new vector<VarInfo>();
                 (yyval.vars)->push_back(*(yyvsp[0].var));
                 delete((yyvsp[0].var));
                 }
-#line 2146 "limbaj.tab.c"
+#line 2147 "limbaj.tab.c"
     break;
 
   case 32: /* list_param: list_param ',' param  */
-#line 544 "limbaj.y"
+#line 536 "limbaj.y"
                                    {
                 (yyval.vars) = (yyvsp[-2].vars);
                 (yyval.vars)->push_back(*(yyvsp[0].var));
                 delete((yyvsp[0].var));
             }
-#line 2156 "limbaj.tab.c"
+#line 2157 "limbaj.tab.c"
     break;
 
   case 33: /* param: TYPE ID  */
-#line 551 "limbaj.y"
+#line 543 "limbaj.y"
                {
             VarInfo* var = new VarInfo((yyvsp[-1].string), (yyvsp[0].string));
             (yyval.var) = var;
         }
-#line 2165 "limbaj.tab.c"
+#line 2166 "limbaj.tab.c"
     break;
 
   case 42: /* assignment_statement: ID ASSIGN expr ';'  */
-#line 569 "limbaj.y"
+#line 561 "limbaj.y"
                                          {
                         VarInfo temp = symbolTable.getVariable((yyvsp[-3].string));
                         if(strcmp(temp.getType().c_str(), (yyvsp[-1].node)->string_type().c_str()) == 0){
@@ -2180,11 +2181,11 @@ string to_return = "Variable already exists (";
                             yyerror(str.c_str());
                         }
                     }
-#line 2184 "limbaj.tab.c"
+#line 2185 "limbaj.tab.c"
     break;
 
   case 43: /* assignment_statement: ID '[' expr ']' ASSIGN expr ';'  */
-#line 583 "limbaj.y"
+#line 575 "limbaj.y"
                                                       {
                         if(strcmp((yyvsp[-4].node)->string_type().c_str(), "int") == 0){
                             VarInfo temp = symbolTable.getVariable((yyvsp[-6].string));
@@ -2230,11 +2231,11 @@ string to_return = "Variable already exists (";
                         }
                         else yyerror("Array element access number is not an integer");
                     }
-#line 2234 "limbaj.tab.c"
+#line 2235 "limbaj.tab.c"
     break;
 
   case 47: /* $@7: %empty  */
-#line 648 "limbaj.y"
+#line 627 "limbaj.y"
                                   {
         symbolTable.enterScope("if" + std::to_string(ifCounter++));
         if(strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") != 0 || get<bool>((yyvsp[-2].node)->evaluate()) == 0){
@@ -2242,105 +2243,105 @@ string to_return = "Variable already exists (";
             //break;
         }
         }
-#line 2246 "limbaj.tab.c"
+#line 2247 "limbaj.tab.c"
     break;
 
   case 48: /* if_statement: IF '(' expr ')' '{' $@7 statements '}'  */
-#line 654 "limbaj.y"
+#line 633 "limbaj.y"
                          {symbolTable.exitScope();}
-#line 2252 "limbaj.tab.c"
+#line 2253 "limbaj.tab.c"
     break;
 
   case 49: /* $@8: %empty  */
-#line 658 "limbaj.y"
+#line 637 "limbaj.y"
                                                                                       { symbolTable.enterScope("for" + std::to_string(forCounter++));}
-#line 2258 "limbaj.tab.c"
+#line 2259 "limbaj.tab.c"
     break;
 
   case 50: /* for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' $@8 statements '}'  */
-#line 658 "limbaj.y"
+#line 637 "limbaj.y"
                                                                                                                                                                       {symbolTable.exitScope();}
-#line 2264 "limbaj.tab.c"
+#line 2265 "limbaj.tab.c"
     break;
 
   case 51: /* $@9: %empty  */
-#line 661 "limbaj.y"
+#line 640 "limbaj.y"
                                         {symbolTable.enterScope("while" + std::to_string(whileCounter++));}
-#line 2270 "limbaj.tab.c"
+#line 2271 "limbaj.tab.c"
     break;
 
   case 52: /* while_statement: WHILE '(' expr ')' '{' $@9 statements '}'  */
-#line 661 "limbaj.y"
+#line 640 "limbaj.y"
                                                                                                                            {symbolTable.exitScope();}
-#line 2276 "limbaj.tab.c"
+#line 2277 "limbaj.tab.c"
     break;
 
   case 53: /* function_call: ID '(' arguments ')'  */
-#line 664 "limbaj.y"
+#line 643 "limbaj.y"
                                     {
         FunctionCallNode* func = new FunctionCallNode((yyvsp[-3].string), (yyvsp[-1].nodes));
         (yyval.node) = func;
     }
-#line 2285 "limbaj.tab.c"
+#line 2286 "limbaj.tab.c"
     break;
 
   case 54: /* arguments: %empty  */
-#line 670 "limbaj.y"
+#line 649 "limbaj.y"
                          {
             vector<ASTNode*>* temp = new vector<ASTNode*>();
             (yyval.nodes) = temp;
         }
-#line 2294 "limbaj.tab.c"
+#line 2295 "limbaj.tab.c"
     break;
 
   case 55: /* arguments: arg_list  */
-#line 674 "limbaj.y"
+#line 653 "limbaj.y"
                    {(yyval.nodes) = (yyvsp[0].nodes);}
-#line 2300 "limbaj.tab.c"
+#line 2301 "limbaj.tab.c"
     break;
 
   case 56: /* arg_list: expr  */
-#line 677 "limbaj.y"
+#line 656 "limbaj.y"
                {
         vector<ASTNode*>* temp = new vector<ASTNode*>();
         temp->push_back((yyvsp[0].node));
         (yyval.nodes) = temp;
     }
-#line 2310 "limbaj.tab.c"
+#line 2311 "limbaj.tab.c"
     break;
 
   case 57: /* arg_list: arg_list ',' expr  */
-#line 682 "limbaj.y"
+#line 661 "limbaj.y"
                         {
         vector<ASTNode*>* temp = (yyvsp[-2].nodes);
         temp->push_back((yyvsp[0].node));
         (yyval.nodes) = temp;
     }
-#line 2320 "limbaj.tab.c"
+#line 2321 "limbaj.tab.c"
     break;
 
   case 58: /* expressions: expr  */
-#line 689 "limbaj.y"
+#line 668 "limbaj.y"
                   {
                 vector<ASTNode*>* temp = new vector<ASTNode*>();
                 temp->push_back((yyvsp[0].node));
                 (yyval.nodes) = temp;
             }
-#line 2330 "limbaj.tab.c"
+#line 2331 "limbaj.tab.c"
     break;
 
   case 59: /* expressions: expressions ',' expr  */
-#line 694 "limbaj.y"
+#line 673 "limbaj.y"
                                   {
                 vector<ASTNode*>* temp = (yyvsp[-2].nodes);
                 temp->push_back((yyvsp[0].node));
                 (yyval.nodes) = temp;
             }
-#line 2340 "limbaj.tab.c"
+#line 2341 "limbaj.tab.c"
     break;
 
   case 60: /* eval_statement: EVAL '(' expr ')' ';'  */
-#line 701 "limbaj.y"
+#line 680 "limbaj.y"
                                       { 
     switch((yyvsp[-2].node)->type()) {
         case ExprType::INT:
@@ -2362,11 +2363,11 @@ string to_return = "Variable already exists (";
     }
     free((yyvsp[-2].node)); // free the memory allocated for the expression
 }
-#line 2366 "limbaj.tab.c"
+#line 2367 "limbaj.tab.c"
     break;
 
   case 61: /* type_of_statement: TYPEOF '(' expr ')' ';'  */
-#line 724 "limbaj.y"
+#line 703 "limbaj.y"
                                            { 
         switch ((yyvsp[-2].node)->type()) {
             case ExprType::INT:
@@ -2390,95 +2391,96 @@ string to_return = "Variable already exists (";
         }
     free((yyvsp[-2].node)); // free the memory allocated for the expression
     }
-#line 2394 "limbaj.tab.c"
+#line 2395 "limbaj.tab.c"
     break;
 
   case 62: /* expr: expr PLUS expr  */
-#line 749 "limbaj.y"
+#line 728 "limbaj.y"
                      {
         if(strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") == 0 || strcmp((yyvsp[0].node)->string_type().c_str(), "bool") == 0) yyerror("[+] bools are not allowed");
         (yyval.node) = new BinaryOpNode('+', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2402 "limbaj.tab.c"
+#line 2403 "limbaj.tab.c"
     break;
 
   case 63: /* expr: expr MINUS expr  */
-#line 752 "limbaj.y"
+#line 731 "limbaj.y"
                       {
         if(strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") == 0 || strcmp((yyvsp[0].node)->string_type().c_str(), "bool") == 0) yyerror("[-] bools are not allowed");
         (yyval.node) = new BinaryOpNode('-', (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 2411 "limbaj.tab.c"
+#line 2412 "limbaj.tab.c"
     break;
 
   case 64: /* expr: expr MUL expr  */
-#line 756 "limbaj.y"
+#line 735 "limbaj.y"
                     {
         if(strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") == 0 || strcmp((yyvsp[0].node)->string_type().c_str(), "bool") == 0) yyerror("[*] bools are not allowed");
         (yyval.node) = new BinaryOpNode('*', (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 2420 "limbaj.tab.c"
+#line 2421 "limbaj.tab.c"
     break;
 
   case 65: /* expr: expr DIV expr  */
-#line 760 "limbaj.y"
+#line 739 "limbaj.y"
                     {
         if(strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") == 0 || strcmp((yyvsp[0].node)->string_type().c_str(), "bool") == 0) yyerror("[/] bools are not allowed");
         (yyval.node) = new BinaryOpNode('/', (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 2429 "limbaj.tab.c"
+#line 2430 "limbaj.tab.c"
     break;
 
   case 66: /* expr: expr MOD expr  */
-#line 764 "limbaj.y"
+#line 743 "limbaj.y"
                     {
         if(strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") == 0 || strcmp((yyvsp[0].node)->string_type().c_str(), "bool") == 0) yyerror("[MOD] bools are not allowed");
         (yyval.node) = new BinaryOpNode('%', (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 2438 "limbaj.tab.c"
+#line 2439 "limbaj.tab.c"
     break;
 
   case 67: /* expr: expr EQ expr  */
-#line 768 "limbaj.y"
-                   { (yyval.node) = new boolBinaryOpNode('=', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2444 "limbaj.tab.c"
+#line 747 "limbaj.y"
+                   { (yyval.node) = new BinaryOpNode('=', (yyvsp[-2].node), (yyvsp[0].node)); }
+#line 2445 "limbaj.tab.c"
     break;
 
   case 68: /* expr: expr NEQ expr  */
-#line 769 "limbaj.y"
-                    { (yyval.node) = new boolBinaryOpNode('n', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2450 "limbaj.tab.c"
+#line 748 "limbaj.y"
+                    { (yyval.node) = new BinaryOpNode('n', (yyvsp[-2].node), (yyvsp[0].node)); }
+#line 2451 "limbaj.tab.c"
     break;
 
   case 69: /* expr: expr LT expr  */
-#line 770 "limbaj.y"
-                   { (yyval.node) = new boolBinaryOpNode('<', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2456 "limbaj.tab.c"
+#line 749 "limbaj.y"
+                   { (yyval.node) = new BinaryOpNode('<', (yyvsp[-2].node), (yyvsp[0].node)); }
+#line 2457 "limbaj.tab.c"
     break;
 
   case 70: /* expr: expr LE expr  */
-#line 771 "limbaj.y"
-                   { (yyval.node) = new boolBinaryOpNode('l', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2462 "limbaj.tab.c"
+#line 750 "limbaj.y"
+                   { (yyval.node) = new BinaryOpNode('l', (yyvsp[-2].node), (yyvsp[0].node)); }
+#line 2463 "limbaj.tab.c"
     break;
 
   case 71: /* expr: expr GT expr  */
-#line 772 "limbaj.y"
-                   { (yyval.node) = new boolBinaryOpNode('>', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2468 "limbaj.tab.c"
+#line 751 "limbaj.y"
+                   { (yyval.node) = new BinaryOpNode('>', (yyvsp[-2].node), (yyvsp[0].node)); }
+#line 2469 "limbaj.tab.c"
     break;
 
   case 72: /* expr: expr GE expr  */
-#line 773 "limbaj.y"
-                   { (yyval.node) = new boolBinaryOpNode('g', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2474 "limbaj.tab.c"
+#line 752 "limbaj.y"
+                   { (yyval.node) = new BinaryOpNode('g', (yyvsp[-2].node), (yyvsp[0].node)); }
+#line 2475 "limbaj.tab.c"
     break;
 
   case 73: /* expr: expr AND expr  */
-#line 774 "limbaj.y"
+#line 753 "limbaj.y"
                     {
-        if(strcmp((yyvsp[0].node)->string_type().c_str(), "bool") == 0 && strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") == 0) (yyval.node) = new boolBinaryOpNode('&', (yyvsp[-2].node), (yyvsp[0].node));
+        if(strcmp((yyvsp[0].node)->string_type().c_str(), "bool") == 0 && strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") == 0)
+            (yyval.node) = new BinaryOpNode('&', (yyvsp[-2].node), (yyvsp[0].node));
         else{
-            std::string str = "[&&] Both operands must be bool (";
+            std::string str = "[&&].. Both operands must be bool (";
             str += (yyvsp[-2].node)->string_type();
             str += ",";
             str += (yyvsp[0].node)->string_type();
@@ -2486,89 +2488,89 @@ string to_return = "Variable already exists (";
             yyerror(str.c_str());
         }
     }
-#line 2490 "limbaj.tab.c"
+#line 2492 "limbaj.tab.c"
     break;
 
   case 74: /* expr: expr OR expr  */
-#line 785 "limbaj.y"
+#line 765 "limbaj.y"
                    {
-        if(strcmp((yyvsp[0].node)->string_type().c_str(), "bool") == 0 && strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") == 0) (yyval.node) = new boolBinaryOpNode('|', (yyvsp[-2].node), (yyvsp[0].node));
+        if(strcmp((yyvsp[0].node)->string_type().c_str(), "bool") == 0 && strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") == 0) (yyval.node) = new BinaryOpNode('|', (yyvsp[-2].node), (yyvsp[0].node));
         else yyerror("[||] Both operands must be bool");
     }
-#line 2499 "limbaj.tab.c"
+#line 2501 "limbaj.tab.c"
     break;
 
   case 75: /* expr: ID  */
-#line 789 "limbaj.y"
+#line 769 "limbaj.y"
          { (yyval.node) = new IdentifierNode((yyvsp[0].string)); }
-#line 2505 "limbaj.tab.c"
+#line 2507 "limbaj.tab.c"
     break;
 
   case 76: /* expr: ID '[' expr ']'  */
-#line 790 "limbaj.y"
+#line 770 "limbaj.y"
                       {
         if(strcmp((yyvsp[-1].node)->string_type().c_str(), "int") == 0) (yyval.node) = new VectorElementNode((yyvsp[-3].string), std::get<int>((yyvsp[-1].node)->evaluate()));
         else yyerror("Access number must be integer type");
     }
-#line 2514 "limbaj.tab.c"
+#line 2516 "limbaj.tab.c"
     break;
 
   case 77: /* expr: INT  */
-#line 794 "limbaj.y"
+#line 774 "limbaj.y"
           { (yyval.node) = new IntNode((yyvsp[0].intValue)); }
-#line 2520 "limbaj.tab.c"
+#line 2522 "limbaj.tab.c"
     break;
 
   case 78: /* expr: FLOAT  */
-#line 795 "limbaj.y"
+#line 775 "limbaj.y"
             { (yyval.node) = new FloatNode((yyvsp[0].floatValue)); }
-#line 2526 "limbaj.tab.c"
+#line 2528 "limbaj.tab.c"
     break;
 
   case 79: /* expr: CHAR  */
-#line 796 "limbaj.y"
+#line 776 "limbaj.y"
            { (yyval.node) = new CharNode((yyvsp[0].charValue)); }
-#line 2532 "limbaj.tab.c"
+#line 2534 "limbaj.tab.c"
     break;
 
   case 80: /* expr: BOOL  */
-#line 797 "limbaj.y"
+#line 777 "limbaj.y"
            { (yyval.node) = new BoolNode((yyvsp[0].boolValue)); }
-#line 2538 "limbaj.tab.c"
+#line 2540 "limbaj.tab.c"
     break;
 
   case 81: /* expr: STRING  */
-#line 798 "limbaj.y"
+#line 778 "limbaj.y"
              { (yyval.node) = new StringNode((yyvsp[0].string)); }
-#line 2544 "limbaj.tab.c"
+#line 2546 "limbaj.tab.c"
     break;
 
   case 82: /* expr: function_call  */
-#line 799 "limbaj.y"
+#line 779 "limbaj.y"
                     { (yyval.node) = (yyvsp[0].node); }
-#line 2550 "limbaj.tab.c"
+#line 2552 "limbaj.tab.c"
     break;
 
   case 83: /* expr: '(' expr ')'  */
-#line 800 "limbaj.y"
+#line 780 "limbaj.y"
                    { (yyval.node) = (yyvsp[-1].node); }
-#line 2556 "limbaj.tab.c"
+#line 2558 "limbaj.tab.c"
     break;
 
   case 84: /* $@10: %empty  */
-#line 826 "limbaj.y"
+#line 806 "limbaj.y"
                                                { symbolTable.enterScope("clean_code_executer"); }
-#line 2562 "limbaj.tab.c"
+#line 2564 "limbaj.tab.c"
     break;
 
   case 85: /* special_function: SPECIAL_FUNCTION '(' ')' '{' $@10 statements '}'  */
-#line 826 "limbaj.y"
+#line 806 "limbaj.y"
                                                                                                                  { symbolTable.exitScope(); }
-#line 2568 "limbaj.tab.c"
+#line 2570 "limbaj.tab.c"
     break;
 
 
-#line 2572 "limbaj.tab.c"
+#line 2574 "limbaj.tab.c"
 
       default: break;
     }
@@ -2792,7 +2794,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 829 "limbaj.y"
+#line 809 "limbaj.y"
 
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
@@ -3156,9 +3158,32 @@ void FunctionInfo::write_to_string(string& str) const {
 
 // BINARYOPNODE IMPLEMENTATION
 
+
+// ASTNode::ReturnValue boolBinaryOpNode::evaluate() const {
+//     if(left->type() != right->type()) {
+//         yyerror("Incompatible types");
+//     }
+//     if(strcmp(left->string_type().c_str(), "int") == 0){
+//         return handleOperation(op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
+//     }
+//     else if(strcmp(left->string_type().c_str(), "bool") == 0){
+//         return handleOperation(op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
+//     }
+//     else if(strcmp(left->string_type().c_str(), "float") == 0){
+//         return handleOperation(op, std::get<float>(left->evaluate()), std::get<float>(right->evaluate()));
+//     }
+//     else if(strcmp(left->string_type().c_str(), "char") == 0){
+//         ReturnValue(0); // error?
+//         //return handleOperation(op, std::get<char>(left->evaluate()), std::get<char>(right->evaluate()));
+//     }
+//     else if(strcmp(left->string_type().c_str(), "string") == 0){
+//         ReturnValue(0); //error?
+//         //return handleOperation(op, std::get<char*>(left->evaluate()), std::get<char*>(right->evaluate()));
+//     }
+//     return ReturnValue(0);
+// }
 template <typename T>
 ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
-    bool response;
     switch (op) {
         case '+':
             return ASTNode::ReturnValue(leftValue + rightValue);
@@ -3169,84 +3194,46 @@ ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
         case '/':
             return ASTNode::ReturnValue(leftValue / rightValue);
         case '%':
-            if constexpr (std::is_same_v<T, int>) {
-                return ASTNode::ReturnValue(leftValue % rightValue);
-            } else {
+            if constexpr (std::is_same_v<T, float>) {
                 yyerror("Cannot use modulo on float");
+            } else {
+                return ASTNode::ReturnValue(leftValue % rightValue);
             }
             break;
         case '=':
-            response = (leftValue == rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue == rightValue);
         case 'n':
-            response = (leftValue != rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue != rightValue);
         case '<':
-            response = (leftValue < rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue < rightValue);
         case 'l':
-            response = (leftValue <= rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue <= rightValue);
         case '>':
-            response = (leftValue > rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue > rightValue);
         case 'g':
-            response = (leftValue >= rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue >= rightValue);
         case '&':
-            response = (leftValue && rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue && rightValue);
         case '|':
-            response = (leftValue || rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue || rightValue);
         default:
             return ASTNode::ReturnValue(0);
     }
     return ASTNode::ReturnValue(0); //safety return
 }
 
-ASTNode::ReturnValue boolBinaryOpNode::evaluate() const {
-    if(left->type() != right->type()) {
-        yyerror("Incompatible types");
-    }
-    if(strcmp(left->string_type().c_str(), "int") == 0){
-        return handleOperation(op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
-    }
-    else if(strcmp(left->string_type().c_str(), "bool") == 0){
-        return handleOperation(op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
-    }
-    else if(strcmp(left->string_type().c_str(), "float") == 0){
-        return handleOperation(op, std::get<float>(left->evaluate()), std::get<float>(right->evaluate()));
-    }
-    else if(strcmp(left->string_type().c_str(), "char") == 0){
-        ReturnValue(0); // error?
-        //return handleOperation(op, std::get<char>(left->evaluate()), std::get<char>(right->evaluate()));
-    }
-    else if(strcmp(left->string_type().c_str(), "string") == 0){
-        ReturnValue(0); //error?
-        //return handleOperation(op, std::get<char*>(left->evaluate()), std::get<char*>(right->evaluate()));
-    }
-    return ReturnValue(0);
-}
-
 ASTNode::ReturnValue BinaryOpNode::evaluate() const {
-    // Implement logic to evaluate the binary operation
-    // based on the operator and return the result
     if(left->type() != right->type()) {
         yyerror("Incompatible types");
     }
     ExprType type = left->type();
     switch (type) {
         case ExprType::INT:
-            //printf("BinaryOpNode: op = %c , leftValue = %d , rightValue = %d\n", op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
             return handleOperation(op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
         case ExprType::FLOAT:
             return handleOperation(op, std::get<float>(left->evaluate()), std::get<float>(right->evaluate()));
         case ExprType::BOOLEAN:
-            //printf("|1|\t");
-            //printf("BinaryOpNode: type = %s , op = %c , leftValue = %d , rightValue = %d\n", op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
-            //return handleOperation(op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
-            //return ReturnValue((bool)((bool)std::get<bool>(left->evaluate()) + (bool)std::get<bool>(right->evaluate())));
+            return handleOperation(op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
         case ExprType::STRING:
         case ExprType::CHAR:
             return ReturnValue(0);
@@ -3260,14 +3247,24 @@ ExprType BinaryOpNode::type() const {
     if(left->type() != right->type()) {
         yyerror("Incompatible typesss");
     }
-    return left->type();
+    if(this->op == '=' || this->op == 'n' || this->op == '<' || this->op == 'l' || this->op == '>' || this->op == 'g' || this->op == '&' || this->op == '|') {
+        return ExprType::BOOLEAN;
+    }
+    else{
+        return left->type();
+    }
 }
 
 string BinaryOpNode::string_type() const {
     if(left->type() != right->type()) {
         yyerror("Incompatible typesss");
     }
-    return left->string_type();
+    if(this->op == '=' || this->op == 'n' || this->op == '<' || this->op == 'l' || this->op == '>' || this->op == 'g' || this->op == '&' || this->op == '|') {
+        return "bool";
+    }
+    else{
+        return left->string_type();
+    }
 }
 
 // BINARYOPNODE IMPLEMENTATION ENDS

@@ -231,19 +231,19 @@ public:
     string string_type() const override;
 };
 
-class boolBinaryOpNode : public ASTNode {
-    private:
-    char op;
-    const ASTNode* left;
-    const ASTNode* right;
+// class boolBinaryOpNode : public ASTNode {
+//     private:
+//     char op;
+//     const ASTNode* left;
+//     const ASTNode* right;
 
-public:
-    boolBinaryOpNode(char oper, const ASTNode* l, const ASTNode* r)
-        : op(oper), left(l), right(r) {}
-    ReturnValue evaluate() const override;
-    ExprType type() const override {return ExprType::BOOLEAN;}
-    string string_type() const override {return "bool";}
-};
+// public:
+//     boolBinaryOpNode(char oper, const ASTNode* l, const ASTNode* r)
+//         : op(oper), left(l), right(r) {}
+//     ReturnValue evaluate() const override;
+//     ExprType type() const override {return ExprType::BOOLEAN;}
+//     string string_type() const override {return "bool";}
+// };
 
 unsigned long long ifCounter = 0;
 unsigned long long forCounter = 0;
@@ -376,10 +376,11 @@ decl: TYPE ID {
             symbolTable.addVariable(*var);
     }
     | CONST TYPE ID {
-string to_return = "Variable already exists (";
+            string to_return = "Variable already exists (";
             to_return += $3;
             to_return += ")";
-            if(symbolTable.variableExists($3)) yyerror(to_return.c_str());            VarInfo* var = new VarInfo($2, $3, true);
+            if(symbolTable.variableExists($3)) yyerror(to_return.c_str());
+            VarInfo* var = new VarInfo($2, $3, true);
             $$ = var;
             symbolTable.addVariable(*var);
     }
@@ -507,15 +508,6 @@ string to_return = "Variable already exists (";
                     symbolTable.addVariable(*var);
             }    
     }
-    // | TYPE ID '[' INT ']' '[' INT ']' {   nu cred ca trebuie sa avem si matrici
-    //         VarInfo* var = new VarInfo($1, $2, false, $4 * $7);
-    //         $$ = var;
-    //         symbolTable.addVariable(*var);}
-    // | TYPE ID '[' INT ']' '[' INT ']' ASSIGN '{' expressions '}' {
-    //         VarInfo* var = new VarInfo($1, $2, false, $4 * $7);
-    //         $$ = var;
-    //         symbolTable.addVariable(*var);
-    // }
 
 global_function_definitions: /* epsilon */
     | global_function_definitions global_function_definition
@@ -626,19 +618,6 @@ assignment_statement: ID ASSIGN expr ';' {
                         else yyerror("Array element access number is not an integer");
                     }
                     ;
-/*
-left_value: ID
-    | array_element_access 
-    ;
-
-array_element_access: ID '[' expr ']' {
-        if($3->string_type() == "int"){
-            VarInfo* temp = symbolTable.getVariable($1);
-        }
-        else yyerror("Array element access number is not an integer");    
-    }
-    ;
-*/
 
 control_statement: if_statement 
     | for_statement
@@ -765,16 +744,17 @@ expr: expr PLUS expr {
         if(strcmp($1->string_type().c_str(), "bool") == 0 || strcmp($3->string_type().c_str(), "bool") == 0) yyerror("[MOD] bools are not allowed");
         $$ = new BinaryOpNode('%', $1, $3);
     }
-    | expr EQ expr { $$ = new boolBinaryOpNode('=', $1, $3); }
-    | expr NEQ expr { $$ = new boolBinaryOpNode('n', $1, $3); }
-    | expr LT expr { $$ = new boolBinaryOpNode('<', $1, $3); }
-    | expr LE expr { $$ = new boolBinaryOpNode('l', $1, $3); }
-    | expr GT expr { $$ = new boolBinaryOpNode('>', $1, $3); }
-    | expr GE expr { $$ = new boolBinaryOpNode('g', $1, $3); }
+    | expr EQ expr { $$ = new BinaryOpNode('=', $1, $3); }
+    | expr NEQ expr { $$ = new BinaryOpNode('n', $1, $3); }
+    | expr LT expr { $$ = new BinaryOpNode('<', $1, $3); }
+    | expr LE expr { $$ = new BinaryOpNode('l', $1, $3); }
+    | expr GT expr { $$ = new BinaryOpNode('>', $1, $3); }
+    | expr GE expr { $$ = new BinaryOpNode('g', $1, $3); }
     | expr AND expr {
-        if(strcmp($3->string_type().c_str(), "bool") == 0 && strcmp($1->string_type().c_str(), "bool") == 0) $$ = new boolBinaryOpNode('&', $1, $3);
+        if(strcmp($3->string_type().c_str(), "bool") == 0 && strcmp($1->string_type().c_str(), "bool") == 0)
+            $$ = new BinaryOpNode('&', $1, $3);
         else{
-            std::string str = "[&&] Both operands must be bool (";
+            std::string str = "[&&].. Both operands must be bool (";
             str += $1->string_type();
             str += ",";
             str += $3->string_type();
@@ -783,7 +763,7 @@ expr: expr PLUS expr {
         }
     }
     | expr OR expr {
-        if(strcmp($3->string_type().c_str(), "bool") == 0 && strcmp($1->string_type().c_str(), "bool") == 0) $$ = new boolBinaryOpNode('|', $1, $3);
+        if(strcmp($3->string_type().c_str(), "bool") == 0 && strcmp($1->string_type().c_str(), "bool") == 0) $$ = new BinaryOpNode('|', $1, $3);
         else yyerror("[||] Both operands must be bool");
     }
     | ID { $$ = new IdentifierNode($1); }
@@ -1189,9 +1169,32 @@ void FunctionInfo::write_to_string(string& str) const {
 
 // BINARYOPNODE IMPLEMENTATION
 
+
+// ASTNode::ReturnValue boolBinaryOpNode::evaluate() const {
+//     if(left->type() != right->type()) {
+//         yyerror("Incompatible types");
+//     }
+//     if(strcmp(left->string_type().c_str(), "int") == 0){
+//         return handleOperation(op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
+//     }
+//     else if(strcmp(left->string_type().c_str(), "bool") == 0){
+//         return handleOperation(op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
+//     }
+//     else if(strcmp(left->string_type().c_str(), "float") == 0){
+//         return handleOperation(op, std::get<float>(left->evaluate()), std::get<float>(right->evaluate()));
+//     }
+//     else if(strcmp(left->string_type().c_str(), "char") == 0){
+//         ReturnValue(0); // error?
+//         //return handleOperation(op, std::get<char>(left->evaluate()), std::get<char>(right->evaluate()));
+//     }
+//     else if(strcmp(left->string_type().c_str(), "string") == 0){
+//         ReturnValue(0); //error?
+//         //return handleOperation(op, std::get<char*>(left->evaluate()), std::get<char*>(right->evaluate()));
+//     }
+//     return ReturnValue(0);
+// }
 template <typename T>
 ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
-    bool response;
     switch (op) {
         case '+':
             return ASTNode::ReturnValue(leftValue + rightValue);
@@ -1202,84 +1205,46 @@ ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
         case '/':
             return ASTNode::ReturnValue(leftValue / rightValue);
         case '%':
-            if constexpr (std::is_same_v<T, int>) {
-                return ASTNode::ReturnValue(leftValue % rightValue);
-            } else {
+            if constexpr (std::is_same_v<T, float>) {
                 yyerror("Cannot use modulo on float");
+            } else {
+                return ASTNode::ReturnValue(leftValue % rightValue);
             }
             break;
         case '=':
-            response = (leftValue == rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue == rightValue);
         case 'n':
-            response = (leftValue != rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue != rightValue);
         case '<':
-            response = (leftValue < rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue < rightValue);
         case 'l':
-            response = (leftValue <= rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue <= rightValue);
         case '>':
-            response = (leftValue > rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue > rightValue);
         case 'g':
-            response = (leftValue >= rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue >= rightValue);
         case '&':
-            response = (leftValue && rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue && rightValue);
         case '|':
-            response = (leftValue || rightValue);
-            return ASTNode::ReturnValue(response);
+            return ASTNode::ReturnValue(leftValue || rightValue);
         default:
             return ASTNode::ReturnValue(0);
     }
     return ASTNode::ReturnValue(0); //safety return
 }
 
-ASTNode::ReturnValue boolBinaryOpNode::evaluate() const {
-    if(left->type() != right->type()) {
-        yyerror("Incompatible types");
-    }
-    if(strcmp(left->string_type().c_str(), "int") == 0){
-        return handleOperation(op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
-    }
-    else if(strcmp(left->string_type().c_str(), "bool") == 0){
-        return handleOperation(op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
-    }
-    else if(strcmp(left->string_type().c_str(), "float") == 0){
-        return handleOperation(op, std::get<float>(left->evaluate()), std::get<float>(right->evaluate()));
-    }
-    else if(strcmp(left->string_type().c_str(), "char") == 0){
-        ReturnValue(0); // error?
-        //return handleOperation(op, std::get<char>(left->evaluate()), std::get<char>(right->evaluate()));
-    }
-    else if(strcmp(left->string_type().c_str(), "string") == 0){
-        ReturnValue(0); //error?
-        //return handleOperation(op, std::get<char*>(left->evaluate()), std::get<char*>(right->evaluate()));
-    }
-    return ReturnValue(0);
-}
-
 ASTNode::ReturnValue BinaryOpNode::evaluate() const {
-    // Implement logic to evaluate the binary operation
-    // based on the operator and return the result
     if(left->type() != right->type()) {
         yyerror("Incompatible types");
     }
     ExprType type = left->type();
     switch (type) {
         case ExprType::INT:
-            //printf("BinaryOpNode: op = %c , leftValue = %d , rightValue = %d\n", op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
             return handleOperation(op, std::get<int>(left->evaluate()), std::get<int>(right->evaluate()));
         case ExprType::FLOAT:
             return handleOperation(op, std::get<float>(left->evaluate()), std::get<float>(right->evaluate()));
         case ExprType::BOOLEAN:
-            //printf("|1|\t");
-            //printf("BinaryOpNode: type = %s , op = %c , leftValue = %d , rightValue = %d\n", op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
-            //return handleOperation(op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
-            //return ReturnValue((bool)((bool)std::get<bool>(left->evaluate()) + (bool)std::get<bool>(right->evaluate())));
+            return handleOperation(op, std::get<bool>(left->evaluate()), std::get<bool>(right->evaluate()));
         case ExprType::STRING:
         case ExprType::CHAR:
             return ReturnValue(0);
@@ -1293,14 +1258,24 @@ ExprType BinaryOpNode::type() const {
     if(left->type() != right->type()) {
         yyerror("Incompatible typesss");
     }
-    return left->type();
+    if(this->op == '=' || this->op == 'n' || this->op == '<' || this->op == 'l' || this->op == '>' || this->op == 'g' || this->op == '&' || this->op == '|') {
+        return ExprType::BOOLEAN;
+    }
+    else{
+        return left->type();
+    }
 }
 
 string BinaryOpNode::string_type() const {
     if(left->type() != right->type()) {
         yyerror("Incompatible typesss");
     }
-    return left->string_type();
+    if(this->op == '=' || this->op == 'n' || this->op == '<' || this->op == 'l' || this->op == '>' || this->op == 'g' || this->op == '&' || this->op == '|') {
+        return "bool";
+    }
+    else{
+        return left->string_type();
+    }
 }
 
 // BINARYOPNODE IMPLEMENTATION ENDS

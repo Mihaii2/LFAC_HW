@@ -7,11 +7,23 @@ size in bytes: 4
 value: 3000
 
 --------Scope: clean_code_executer::
+name: mybool
+type: bool
+const: 0
+size in bytes: 1
+value: 1
+
 name: intTest
 type: int
 const: 0
 size in bytes: 4
 value: 10
+
+name: mychhar
+type: char
+const: 0
+size in bytes: 1
+value: c
 
 name: oh
 type: int
@@ -31,7 +43,7 @@ name: bools0cpy
 type: bool
 const: 0
 size in bytes: 1
-value: 0
+value: 1
 
 name: strings
 type: string
@@ -115,7 +127,7 @@ name: bools
 type: bool
 const: 0
 size in bytes: 2
-value: 0 0 
+value: 1 0 
 
 name: expressionINTEGER
 type: int
