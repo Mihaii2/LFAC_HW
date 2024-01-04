@@ -44,7 +44,7 @@ public:
     void* getValueCopy() const;
     void assign_expr(ASTNode* expr);
     void write_to_string(string &str) const;
-    void printMembers();
+    void printMembers() const;
 
 };
 class FunctionInfo {
@@ -110,12 +110,12 @@ enum class ExprType {
     CHAR,
 };
 
-using ReturnValue = variant<int, float, bool, char*, char>;
+using ReturnValue = variant<int, float, bool, char, char**>;
 using ReturnBool = bool;
 
 class ASTNode {
 public:
-    using ReturnValue = variant<int, float, bool, char*, char>;
+    using ReturnValue = variant<int, float, bool, char, char**>;
     using ReturnBool = bool;
     virtual ~ASTNode() {}
     virtual ReturnValue evaluate() const = 0;
@@ -170,13 +170,18 @@ public:
 
 class StringNode : public ASTNode {
 private:
-    char* value;
+    char** value;
 public:
-    StringNode(char* val) : value(val) {}
+    StringNode(char** val) {
+        value = new char*[1];
+        value[0] = new char[strlen(*val) + 1];
+        strcpy(value[0], *val);
+    }
 
-    ReturnValue evaluate() const override { 
-        char* copy = new char[strlen(value) + 1];
-        strcpy(copy, value);
+    ReturnValue evaluate() const override {
+        char** copy = new char*[1];
+        copy[0] = new char[strlen(*value) + 1];
+        strcpy(copy[0], *value);
         return ReturnValue(copy);
     }
     ExprType type() const override { return ExprType::STRING; }
@@ -451,9 +456,9 @@ decl: TYPE ID {
             else if (strcmp($1, "string") == 0){
                     char** stringVals = new char*[nr_elements];
                     for(int i = 0; i < nr_elements; ++i){
-                        stringVals[i] = std::get<char*>(values[i]);
+                        stringVals[i] = *(std::get<char**>(values[i]));
                     }
-                    var->setValue((void*)stringVals);  
+                    var->setValue((void*)stringVals);
             }    
             $$ = var;
             symbolTable.addVariable(*var);
@@ -510,16 +515,13 @@ decl: TYPE ID {
             for (int i = 0; i < nr_elements; ++i) {
                 std::visit([&](auto&& arg) {     // visit each element in the initializer list and copy it to the user type variable
                     using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, int> || std::is_same_v<T, float> || std::is_same_v<T, bool> ||   std::is_same_v<T, char>) {
+                    if constexpr (std::is_same_v<T, int> || std::is_same_v<T, float> || std::is_same_v<T, bool> ||   std::is_same_v<T, char> || std::is_same_v<T, char**>) {
                         memcpy((char*)copy + offset, &arg, sizeof(T));
                         offset += sizeof(T);
                     }
-                    if constexpr (std::is_same_v<T, char*>) {
-                        memcpy((char*)copy + offset, arg, strlen(arg) + 1);
-                        offset += strlen(arg) + 1;
-                    }
                 }, (*$5)[i]->evaluate());
             }
+
             var->setValue(copy);
             $$ = var;
             symbolTable.addVariable(*var);
@@ -623,7 +625,7 @@ assignment_statement: ID ASSIGN expr ';' {
                                 }
                                 else if(strcmp(temp.getType().c_str(), "string") == 0){
                                     char** stringVals = (char**)(temp.getValueCopy());
-                                    stringVals[std::get<int>($3->evaluate())] = std::get<char*>($6->evaluate());
+                                    stringVals[std::get<int>($3->evaluate())] = *(std::get<char**>($6->evaluate()));
                                     temp.setValue((void*)stringVals);
                                 }
                             }
@@ -704,7 +706,12 @@ eval_statement: EVAL '(' expr ')' ';' {
             printf("Evaluated expression: %s\n", std::get<bool>($3->evaluate())? "true" : "false");
             break;
         case ExprType::STRING:
-            printf("Evaluated expression: %s\n", std::get<char*>($3->evaluate()));
+            if(std::get<char**>($3->evaluate()) != nullptr) {
+                printf("Evaluated expression: %s\n", *(std::get<char**>($3->evaluate())));
+
+            }
+            else
+                printf("Evaluated expression: null\n");
             break;
         case ExprType::CHAR:
             printf("Evaluated expression: %c\n", std::get<char>($3->evaluate()));
@@ -767,7 +774,8 @@ expr: expr PLUS expr { $$ = new BinaryOpNode('+', $1, $3); }
     | FLOAT { $$ = new FloatNode($1); }
     | CHAR { $$ = new CharNode($1); }
     | BOOL { $$ = new BoolNode($1); }
-    | STRING { $$ = new StringNode($1); }
+    | STRING { $$ = new StringNode(&$1); 
+    }
     | function_call { $$ = $1; }
     | '(' expr ')' { $$ = $2; }
     ;
@@ -948,13 +956,14 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* v
         this->size = sizeof(bool);
         break;
     case 's': // string
-        this->size = sizeof(char*);
+        this->size = sizeof(char**);
         break;
     default:
         this->size = 0;
         break;
     }
     if(isUserType) {
+        this->size = 0;
         bool found = false;
         for (const UserType& userType : userTypes) {
             if (userType.getName() == type) {
@@ -987,21 +996,18 @@ void VarInfo::setSize(int size) {
 }
 
 void VarInfo::setValue(void* value){
-    if(this->type == "string" && this->size == sizeof(char*)){
-        char* copy = new char[strlen((char*)value) + 1];
-        strcpy(copy, (char*)value);
-        this->memoryLocation = (void*)copy;
+    // print value for debugging in case var is string
+    if(this->type == "string" && this->size == sizeof(char*)) {
     }
-    else {
-        memcpy(this->memoryLocation, value, this->size);
-    }
+    memcpy(this->memoryLocation, value, this->size);
 }
 
 void* VarInfo::getValueCopy() const {
     if(this->type == "string" && this->size == sizeof(char*)){
-        char* copy = new char[strlen((char*)this->memoryLocation) + 1];
-        strcpy(copy, (char*)this->memoryLocation);
-        return (void*)copy;
+        char** copy = new char*[1];
+        copy[0] = new char[strlen(*(char**)this->memoryLocation) + 1];
+        strcpy(copy[0], *(char**)this->memoryLocation);
+        return copy;
     }
     else {
         void* copy = malloc(this->size);
@@ -1021,12 +1027,7 @@ void VarInfo::write_to_string(string& str) const {
         string is_const = std::to_string(this->isConst);
         str += is_const;
         str += "\nsize in bytes: ";
-        if(this->size == sizeof(char*) && this->type == "string") {
-            str += std::to_string(strlen((char*)this->memoryLocation) + 1);
-        }
-        else {
-            str += std::to_string(this->size); 
-        }
+        str += std::to_string(this->size); 
         str += "\nvalue: ";
     }
     if(this->type == "int"){
@@ -1074,7 +1075,7 @@ void VarInfo::write_to_string(string& str) const {
     else if (this->type == "string"){
         if(this->memoryLocation != nullptr) {
             if(this->size == sizeof(char*)) {
-                str += (char*)this->memoryLocation;
+                str += *((char**)this->memoryLocation);
             }
             else if (this->size > sizeof(char*)) {
                 char** arr = (char**)(this->memoryLocation);
@@ -1119,6 +1120,8 @@ void VarInfo::write_to_string(string& str) const {
                     str += std::to_string(var.getSize());
                     str += "\nvalue: ";
                     if (var.getType() == "int") {
+                        cout<<"INT"<<endl;
+                        cout<<*(int*)((char*)this->memoryLocation + offset)<<endl;
                         str += std::to_string(*(int*)((char*)this->memoryLocation + offset));
                     }
                     else if (var.getType() == "char") {
@@ -1131,7 +1134,9 @@ void VarInfo::write_to_string(string& str) const {
                         str += std::to_string(*(bool*)((char*)this->memoryLocation + offset));
                     }
                     else if (var.getType() == "string") {
-                        str += (char*)((char*)this->memoryLocation + offset);
+                        cout<<"STRING"<<endl;
+                        cout<<*(((char**)this->memoryLocation + offset))<<endl;
+                        str += *(((char**)this->memoryLocation + offset));
                     }
                     str += "\n\n";
                     offset += var.getSize();
@@ -1144,7 +1149,7 @@ void VarInfo::write_to_string(string& str) const {
     str += "\n\n";
 }
 
-void VarInfo::printMembers() {
+void VarInfo::printMembers() const {
     cout << "Variable name: " << name << endl;
     cout << "Type: " << type << endl;
     cout << "Is const: " << isConst << endl;
@@ -1204,8 +1209,8 @@ void VarInfo::assign_expr(ASTNode* expr) {
         break;
     }
     case ExprType::STRING: {
-        this->setSize(sizeof(char*));
-        void* value = std::get<char*>(expr->evaluate());
+        this->setSize(sizeof(char**));
+        void* value = std::get<char**>(expr->evaluate()); 
         this->setValue(value);
         break;
     }
@@ -1436,10 +1441,7 @@ ASTNode::ReturnValue VectorElementNode::evaluate() const {
     else if(strcmp(var.getType().c_str(), "string") == 0){
         void* vals = var.getValueCopy();
         char** stringVals = (char**)vals;
-        char* returnstr = new char[strlen(stringVals[index])];
-        strcpy(returnstr, stringVals[index]);
-        returnstr[strlen(returnstr)] = '\0';
-        return ReturnValue(returnstr);
+        return ReturnValue(&(stringVals[index]));
     }
     return ReturnValue(0);
 }
@@ -1475,7 +1477,7 @@ ASTNode::ReturnValue IdentifierNode::evaluate() const {
         case 'c':
             return ReturnValue(*(char*)var.getValueCopy());
         case 's':
-            return ReturnValue((char*)var.getValueCopy());
+            return ReturnValue((char**)var.getValueCopy());
         default:
             return ReturnValue(0);
     }

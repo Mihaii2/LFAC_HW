@@ -20,7 +20,9 @@ usr_type myType {
 usr_type carClass {
     int engine;
     int speed;
-    
+    string model;
+    int consumption;
+
     #END_USR_TYPE_VARS
 }
 
@@ -43,7 +45,7 @@ usr_type myType typevar {'a', 'm', 'b', 'c'};
 
 usr_type myType typevarEmpty;
 
-usr_type carClass myCar {100, 200};
+usr_type carClass myCar {100, 200, "Dacia", 40};
 
 char charValue1 = 'a';
 char charValue2 = 'j';
