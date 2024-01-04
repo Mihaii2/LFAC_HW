@@ -28,13 +28,14 @@ private:
     string type;
     string name;
     bool isConst = false;
+    bool isUserType = false;
     int size = 0;
     void* memoryLocation = nullptr;
 
 public:
 
     VarInfo() {}
-    VarInfo(string type, string name, bool is_const = false, int arraySize = 1, void* value = nullptr);
+    VarInfo(string type, string name, bool is_const = false, int arraySize = 1, void* value = nullptr, bool isUserType = false);
     string getName() const { return name; }
     string getType() const { return type; }
     void setValue(void* value);
@@ -74,6 +75,7 @@ public:
     void printMembers();
     string getName() const { return name; }
     vector<VarInfo> getVars() const { return vars; }
+    vector<FunctionInfo> getMethods() const { return methods; }
 };
 
 vector<UserType> userTypes;
@@ -277,10 +279,10 @@ unsigned long long whileCounter = 0;
 %token <charValue> CHAR
 %token <string> STRING
 %token <boolValue> BOOL
-%token <string> ID TYPE SPECIAL_FUNCTION
+%token <string> ID TYPE SPECIAL_FUNCTION USR_TYPE
 %token IF WHILE FOR  
 %token END_USR_TYPES END_USR_TYPE_VARS END_GLOBAL_VARS END_GLOBAL_FUNCS
-%token CONST USR_TYPE EVAL TYPEOF
+%token CONST EVAL TYPEOF
 %token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV MOD AND OR GEQ LEQ
 
 %type<vars> usr_type_vars list_param func_param
@@ -288,7 +290,7 @@ unsigned long long whileCounter = 0;
 %type<var> usr_type_var param decl
 %type<func> usr_type_method
 %type<node> expr function_call
-%type<nodes> expressions arguments arg_list
+%type<nodes> expressions arguments arg_list initializer_list
 
 
 %left AND OR
@@ -357,7 +359,7 @@ decl: TYPE ID {
             symbolTable.addVariable(*var);
     }
     | CONST TYPE ID {
-            if(symbolTable.variableExists($3)) { 
+            if(symbolTable.variableExists($3)) {
                 error_variable_exists($3);
             }
             VarInfo* var = new VarInfo($2, $3, true);
@@ -456,6 +458,86 @@ decl: TYPE ID {
             $$ = var;
             symbolTable.addVariable(*var);
     }
+    | USR_TYPE ID ID {
+            if(symbolTable.variableExists($3)) {
+                error_variable_exists($3);
+            }
+            VarInfo* var = new VarInfo($2, $3, false, 1, nullptr, true);
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
+    | CONST USR_TYPE ID ID {
+            if(symbolTable.variableExists($4)) {
+                error_variable_exists($4);
+            }
+            VarInfo* var = new VarInfo($3, $4, true, 1, nullptr, true);
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
+    | USR_TYPE ID ID '{' initializer_list '}' { // initialize user type variable with initializer list 
+            if(symbolTable.variableExists($3)) {
+                error_variable_exists($3);
+            }
+            VarInfo* var = new VarInfo($2, $3, false, 1, nullptr, true);
+
+            int nr_elements = $5->size();
+            if(nr_elements == 0) {
+                yyerror("Initializer list is empty in user type initialization");
+            }
+
+            int userTypeIndex = -1;
+            for (int i = 0; i < userTypes.size(); ++i) {
+                if (userTypes[i].getName() == $2) {
+                    userTypeIndex = i;
+                    break;
+                }
+            }
+            if (userTypeIndex == -1) {
+                yyerror("User type not found");
+            }
+            if (userTypes[userTypeIndex].getVars().size() != nr_elements) {
+                yyerror("Number of elements in the initializer list is not equal to the number of variables in the user type");
+            }
+            for (int i = 0; i < nr_elements; ++i) {
+                if (userTypes[userTypeIndex].getVars()[i].getType() != (*$5)[i]->string_type()) {
+                    yyerror("Types of elements in the initializer list do not match the types of the variables in the user type");
+                }
+            }
+            // copy the values from the initializer list to the user type variable
+            int offset = 0;
+            void* copy = malloc(var->getSize());
+            memset(copy, 0, var->getSize());
+            for (int i = 0; i < nr_elements; ++i) {
+                std::visit([&](auto&& arg) {     // visit each element in the initializer list and copy it to the user type variable
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, int> || std::is_same_v<T, float> || std::is_same_v<T, bool> ||   std::is_same_v<T, char>) {
+                        memcpy((char*)copy + offset, &arg, sizeof(T));
+                        offset += sizeof(T);
+                    }
+                    if constexpr (std::is_same_v<T, char*>) {
+                        memcpy((char*)copy + offset, arg, strlen(arg) + 1);
+                        offset += strlen(arg) + 1;
+                    }
+                }, (*$5)[i]->evaluate());
+            }
+            var->setValue(copy);
+            $$ = var;
+            symbolTable.addVariable(*var);
+    }
+    ;
+
+initializer_list: /* epsilon */ {
+                    $$ = new vector<ASTNode*>();
+                }
+                | initializer_list ',' expr {
+                    $$ = $1;
+                    $$->push_back($3);
+                }
+                | expr {
+                    $$ = new vector<ASTNode*>();
+                    $$->push_back($1);
+                }
+                ;
 
 global_function_definitions: /* epsilon */
     | global_function_definitions global_function_definition
@@ -847,7 +929,7 @@ UserType::UserType(string name, vector<VarInfo> vars, vector<FunctionInfo> metho
 
 // VARINFO IMPLEMENTATION
 
-VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* value) {
+VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* value, bool isUserType) {
     this->type = type;
     this->name = name;
     this->isConst = is_const;
@@ -871,6 +953,23 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* v
     default:
         this->size = 0;
         break;
+    }
+    if(isUserType) {
+        bool found = false;
+        for (const UserType& userType : userTypes) {
+            if (userType.getName() == type) {
+                found = true;
+                // calculate the size of the user type
+                for (const VarInfo& var : userType.getVars()) {
+                    this->size += var.getSize();
+                }
+                break;
+            }
+        }
+        if (!found) {
+            yyerror("User type not found");
+        }
+        this->isUserType = true;
     }
 
     // Allocate memory for the variable
@@ -913,21 +1012,23 @@ void* VarInfo::getValueCopy() const {
 
 void VarInfo::write_to_string(string& str) const {
     if(this->size == 0) return; // variabila nu exosta
-    str += "name: ";
-    str += name;
-    str += "\ntype: ";
-    str += type;
-    str += "\nconst: ";
-    string is_const = std::to_string(this->isConst);
-    str += is_const;
-    str += "\nsize in bytes: ";
-    if(this->size == sizeof(char*) && this->type == "string") {
-        str += std::to_string(strlen((char*)this->memoryLocation) + 1);
+    if(!this->isUserType) {
+        str += "name: ";
+        str += name;
+        str += "\ntype: ";
+        str += type;
+        str += "\nconst: ";
+        string is_const = std::to_string(this->isConst);
+        str += is_const;
+        str += "\nsize in bytes: ";
+        if(this->size == sizeof(char*) && this->type == "string") {
+            str += std::to_string(strlen((char*)this->memoryLocation) + 1);
+        }
+        else {
+            str += std::to_string(this->size); 
+        }
+        str += "\nvalue: ";
     }
-    else {
-        str += std::to_string(this->size); 
-    }
-    str += "\nvalue: ";
     if(this->type == "int"){
         if(this->size == sizeof(int)) str += std::to_string(*(int*)this->memoryLocation);
         else if (this->size > sizeof(int) && this->memoryLocation != nullptr){
@@ -985,6 +1086,60 @@ void VarInfo::write_to_string(string& str) const {
                 }
             }
         }
+    }
+    else if (this->isUserType) {
+        // print the user type bytes for debugging
+        
+
+        // print to string user type variable name and type
+        str += "\n\n____user type variable: \n\n";
+        str += "type: ";
+        str += this->type;
+        str += "\n";
+        str += "name: ";
+        str += this->name;
+        str += "\n";
+        str += "size in bytes: ";
+        str += std::to_string(this->size);
+        str += "\n";
+        string is_const = std::to_string(this->isConst);
+        str += "const: ";
+        str += is_const;
+        str += "\n\n";
+        str += "__variables: \n";
+        for (int i = 0; i < userTypes.size(); ++i) {
+            if (userTypes[i].getName() == this->type) {
+                int offset = 0;
+                for (const VarInfo& var : userTypes[i].getVars()) {
+                    str += "name: ";
+                    str += var.getName();
+                    str += "\ntype: ";
+                    str += var.getType();
+                    str += "\nsize in bytes: ";
+                    str += std::to_string(var.getSize());
+                    str += "\nvalue: ";
+                    if (var.getType() == "int") {
+                        str += std::to_string(*(int*)((char*)this->memoryLocation + offset));
+                    }
+                    else if (var.getType() == "char") {
+                        str += *(char*)((char*)this->memoryLocation + offset);
+                    }
+                    else if (var.getType() == "float") {
+                        str += std::to_string(*(float*)((char*)this->memoryLocation + offset));
+                    }
+                    else if (var.getType() == "bool") {
+                        str += std::to_string(*(bool*)((char*)this->memoryLocation + offset));
+                    }
+                    else if (var.getType() == "string") {
+                        str += (char*)((char*)this->memoryLocation + offset);
+                    }
+                    str += "\n\n";
+                    offset += var.getSize();
+                }
+                break;
+            }
+        }
+        str += "____end of user type variable: ";
     }
     str += "\n\n";
 }

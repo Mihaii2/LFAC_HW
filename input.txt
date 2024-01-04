@@ -1,6 +1,8 @@
 usr_type myType {
-    int a;
+    char a;
     char gender; // comentariu
+    char b;
+    char c;
 
     #END_USR_TYPE_VARS 
 
@@ -13,6 +15,13 @@ usr_type myType {
             const int omegalul = 3;
         }
     }
+} 
+
+usr_type carClass {
+    int engine;
+    int speed;
+    
+    #END_USR_TYPE_VARS
 }
 
 #END_USR_TYPES
@@ -30,6 +39,12 @@ bool boolValue = true;
 bool dmnefereste = true || (false && true);
 float vloatValue = 0.85191;
 
+usr_type myType typevar {'a', 'm', 'b', 'c'};
+
+usr_type myType typevarEmpty;
+
+usr_type carClass myCar {100, 200};
+
 char charValue1 = 'a';
 char charValue2 = 'j';
 //string jojo = 'b';   //eroare diff types
@@ -44,7 +59,7 @@ int shippuden = 2007;
 //int shippuden = 2007 + ints[2];
 char varp[4] = {'2', '0', '2', '3'};
 //nt_exist = 2; // eroare
-bool bools0cpy = bools[0];
+bool bools0cpy = bools[0]; 
 
 #END_GLOBAL_VARS
 
