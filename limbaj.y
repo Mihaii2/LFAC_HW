@@ -40,7 +40,7 @@ public:
     void setValue(void* value);
     void setSize(int size); 
     int getSize() const { return this->size; }
-    void* getValueCopy();
+    void* getValueCopy() const;
     void assign_expr(ASTNode* expr);
     void write_to_string(string &str) const;
     void printMembers();
@@ -175,7 +175,6 @@ public:
     ReturnValue evaluate() const override { 
         char* copy = new char[strlen(value) + 1];
         strcpy(copy, value);
-        //printf("\nI|%s|I\n", copy);
         return ReturnValue(copy);
     }
     ExprType type() const override { return ExprType::STRING; }
@@ -223,8 +222,7 @@ private:
     const ASTNode* right;
 
 public:
-    BinaryOpNode(char oper, const ASTNode* l, const ASTNode* r)
-        : op(oper), left(l), right(r) {}
+    BinaryOpNode(char oper, const ASTNode* l, const ASTNode* r);
     ReturnValue evaluate() const override;
     ExprType type() const override;
     string string_type() const override;
@@ -292,7 +290,6 @@ unsigned long long whileCounter = 0;
 %type<node> expr function_call
 %type<nodes> expressions arguments arg_list
 
-%left CHAR
 
 %left AND OR
 %left LT LE GT GE EQ NEQ
@@ -455,9 +452,6 @@ decl: TYPE ID {
                         stringVals[i] = std::get<char*>(values[i]);
                     }
                     var->setValue((void*)stringVals);  
-                    for(int i = 0; i < nr_elements; ++i){
-                        printf("%s\n", stringVals[i]);
-                    }
             }    
             $$ = var;
             symbolTable.addVariable(*var);
@@ -571,7 +565,6 @@ if_statement: IF '(' expr ')' '{' {
             //break;
         }
         } statements '}' {symbolTable.exitScope();}
-    //| IF '(' e_bool ')' '{' statements '}' 
     ;
 
 for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' { symbolTable.enterScope("for" + std::to_string(forCounter++));} statements '}' {symbolTable.exitScope();}
@@ -626,14 +619,16 @@ eval_statement: EVAL '(' expr ')' ';' {
             printf("Evaluated expression: %f\n", std::get<float>($3->evaluate()));
             break;
         case ExprType::BOOLEAN:
-            printf("Evaluated expression: %d\n", std::get<bool>($3->evaluate()));
+            printf("Evaluated expression: %s\n", std::get<bool>($3->evaluate())? "true" : "false");
             break;
         case ExprType::STRING:
+            printf("Evaluated expression: %s\n", std::get<char*>($3->evaluate()));
+            break;
         case ExprType::CHAR:
-            printf("Evaluated expression: %d\n", 0);
+            printf("Evaluated expression: %c\n", std::get<char>($3->evaluate()));
             break;
         default:
-            printf("Unknown type\n");
+            printf("Evaluated expression: Unknown type\n");
             break;
     }
     free($3); // free the memory allocated for the expression
@@ -665,50 +660,25 @@ type_of_statement: TYPEOF '(' expr ')' ';' {
     }
     ;
 
-expr: expr PLUS expr {
-        if(strcmp($1->string_type().c_str(), "bool") == 0 || strcmp($3->string_type().c_str(), "bool") == 0) yyerror("[+] bools are not allowed");
-        $$ = new BinaryOpNode('+', $1, $3); }
-    | expr MINUS expr {
-        if(strcmp($1->string_type().c_str(), "bool") == 0 || strcmp($3->string_type().c_str(), "bool") == 0) yyerror("[-] bools are not allowed");
-        $$ = new BinaryOpNode('-', $1, $3);
-    }
-    | expr MUL expr {
-        if(strcmp($1->string_type().c_str(), "bool") == 0 || strcmp($3->string_type().c_str(), "bool") == 0) yyerror("[*] bools are not allowed");
-        $$ = new BinaryOpNode('*', $1, $3);
-    }
-    | expr DIV expr {
-        if(strcmp($1->string_type().c_str(), "bool") == 0 || strcmp($3->string_type().c_str(), "bool") == 0) yyerror("[/] bools are not allowed");
-        $$ = new BinaryOpNode('/', $1, $3);
-    }
-    | expr MOD expr {
-        if(strcmp($1->string_type().c_str(), "bool") == 0 || strcmp($3->string_type().c_str(), "bool") == 0) yyerror("[MOD] bools are not allowed");
-        $$ = new BinaryOpNode('%', $1, $3);
-    }
+expr: expr PLUS expr { $$ = new BinaryOpNode('+', $1, $3); }
+    | expr MINUS expr { $$ = new BinaryOpNode('-', $1, $3); }
+    | expr MUL expr { $$ = new BinaryOpNode('*', $1, $3); }
+    | expr DIV expr { $$ = new BinaryOpNode('/', $1, $3); }
+    | expr MOD expr { $$ = new BinaryOpNode('%', $1, $3); }
     | expr EQ expr { $$ = new BinaryOpNode('=', $1, $3); }
     | expr NEQ expr { $$ = new BinaryOpNode('n', $1, $3); }
     | expr LT expr { $$ = new BinaryOpNode('<', $1, $3); }
     | expr LE expr { $$ = new BinaryOpNode('l', $1, $3); }
     | expr GT expr { $$ = new BinaryOpNode('>', $1, $3); }
     | expr GE expr { $$ = new BinaryOpNode('g', $1, $3); }
-    | expr AND expr {
-        if(strcmp($3->string_type().c_str(), "bool") == 0 && strcmp($1->string_type().c_str(), "bool") == 0)
-            $$ = new BinaryOpNode('&', $1, $3);
-        else{
-            std::string str = "[&&].. Both operands must be bool (";
-            str += $1->string_type();
-            str += ",";
-            str += $3->string_type();
-            str += ')';
-            yyerror(str.c_str());
-        }
-    }
-    | expr OR expr {
-        if(strcmp($3->string_type().c_str(), "bool") == 0 && strcmp($1->string_type().c_str(), "bool") == 0) $$ = new BinaryOpNode('|', $1, $3);
-        else yyerror("[||] Both operands must be bool");
-    }
+    | expr AND expr { $$ = new BinaryOpNode('&', $1, $3); }
+    | expr OR expr { $$ = new BinaryOpNode('|', $1, $3); }
+    | NOT expr { $$ = new BinaryOpNode('!', $2, new BoolNode(false)); /* right node is a dummy value */ }
     | ID { $$ = new IdentifierNode($1); }
     | ID '[' expr ']' {
-        if(strcmp($3->string_type().c_str(), "int") == 0) $$ = new VectorElementNode($1, std::get<int>($3->evaluate()));
+        if($3->type() == ExprType::INT) {
+            $$ = new VectorElementNode($1, std::get<int>($3->evaluate()));
+        }
         else yyerror("Access number must be integer type");
     }
     | INT { $$ = new IntNode($1); }
@@ -750,7 +720,6 @@ void error_different_types(const char* left , const char* right){
     exit(1);
 }
 
-
 // SYMBOLTABLE IMPLEMENTATION
 
 void SymbolTable::enterScope(const std::string& scopeName) {
@@ -762,19 +731,16 @@ void SymbolTable::exitScope() {
 }
 
 string SymbolTable::getCurrentScope() {
-    // retrieve current scope from the vector of strings
     string scope = "";
     for (const string& s : current_scope) {
         scope += s;
         scope += "::";
     }
-    //cout << "SCOPE: " << "|" << scope << "|";
     return scope;
 }
 
 void SymbolTable::addVariable(VarInfo var) {
     variables[symbolTable.getCurrentScope()][var.getName()] = var;
-    //cout << " = " << var.getName() << "\n";
 }
 
 void SymbolTable::addFunction(FunctionInfo func) {
@@ -782,25 +748,32 @@ void SymbolTable::addFunction(FunctionInfo func) {
 }
 
 bool SymbolTable::variableExists(const string& name) {
-    //if(variables[symbolTable.getCurrentScope()].find(name) != variables[symbolTable.getCurrentScope()].end()) return 1;
-    //else if(variables[" "].find(name) != variables[symbolTable.getCurrentScope()].end()) return 1;
-    //else return 0;
-    return variables[symbolTable.getCurrentScope()].find(name) != variables[symbolTable.getCurrentScope()].end();
+    // search for variable in current scope and all parent scopes
+    for (int i = symbolTable.getCurrentScope().length(); i >= 0; --i) {
+        string currentScope = symbolTable.getCurrentScope().substr(0, i);
+        auto it = variables.find(currentScope);
+        if (it != variables.end() && it->second.find(name) != it->second.end()) {            
+            return true;
+        }
+    }
+    return false;
 }
 
 bool SymbolTable::functionExists(const string& name) {
-    return functions[symbolTable.getCurrentScope()].find(name) != functions[symbolTable.getCurrentScope()].end();
+    // search in global scope
+    return functions[""].find(name) != functions[""].end();
 }
 
 VarInfo& SymbolTable::getVariable(const string& name) {
-    //search for variable in current scope
-    if (variables[symbolTable.getCurrentScope()].find(name) != variables[symbolTable.getCurrentScope()].end()) {
-        return variables[symbolTable.getCurrentScope()][name];
+    // search for variable in current scope and all parent scopes
+    for (int i = symbolTable.getCurrentScope().length(); i >= 0; --i) {
+        string currentScope = symbolTable.getCurrentScope().substr(0, i);
+        auto it = variables.find(currentScope);
+        if (it != variables.end() && it->second.find(name) != it->second.end()) {
+            return it->second[name];
+        }
     }
-    //search for variable in global scope
-    else {
-        return variables[""][name];
-    }
+    return variables[""][""]; // return empty variable
 }
 
 FunctionInfo SymbolTable::getFunction(const string& name) {
@@ -893,15 +866,11 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* v
         this->size = sizeof(bool);
         break;
     case 's': // string
-        this->size = sizeof(char);
+        this->size = sizeof(char*);
         break;
     default:
         this->size = 0;
         break;
-    }
-
-    if(type == "string" && arraySize > 1) { // string array
-        this->size = sizeof(char*);
     }
 
     // Allocate memory for the variable
@@ -919,13 +888,27 @@ void VarInfo::setSize(int size) {
 }
 
 void VarInfo::setValue(void* value){
-    memcpy(this->memoryLocation, value, this->size);
+    if(this->type == "string" && this->size == sizeof(char*)){
+        char* copy = new char[strlen((char*)value) + 1];
+        strcpy(copy, (char*)value);
+        this->memoryLocation = (void*)copy;
+    }
+    else {
+        memcpy(this->memoryLocation, value, this->size);
+    }
 }
 
-void* VarInfo::getValueCopy(){
-    void* copy = malloc(this->size);
-    memcpy(copy, this->memoryLocation, this->size);
-    return copy;
+void* VarInfo::getValueCopy() const {
+    if(this->type == "string" && this->size == sizeof(char*)){
+        char* copy = new char[strlen((char*)this->memoryLocation) + 1];
+        strcpy(copy, (char*)this->memoryLocation);
+        return (void*)copy;
+    }
+    else {
+        void* copy = malloc(this->size);
+        memcpy(copy, this->memoryLocation, this->size);
+        return copy;
+    }
 }
 
 void VarInfo::write_to_string(string& str) const {
@@ -938,7 +921,12 @@ void VarInfo::write_to_string(string& str) const {
     string is_const = std::to_string(this->isConst);
     str += is_const;
     str += "\nsize in bytes: ";
-    str += std::to_string(this->size);
+    if(this->size == sizeof(char*) && this->type == "string") {
+        str += std::to_string(strlen((char*)this->memoryLocation) + 1);
+    }
+    else {
+        str += std::to_string(this->size); 
+    }
     str += "\nvalue: ";
     if(this->type == "int"){
         if(this->size == sizeof(int)) str += std::to_string(*(int*)this->memoryLocation);
@@ -983,12 +971,18 @@ void VarInfo::write_to_string(string& str) const {
         }
     }
     else if (this->type == "string"){
-        if(this->size == sizeof(char*)) str += (char*)this->memoryLocation;
-        else if (this->size > sizeof(char*) && this->memoryLocation != nullptr){
-            char** arr = (char**)(this->memoryLocation);
-            for(int j = 0; j < this->size/sizeof(char*); ++j){
-                str += arr[j];
-                str += " ";
+        if(this->memoryLocation != nullptr) {
+            if(this->size == sizeof(char*)) {
+                str += (char*)this->memoryLocation;
+            }
+            else if (this->size > sizeof(char*)) {
+                char** arr = (char**)(this->memoryLocation);
+                for(int j = 0; j < this->size/sizeof(char*); ++j){
+                    if(arr[j] != nullptr) {
+                        str += arr[j];
+                        str += " ";
+                    }
+                }
             }
         }
     }
@@ -1055,11 +1049,9 @@ void VarInfo::assign_expr(ASTNode* expr) {
         break;
     }
     case ExprType::STRING: {
-        char* value = std::get<char*>(expr->evaluate());
-        void* to_set = malloc(strlen(value) + 1);
-        memcpy(to_set, value, strlen(value) + 1);
-        this->setSize(strlen(value) + 1);
-        this->setValue(to_set);
+        this->setSize(sizeof(char*));
+        void* value = std::get<char*>(expr->evaluate());
+        this->setValue(value);
         break;
     }
     default: {
@@ -1082,7 +1074,7 @@ FunctionInfo::FunctionInfo(string type, string name, vector<VarInfo> params) {
 void FunctionInfo::write_to_string(string& str) const {
     str += "name: ";
     str += name;
-    str += "\ntype: ";
+    str += "\nreturn type: ";
     str += type;
     str += "\nparams: ";
     if(params.size() != 0) {
@@ -1100,6 +1092,18 @@ void FunctionInfo::write_to_string(string& str) const {
 // FUNCTIONINFO IMPLEMENTATION ENDS
 
 // BINARYOPNODE IMPLEMENTATION
+
+BinaryOpNode::BinaryOpNode(char oper, const ASTNode* l, const ASTNode* r) {
+    if((oper == '+' || oper == '-' || oper == '*' || oper == '/' || oper == '%') && (l->type() == ExprType::BOOLEAN || r->type() == ExprType::BOOLEAN)) {
+        yyerror("No arithmetic operations on bool type allowed");
+    }
+    if((oper == '&' || oper == '|' || oper == '!') && (l->type() != ExprType::BOOLEAN || r->type() != ExprType::BOOLEAN)) {
+        yyerror("Logical operations allowed only on bool type");
+    }
+    this->op = oper;
+    this->left = l;
+    this->right = r;
+}
 
 template <typename T>
 ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
@@ -1135,6 +1139,8 @@ ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
             return ASTNode::ReturnValue(leftValue && rightValue);
         case '|':
             return ASTNode::ReturnValue(leftValue || rightValue);
+        case '!':
+            return ASTNode::ReturnValue(!leftValue);
         default:
             return ASTNode::ReturnValue(0);
     }
@@ -1349,9 +1355,6 @@ string IdentifierNode::string_type() const {
 int main(int argc, char** argv){
     yyin=fopen(argv[1],"r");
     yyparse();
-
-//    IntNode intn(128);
-//    cout << "|" << std::get<int>(intn.evaluate()) << "|" << endl;
 
     // Print user types
     // for (UserType& userType : userTypes) {

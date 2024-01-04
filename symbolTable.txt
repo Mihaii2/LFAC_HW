@@ -4,20 +4,20 @@ name: a
 type: int
 const: 0
 size in bytes: 4
-value: 3000
+value: 200
 
 --------Scope: clean_code_executer::
-name: mybool
-type: bool
-const: 0
-size in bytes: 1
-value: 1
-
 name: intTest
 type: int
 const: 0
 size in bytes: 4
 value: 10
+
+name: mychhar
+type: char
+const: 0
+size in bytes: 1
+value: a
 
 name: myasdfea
 type: bool
@@ -25,11 +25,11 @@ const: 0
 size in bytes: 1
 value: 1
 
-name: mychhar
-type: char
+name: oh
+type: int
 const: 0
-size in bytes: 1
-value: a
+size in bytes: 4
+value: 111
 
 --------Scope: globalMethod::while2::
 name: b
@@ -39,11 +39,125 @@ size in bytes: 4
 value: 203
 
 --------Scope: 
+name: bools0cpy
+type: bool
+const: 0
+size in bytes: 1
+value: 1
+
 name: strings
 type: string
 const: 0
 size in bytes: 24
-value: abrafaa cadagdar brarghh 
+value: abra cada bra 
+
+name: stringValue
+type: string
+const: 0
+size in bytes: 13
+value: 2023 -> 2024
+
+name: newcpo
+type: bool
+const: 0
+size in bytes: 1
+value: 0
+
+name: cpo
+type: bool
+const: 0
+size in bytes: 1
+value: 0
+
+name: dmnefereste
+type: bool
+const: 0
+size in bytes: 1
+value: 1
+
+name: gb
+type: float
+const: 0
+size in bytes: 4
+value: 2.200000
+
+name: myint
+type: int
+const: 0
+size in bytes: 4
+value: 8889
+
+name: varp
+type: char
+const: 0
+size in bytes: 4
+value: 2 0 2 4 
+
+name: sing_arr
+type: int
+const: 0
+size in bytes: 4
+value: 1
+
+name: ints
+type: int
+const: 0
+size in bytes: 44
+value: 2024 63 20 52 49 81 16 8 53 93 22 
+
+name: chars
+type: char
+const: 0
+size in bytes: 7
+value: a 0 n & 
+
+name: vloatValue
+type: float
+const: 0
+size in bytes: 4
+value: 0.851910
+
+name: shippuden
+type: int
+const: 0
+size in bytes: 4
+value: 2028
+
+name: bools
+type: bool
+const: 0
+size in bytes: 2
+value: 1 0 
+
+name: expressionINTEGER
+type: int
+const: 0
+size in bytes: 4
+value: 6
+
+name: boolValue
+type: bool
+const: 0
+size in bytes: 1
+value: 1
+
+name: mix
+type: int
+const: 0
+size in bytes: 4
+value: 5
+
+name: charValue2
+type: char
+const: 0
+size in bytes: 1
+value: j
+
+name: charValue1
+type: char
+const: 0
+size in bytes: 1
+value: a
 
 --------Scope: myType::someMethod::while1::
 name: omegalul
@@ -69,6 +183,6 @@ value: 15
 -----------------Functions-----------------
 --------Scope: 
 name: globalMethod
-type: int
+return type: int
 params: int a, int b
 
