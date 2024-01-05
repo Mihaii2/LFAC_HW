@@ -85,7 +85,12 @@ extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
 void error_variable_exists(const char* name);
+void error_function_exists(const char* name);
+void error_variable_not_found(const char* name);
+void error_function_not_found(const char* name);
 void error_different_types(const char* left , const char* right);
+void incompatible_types(const char* left , const char* right);
+
 
 class ASTNode;
 class SymbolTable;
@@ -111,7 +116,7 @@ public:
     void setValue(void* value);
     void setSize(int size); 
     int getSize() const { return this->size; }
-    void* getValueCopy() const;
+    void* getValueReference() const;
     void assign_expr(ASTNode* expr);
     void write_to_string(string &str) const;
     void printMembers() const;
@@ -308,6 +313,8 @@ public:
 unsigned long long ifCounter = 0;
 unsigned long long forCounter = 0;
 unsigned long long whileCounter = 0;
+VarInfo DummyVarInfo = VarInfo();
+FunctionInfo DummyFunctionInfo = FunctionInfo();
 
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
@@ -321,7 +328,7 @@ unsigned long long whileCounter = 0;
 //////////////////////////////////////////////////////////////////////////////////////
 
 
-#line 325 "limbaj.tab.c"
+#line 332 "limbaj.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -396,47 +403,48 @@ enum yysymbol_kind_t
   YYSYMBOL_44_ = 44,                       /* '['  */
   YYSYMBOL_45_ = 45,                       /* ']'  */
   YYSYMBOL_46_ = 46,                       /* ','  */
-  YYSYMBOL_YYACCEPT = 47,                  /* $accept  */
-  YYSYMBOL_program = 48,                   /* program  */
-  YYSYMBOL_user_defined_types = 49,        /* user_defined_types  */
-  YYSYMBOL_user_defined_type = 50,         /* user_defined_type  */
-  YYSYMBOL_51_1 = 51,                      /* $@1  */
-  YYSYMBOL_52_2 = 52,                      /* $@2  */
-  YYSYMBOL_usr_type_vars = 53,             /* usr_type_vars  */
-  YYSYMBOL_usr_type_var = 54,              /* usr_type_var  */
-  YYSYMBOL_usr_type_methods = 55,          /* usr_type_methods  */
-  YYSYMBOL_usr_type_method = 56,           /* usr_type_method  */
-  YYSYMBOL_57_3 = 57,                      /* $@3  */
-  YYSYMBOL_58_4 = 58,                      /* $@4  */
-  YYSYMBOL_declarations = 59,              /* declarations  */
-  YYSYMBOL_decl = 60,                      /* decl  */
-  YYSYMBOL_initializer_list = 61,          /* initializer_list  */
-  YYSYMBOL_global_function_definitions = 62, /* global_function_definitions  */
-  YYSYMBOL_global_function_definition = 63, /* global_function_definition  */
-  YYSYMBOL_64_5 = 64,                      /* $@5  */
-  YYSYMBOL_65_6 = 65,                      /* $@6  */
-  YYSYMBOL_func_param = 66,                /* func_param  */
-  YYSYMBOL_list_param = 67,                /* list_param  */
-  YYSYMBOL_param = 68,                     /* param  */
-  YYSYMBOL_statements = 69,                /* statements  */
-  YYSYMBOL_statement = 70,                 /* statement  */
-  YYSYMBOL_assignment_statement = 71,      /* assignment_statement  */
-  YYSYMBOL_control_statement = 72,         /* control_statement  */
-  YYSYMBOL_if_statement = 73,              /* if_statement  */
-  YYSYMBOL_74_7 = 74,                      /* $@7  */
-  YYSYMBOL_for_statement = 75,             /* for_statement  */
-  YYSYMBOL_76_8 = 76,                      /* $@8  */
-  YYSYMBOL_while_statement = 77,           /* while_statement  */
-  YYSYMBOL_78_9 = 78,                      /* $@9  */
-  YYSYMBOL_function_call = 79,             /* function_call  */
-  YYSYMBOL_arguments = 80,                 /* arguments  */
-  YYSYMBOL_arg_list = 81,                  /* arg_list  */
-  YYSYMBOL_expressions = 82,               /* expressions  */
-  YYSYMBOL_eval_statement = 83,            /* eval_statement  */
-  YYSYMBOL_type_of_statement = 84,         /* type_of_statement  */
-  YYSYMBOL_expr = 85,                      /* expr  */
-  YYSYMBOL_special_function = 86,          /* special_function  */
-  YYSYMBOL_87_10 = 87                      /* $@10  */
+  YYSYMBOL_47_ = 47,                       /* '.'  */
+  YYSYMBOL_YYACCEPT = 48,                  /* $accept  */
+  YYSYMBOL_program = 49,                   /* program  */
+  YYSYMBOL_user_defined_types = 50,        /* user_defined_types  */
+  YYSYMBOL_user_defined_type = 51,         /* user_defined_type  */
+  YYSYMBOL_52_1 = 52,                      /* $@1  */
+  YYSYMBOL_53_2 = 53,                      /* $@2  */
+  YYSYMBOL_usr_type_vars = 54,             /* usr_type_vars  */
+  YYSYMBOL_usr_type_var = 55,              /* usr_type_var  */
+  YYSYMBOL_usr_type_methods = 56,          /* usr_type_methods  */
+  YYSYMBOL_usr_type_method = 57,           /* usr_type_method  */
+  YYSYMBOL_58_3 = 58,                      /* $@3  */
+  YYSYMBOL_59_4 = 59,                      /* $@4  */
+  YYSYMBOL_declarations = 60,              /* declarations  */
+  YYSYMBOL_decl = 61,                      /* decl  */
+  YYSYMBOL_initializer_list = 62,          /* initializer_list  */
+  YYSYMBOL_global_function_definitions = 63, /* global_function_definitions  */
+  YYSYMBOL_global_function_definition = 64, /* global_function_definition  */
+  YYSYMBOL_65_5 = 65,                      /* $@5  */
+  YYSYMBOL_66_6 = 66,                      /* $@6  */
+  YYSYMBOL_func_param = 67,                /* func_param  */
+  YYSYMBOL_list_param = 68,                /* list_param  */
+  YYSYMBOL_param = 69,                     /* param  */
+  YYSYMBOL_statements = 70,                /* statements  */
+  YYSYMBOL_statement = 71,                 /* statement  */
+  YYSYMBOL_assignment_statement = 72,      /* assignment_statement  */
+  YYSYMBOL_control_statement = 73,         /* control_statement  */
+  YYSYMBOL_if_statement = 74,              /* if_statement  */
+  YYSYMBOL_75_7 = 75,                      /* $@7  */
+  YYSYMBOL_for_statement = 76,             /* for_statement  */
+  YYSYMBOL_77_8 = 77,                      /* $@8  */
+  YYSYMBOL_while_statement = 78,           /* while_statement  */
+  YYSYMBOL_79_9 = 79,                      /* $@9  */
+  YYSYMBOL_function_call = 80,             /* function_call  */
+  YYSYMBOL_arguments = 81,                 /* arguments  */
+  YYSYMBOL_arg_list = 82,                  /* arg_list  */
+  YYSYMBOL_expressions = 83,               /* expressions  */
+  YYSYMBOL_eval_statement = 84,            /* eval_statement  */
+  YYSYMBOL_type_of_statement = 85,         /* type_of_statement  */
+  YYSYMBOL_expr = 86,                      /* expr  */
+  YYSYMBOL_special_function = 87,          /* special_function  */
+  YYSYMBOL_88_10 = 88                      /* $@10  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -764,16 +772,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  3
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   387
+#define YYLAST   386
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  47
+#define YYNTOKENS  48
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  41
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  92
+#define YYNRULES  93
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  203
+#define YYNSTATES  205
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   293
@@ -794,7 +802,7 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-      42,    43,     2,     2,    46,     2,     2,     2,     2,     2,
+      42,    43,     2,     2,    46,     2,    47,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,    41,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -826,16 +834,16 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   310,   310,   312,   313,   316,   316,   316,   322,   325,
-     332,   338,   341,   348,   348,   348,   354,   355,   358,   366,
-     374,   387,   397,   406,   466,   474,   482,   531,   534,   538,
-     544,   545,   548,   548,   548,   555,   558,   563,   568,   575,
-     581,   582,   585,   586,   587,   588,   589,   590,   593,   602,
-     640,   641,   642,   645,   645,   654,   654,   657,   657,   660,
-     666,   670,   673,   678,   685,   690,   697,   727,   752,   753,
-     754,   755,   756,   757,   758,   759,   760,   761,   762,   763,
-     764,   765,   766,   767,   773,   774,   775,   776,   777,   779,
-     780,   782,   782
+       0,   317,   317,   319,   320,   323,   323,   323,   329,   332,
+     339,   345,   348,   355,   355,   355,   361,   362,   365,   373,
+     381,   394,   407,   416,   476,   484,   492,   541,   544,   548,
+     554,   555,   558,   558,   558,   565,   568,   573,   578,   585,
+     591,   592,   595,   596,   597,   598,   599,   600,   603,   616,
+     659,   660,   661,   664,   664,   673,   673,   676,   676,   679,
+     688,   692,   695,   700,   707,   712,   719,   749,   774,   775,
+     776,   777,   778,   779,   780,   781,   782,   783,   784,   785,
+     786,   787,   788,   789,   795,   796,   797,   798,   799,   800,
+     801,   854,   856,   856
 };
 #endif
 
@@ -857,10 +865,10 @@ static const char *const yytname[] =
   "END_GLOBAL_FUNCS", "CONST", "EVAL", "TYPEOF", "NOT", "EQ", "NEQ", "LT",
   "LE", "GT", "GE", "ASSIGN", "PLUS", "MINUS", "MUL", "DIV", "MOD", "AND",
   "OR", "GEQ", "LEQ", "'{'", "'}'", "';'", "'('", "')'", "'['", "']'",
-  "','", "$accept", "program", "user_defined_types", "user_defined_type",
-  "$@1", "$@2", "usr_type_vars", "usr_type_var", "usr_type_methods",
-  "usr_type_method", "$@3", "$@4", "declarations", "decl",
-  "initializer_list", "global_function_definitions",
+  "','", "'.'", "$accept", "program", "user_defined_types",
+  "user_defined_type", "$@1", "$@2", "usr_type_vars", "usr_type_var",
+  "usr_type_methods", "usr_type_method", "$@3", "$@4", "declarations",
+  "decl", "initializer_list", "global_function_definitions",
   "global_function_definition", "$@5", "$@6", "func_param", "list_param",
   "param", "statements", "statement", "assignment_statement",
   "control_statement", "if_statement", "$@7", "for_statement", "$@8",
@@ -876,7 +884,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-146)
+#define YYPACT_NINF (-145)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -890,27 +898,27 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-    -146,     1,   136,  -146,    -4,    11,  -146,     8,    51,    52,
-      15,    60,    37,  -146,    20,    72,    84,    96,  -146,    71,
-    -146,  -146,     3,     3,    78,   110,   116,    49,  -146,    82,
-    -146,  -146,  -146,  -146,  -146,    26,     3,     3,  -146,   351,
-     176,     3,     3,  -146,   137,   134,  -146,   138,  -146,   111,
-       3,     3,  -146,   224,     3,     3,     3,     3,     3,     3,
-       3,     3,     3,     3,     3,     3,     3,   124,   -17,   351,
-     351,   113,   114,  -146,  -146,    12,  -146,   118,   120,   351,
-     192,  -146,   162,   162,   162,   162,   162,   162,    77,    77,
-    -146,  -146,  -146,    95,    95,   128,  -146,     3,   148,   125,
-     167,  -146,  -146,  -146,     3,  -146,     3,   351,   172,   139,
-     135,  -146,   144,   145,  -146,   351,    53,   351,  -146,   149,
-     148,  -146,   148,  -146,     3,  -146,  -146,  -146,   146,   351,
-    -146,    42,   158,    76,   -27,   156,   171,   187,   188,   203,
-    -146,   173,  -146,  -146,  -146,  -146,  -146,  -146,   205,  -146,
-    -146,  -146,  -146,     3,     3,     3,     3,   182,     3,     3,
-    -146,  -146,  -146,  -146,   294,   208,   238,   252,    28,   290,
-     266,   280,    94,  -146,   303,   295,   311,     3,   292,   301,
-    -146,     3,  -146,  -146,   313,  -146,  -146,  -146,   332,  -146,
-    -146,   182,  -146,   129,   151,   308,  -146,  -146,   314,  -146,
-    -146,   165,  -146
+    -145,     3,   -10,  -145,    14,    87,  -145,   -14,    40,    52,
+      86,    12,    24,  -145,   -27,    61,    69,    78,  -145,    46,
+    -145,  -145,     4,     4,    63,    85,   117,    50,  -145,    55,
+    -145,  -145,  -145,  -145,  -145,   147,     4,     4,  -145,   333,
+     151,     4,     4,  -145,   118,   129,  -145,   119,  -145,   101,
+       4,     4,   120,  -145,   206,     4,     4,     4,     4,     4,
+       4,     4,     4,     4,     4,     4,     4,     4,   125,   -16,
+     333,   333,   105,   106,  -145,  -145,     7,  -145,   112,   103,
+     333,   174,  -145,  -145,   352,   352,   352,   352,   352,   352,
+      79,    79,  -145,  -145,  -145,   347,   347,   126,  -145,     4,
+     148,   123,   159,  -145,  -145,  -145,     4,  -145,     4,   333,
+     160,   130,   134,  -145,   149,   153,  -145,   333,    35,   333,
+    -145,   154,   148,  -145,   148,  -145,     4,  -145,  -145,  -145,
+     168,   333,  -145,    42,   164,    80,    28,   170,   185,   186,
+     271,   272,  -145,   274,  -145,  -145,  -145,  -145,  -145,  -145,
+     275,  -145,  -145,  -145,  -145,     4,     4,     4,     4,   184,
+       4,     4,  -145,  -145,  -145,  -145,   276,   190,   220,   234,
+      29,   283,   248,   262,    96,  -145,   303,   294,   296,     4,
+     293,   302,  -145,     4,  -145,  -145,   295,  -145,  -145,  -145,
+     314,  -145,  -145,   184,  -145,   110,   132,   308,  -145,  -145,
+     313,  -145,  -145,   150,  -145
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -923,42 +931,42 @@ static const yytype_int8 yydefact[] =
       16,     8,     0,     0,    24,    19,     0,     0,    17,     0,
       84,    85,    86,    88,    87,    82,     0,     0,    89,    20,
        0,    27,     0,    25,     0,     0,    31,     0,    11,     0,
-      60,     0,    81,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,    22,     0,    29,
-      21,     0,     0,     2,    10,     0,     9,     0,    61,    62,
-       0,    90,    73,    74,    75,    76,    77,    78,    68,    69,
-      70,    71,    72,    79,    80,     0,    26,     0,    35,     0,
-       0,     6,    12,    59,     0,    83,     0,    28,     0,     0,
-      36,    37,     0,     0,     7,    63,     0,    64,    39,     0,
-       0,    91,    35,    23,     0,    32,    38,    40,     0,    65,
-      40,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-      92,     0,    41,    43,    44,    50,    51,    52,     0,    46,
-      47,    13,    33,     0,     0,     0,     0,     0,     0,     0,
-      42,    45,    40,    34,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    48,     0,     0,     0,     0,     0,     0,
-      14,     0,    53,    57,     0,    66,    67,    15,     0,    40,
-      40,     0,    49,     0,     0,     0,    54,    58,     0,    55,
-      40,     0,    56
+      60,     0,     0,    81,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,    22,     0,
+      29,    21,     0,     0,     2,    10,     0,     9,     0,    61,
+      62,     0,    90,    91,    73,    74,    75,    76,    77,    78,
+      68,    69,    70,    71,    72,    79,    80,     0,    26,     0,
+      35,     0,     0,     6,    12,    59,     0,    83,     0,    28,
+       0,     0,    36,    37,     0,     0,     7,    63,     0,    64,
+      39,     0,     0,    92,    35,    23,     0,    32,    38,    40,
+       0,    65,    40,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,    93,     0,    41,    43,    44,    50,    51,    52,
+       0,    46,    47,    13,    33,     0,     0,     0,     0,     0,
+       0,     0,    42,    45,    40,    34,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,    48,     0,     0,     0,     0,
+       0,     0,    14,     0,    53,    57,     0,    66,    67,    15,
+       0,    40,    40,     0,    49,     0,     0,     0,    54,    58,
+       0,    55,    40,     0,    56
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -146,  -146,  -146,  -146,  -146,  -146,  -146,  -146,  -146,  -146,
-    -146,  -146,  -146,    89,  -146,  -146,  -146,  -146,  -146,   230,
-    -146,   241,  -114,  -146,  -145,  -146,  -146,  -146,  -146,  -146,
-    -146,  -146,  -128,  -146,  -146,  -146,  -146,  -146,   -23,  -146,
-    -146
+    -145,  -145,  -145,  -145,  -145,  -145,  -145,  -145,  -145,  -145,
+    -145,  -145,  -145,    73,  -145,  -145,  -145,  -145,  -145,   229,
+    -145,   232,  -112,  -145,  -144,  -145,  -145,  -145,  -145,  -145,
+    -145,  -145,  -129,  -145,  -145,  -145,  -145,  -145,   -23,  -145,
+    -145
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_uint8 yydefgoto[] =
 {
-       0,     1,     2,     6,    21,   114,    29,    49,    75,   102,
-     162,   187,    11,   141,    68,    27,    46,   130,   163,   109,
-     110,   111,   131,   142,   143,   144,   145,   189,   146,   200,
-     147,   190,    38,    77,    78,   116,   149,   150,    39,    73,
-     127
+       0,     1,     2,     6,    21,   116,    29,    49,    76,   104,
+     164,   189,    11,   143,    69,    27,    46,   132,   165,   111,
+     112,   113,   133,   144,   145,   146,   147,   191,   148,   202,
+     149,   192,    38,    78,    79,   118,   151,   152,    39,    74,
+     129
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -966,130 +974,130 @@ static const yytype_uint8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-      40,     3,   153,   148,     7,   148,    30,    31,    32,    33,
-      34,    35,   169,    52,    53,    50,   133,   154,    69,    70,
-       8,   100,     9,    96,    16,    36,    17,    79,    80,    97,
-      10,    82,    83,    84,    85,    86,    87,    88,    89,    90,
-      91,    92,    93,    94,   148,    37,   195,    13,   172,    22,
-     134,     8,   101,     9,   135,   136,   137,   153,    44,    14,
-      15,    10,   138,   139,    23,   148,   148,    45,    50,     8,
-      51,     9,   154,   148,   107,   193,   194,    18,    20,    10,
-      24,   115,   140,   117,   134,     8,   201,     9,   135,   136,
-     137,    47,    25,   123,    12,    10,   138,   139,    48,   124,
-      19,   129,   134,     8,    26,     9,   135,   136,   137,    62,
-      63,    64,    28,    10,   138,   139,   152,    41,    54,    55,
-      56,    57,    58,    59,    43,    60,    61,    62,    63,    64,
-     164,   165,   166,   167,   180,   170,   171,   134,     8,    42,
-       9,   135,   136,   137,    72,    71,    74,     4,    10,   138,
-     139,     5,    76,    95,   184,    98,    99,   108,   188,   134,
-       8,   103,     9,   135,   136,   137,   104,   106,   112,   196,
-      10,   138,   139,   134,     8,   113,     9,   135,   136,   137,
-     118,   120,   119,   121,    10,   138,   139,   122,   125,   132,
-     168,   197,    60,    61,    62,    63,    64,   151,   155,    54,
-      55,    56,    57,    58,    59,   202,    60,    61,    62,    63,
-      64,    65,    66,   156,   160,    54,    55,    56,    57,    58,
-      59,    67,    60,    61,    62,    63,    64,    65,    66,   157,
-     158,    54,    55,    56,    57,    58,    59,   105,    60,    61,
-      62,    63,    64,    65,    66,   159,   161,    54,    55,    56,
-      57,    58,    59,   174,    60,    61,    62,    63,    64,    65,
-      66,    54,    55,    56,    57,    58,    59,    81,    60,    61,
-      62,    63,    64,    65,    66,    54,    55,    56,    57,    58,
-      59,   175,    60,    61,    62,    63,    64,    65,    66,    54,
-      55,    56,    57,    58,    59,   176,    60,    61,    62,    63,
-      64,    65,    66,    54,    55,    56,    57,    58,    59,   178,
-      60,    61,    62,    63,    64,    65,    66,    54,    55,    56,
-      57,    58,    59,   179,    60,    61,    62,    63,    64,    65,
-      66,   177,   181,   185,   182,   173,    54,    55,    56,    57,
-      58,    59,   186,    60,    61,    62,    63,    64,    65,    66,
-     183,   198,   128,   199,   191,    54,    55,    56,    57,    58,
-      59,   126,    60,    61,    62,    63,    64,    65,    66,     0,
-       0,     0,     0,   192,    54,    55,    56,    57,    58,    59,
-       0,    60,    61,    62,    63,    64,    65,    66
+      40,     4,    22,     3,   150,     5,   150,    30,    31,    32,
+      33,    34,    35,    53,    54,   171,   102,    23,    70,    71,
+     135,     8,     7,     9,    98,    13,    36,    80,    81,    18,
+      99,    10,    84,    85,    86,    87,    88,    89,    90,    91,
+      92,    93,    94,    95,    96,   150,    37,   103,    14,   197,
+     136,     8,   174,     9,   137,   138,   139,   155,   155,    44,
+      15,    10,   140,   141,    47,    20,   150,   150,    45,    24,
+      50,    48,   156,   156,   150,   125,   109,    25,    12,   195,
+     196,   126,   142,   117,    19,   119,    26,    28,   136,     8,
+     203,     9,   137,   138,   139,    16,     8,    17,     9,    10,
+     140,   141,    41,   131,   136,     8,    10,     9,   137,   138,
+     139,    63,    64,    65,    42,    10,   140,   141,   136,     8,
+     154,     9,   137,   138,   139,    43,    72,    75,    82,    10,
+     140,   141,   166,   167,   168,   169,   182,   172,   173,    73,
+     136,     8,    77,     9,   137,   138,   139,   100,   101,   106,
+     198,    10,   140,   141,    97,   105,   186,   110,   136,     8,
+     190,     9,   137,   138,   139,   108,   114,   115,   120,    10,
+     140,   141,   199,   121,    55,    56,    57,    58,    59,    60,
+     122,    61,    62,    63,    64,    65,    66,    67,   123,    50,
+     204,    51,   170,   127,    52,   124,    68,    55,    56,    57,
+      58,    59,    60,   153,    61,    62,    63,    64,    65,    66,
+      67,   134,   157,    55,    56,    57,    58,    59,    60,   107,
+      61,    62,    63,    64,    65,    66,    67,   158,   159,    55,
+      56,    57,    58,    59,    60,   176,    61,    62,    63,    64,
+      65,    66,    67,    55,    56,    57,    58,    59,    60,    83,
+      61,    62,    63,    64,    65,    66,    67,    55,    56,    57,
+      58,    59,    60,   177,    61,    62,    63,    64,    65,    66,
+      67,    55,    56,    57,    58,    59,    60,   178,    61,    62,
+      63,    64,    65,    66,    67,    55,    56,    57,    58,    59,
+      60,   180,    61,    62,    63,    64,    65,    66,    67,    55,
+      56,    57,    58,    59,    60,   181,    61,    62,    63,    64,
+      65,    66,    67,   160,   161,   162,   163,   175,    55,    56,
+      57,    58,    59,    60,   179,    61,    62,    63,    64,    65,
+      66,    67,   183,   184,   187,   185,   193,    55,    56,    57,
+      58,    59,    60,   188,    61,    62,    63,    64,    65,    66,
+      67,   200,   201,   130,   128,   194,    55,    56,    57,    58,
+      59,    60,     0,    61,    62,    63,    64,    65,    66,    67,
+      55,    56,    57,    58,    59,    60,     0,    61,    62,    63,
+      64,    65,    61,    62,    63,    64,    65
 };
 
 static const yytype_int16 yycheck[] =
 {
-      23,     0,    29,   131,     8,   133,     3,     4,     5,     6,
-       7,     8,   157,    36,    37,    42,   130,    44,    41,    42,
-       9,     9,    11,    40,     9,    22,    11,    50,    51,    46,
-      19,    54,    55,    56,    57,    58,    59,    60,    61,    62,
-      63,    64,    65,    66,   172,    42,   191,    39,   162,    29,
-       8,     9,    40,    11,    12,    13,    14,    29,     9,     8,
-       8,    19,    20,    21,    44,   193,   194,    18,    42,     9,
-      44,    11,    44,   201,    97,   189,   190,    17,    41,    19,
-       8,   104,    40,   106,     8,     9,   200,    11,    12,    13,
-      14,     9,     8,    40,     5,    19,    20,    21,    16,    46,
-      11,   124,     8,     9,     8,    11,    12,    13,    14,    32,
-      33,    34,    41,    19,    20,    21,    40,    39,    23,    24,
-      25,    26,    27,    28,     8,    30,    31,    32,    33,    34,
-     153,   154,   155,   156,    40,   158,   159,     8,     9,    29,
-      11,    12,    13,    14,    10,     8,     8,    11,    19,    20,
-      21,    15,    41,    29,   177,    42,    42,     9,   181,     8,
-       9,    43,    11,    12,    13,    14,    46,    39,    43,    40,
-      19,    20,    21,     8,     9,     8,    11,    12,    13,    14,
-       8,    46,    43,    39,    19,    20,    21,    42,    39,    43,
-       8,    40,    30,    31,    32,    33,    34,    39,    42,    23,
-      24,    25,    26,    27,    28,    40,    30,    31,    32,    33,
-      34,    35,    36,    42,    41,    23,    24,    25,    26,    27,
-      28,    45,    30,    31,    32,    33,    34,    35,    36,    42,
-      42,    23,    24,    25,    26,    27,    28,    45,    30,    31,
-      32,    33,    34,    35,    36,    42,    41,    23,    24,    25,
-      26,    27,    28,    45,    30,    31,    32,    33,    34,    35,
+      23,    11,    29,     0,   133,    15,   135,     3,     4,     5,
+       6,     7,     8,    36,    37,   159,     9,    44,    41,    42,
+     132,     9,     8,    11,    40,    39,    22,    50,    51,    17,
+      46,    19,    55,    56,    57,    58,    59,    60,    61,    62,
+      63,    64,    65,    66,    67,   174,    42,    40,     8,   193,
+       8,     9,   164,    11,    12,    13,    14,    29,    29,     9,
+       8,    19,    20,    21,     9,    41,   195,   196,    18,     8,
+      42,    16,    44,    44,   203,    40,    99,     8,     5,   191,
+     192,    46,    40,   106,    11,   108,     8,    41,     8,     9,
+     202,    11,    12,    13,    14,     9,     9,    11,    11,    19,
+      20,    21,    39,   126,     8,     9,    19,    11,    12,    13,
+      14,    32,    33,    34,    29,    19,    20,    21,     8,     9,
+      40,    11,    12,    13,    14,     8,     8,     8,     8,    19,
+      20,    21,   155,   156,   157,   158,    40,   160,   161,    10,
+       8,     9,    41,    11,    12,    13,    14,    42,    42,    46,
+      40,    19,    20,    21,    29,    43,   179,     9,     8,     9,
+     183,    11,    12,    13,    14,    39,    43,     8,     8,    19,
+      20,    21,    40,    43,    23,    24,    25,    26,    27,    28,
+      46,    30,    31,    32,    33,    34,    35,    36,    39,    42,
+      40,    44,     8,    39,    47,    42,    45,    23,    24,    25,
+      26,    27,    28,    39,    30,    31,    32,    33,    34,    35,
+      36,    43,    42,    23,    24,    25,    26,    27,    28,    45,
+      30,    31,    32,    33,    34,    35,    36,    42,    42,    23,
+      24,    25,    26,    27,    28,    45,    30,    31,    32,    33,
+      34,    35,    36,    23,    24,    25,    26,    27,    28,    43,
+      30,    31,    32,    33,    34,    35,    36,    23,    24,    25,
+      26,    27,    28,    43,    30,    31,    32,    33,    34,    35,
       36,    23,    24,    25,    26,    27,    28,    43,    30,    31,
       32,    33,    34,    35,    36,    23,    24,    25,    26,    27,
       28,    43,    30,    31,    32,    33,    34,    35,    36,    23,
       24,    25,    26,    27,    28,    43,    30,    31,    32,    33,
-      34,    35,    36,    23,    24,    25,    26,    27,    28,    43,
-      30,    31,    32,    33,    34,    35,    36,    23,    24,    25,
-      26,    27,    28,    43,    30,    31,    32,    33,    34,    35,
-      36,    41,    29,    41,    39,    41,    23,    24,    25,    26,
-      27,    28,    41,    30,    31,    32,    33,    34,    35,    36,
-      39,    43,   122,    39,    41,    23,    24,    25,    26,    27,
-      28,   120,    30,    31,    32,    33,    34,    35,    36,    -1,
-      -1,    -1,    -1,    41,    23,    24,    25,    26,    27,    28,
-      -1,    30,    31,    32,    33,    34,    35,    36
+      34,    35,    36,    42,    42,    41,    41,    41,    23,    24,
+      25,    26,    27,    28,    41,    30,    31,    32,    33,    34,
+      35,    36,    29,    39,    41,    39,    41,    23,    24,    25,
+      26,    27,    28,    41,    30,    31,    32,    33,    34,    35,
+      36,    43,    39,   124,   122,    41,    23,    24,    25,    26,
+      27,    28,    -1,    30,    31,    32,    33,    34,    35,    36,
+      23,    24,    25,    26,    27,    28,    -1,    30,    31,    32,
+      33,    34,    30,    31,    32,    33,    34
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,    48,    49,     0,    11,    15,    50,     8,     9,    11,
-      19,    59,    60,    39,     8,     8,     9,    11,    17,    60,
-      41,    51,    29,    44,     8,     8,     8,    62,    41,    53,
-       3,     4,     5,     6,     7,     8,    22,    42,    79,    85,
-      85,    39,    29,     8,     9,    18,    63,     9,    16,    54,
-      42,    44,    85,    85,    23,    24,    25,    26,    27,    28,
-      30,    31,    32,    33,    34,    35,    36,    45,    61,    85,
-      85,     8,    10,    86,     8,    55,    41,    80,    81,    85,
-      85,    43,    85,    85,    85,    85,    85,    85,    85,    85,
-      85,    85,    85,    85,    85,    29,    40,    46,    42,    42,
-       9,    40,    56,    43,    46,    45,    39,    85,     9,    66,
-      67,    68,    43,     8,    52,    85,    82,    85,     8,    43,
-      46,    39,    42,    40,    46,    39,    68,    87,    66,    85,
-      64,    69,    43,    69,     8,    12,    13,    14,    20,    21,
-      40,    60,    70,    71,    72,    73,    75,    77,    79,    83,
-      84,    39,    40,    29,    44,    42,    42,    42,    42,    42,
-      41,    41,    57,    65,    85,    85,    85,    85,     8,    71,
-      85,    85,    69,    41,    45,    43,    43,    41,    43,    43,
-      40,    29,    39,    39,    85,    41,    41,    58,    85,    74,
-      78,    41,    41,    69,    69,    71,    40,    40,    43,    39,
-      76,    69,    40
+       0,    49,    50,     0,    11,    15,    51,     8,     9,    11,
+      19,    60,    61,    39,     8,     8,     9,    11,    17,    61,
+      41,    52,    29,    44,     8,     8,     8,    63,    41,    54,
+       3,     4,     5,     6,     7,     8,    22,    42,    80,    86,
+      86,    39,    29,     8,     9,    18,    64,     9,    16,    55,
+      42,    44,    47,    86,    86,    23,    24,    25,    26,    27,
+      28,    30,    31,    32,    33,    34,    35,    36,    45,    62,
+      86,    86,     8,    10,    87,     8,    56,    41,    81,    82,
+      86,    86,     8,    43,    86,    86,    86,    86,    86,    86,
+      86,    86,    86,    86,    86,    86,    86,    29,    40,    46,
+      42,    42,     9,    40,    57,    43,    46,    45,    39,    86,
+       9,    67,    68,    69,    43,     8,    53,    86,    83,    86,
+       8,    43,    46,    39,    42,    40,    46,    39,    69,    88,
+      67,    86,    65,    70,    43,    70,     8,    12,    13,    14,
+      20,    21,    40,    61,    71,    72,    73,    74,    76,    78,
+      80,    84,    85,    39,    40,    29,    44,    42,    42,    42,
+      42,    42,    41,    41,    58,    66,    86,    86,    86,    86,
+       8,    72,    86,    86,    70,    41,    45,    43,    43,    41,
+      43,    43,    40,    29,    39,    39,    86,    41,    41,    59,
+      86,    75,    79,    41,    41,    70,    70,    72,    40,    40,
+      43,    39,    77,    70,    40
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    47,    48,    49,    49,    51,    52,    50,    53,    53,
-      54,    55,    55,    57,    58,    56,    59,    59,    60,    60,
-      60,    60,    60,    60,    60,    60,    60,    61,    61,    61,
-      62,    62,    64,    65,    63,    66,    66,    67,    67,    68,
-      69,    69,    70,    70,    70,    70,    70,    70,    71,    71,
-      72,    72,    72,    74,    73,    76,    75,    78,    77,    79,
-      80,    80,    81,    81,    82,    82,    83,    84,    85,    85,
-      85,    85,    85,    85,    85,    85,    85,    85,    85,    85,
-      85,    85,    85,    85,    85,    85,    85,    85,    85,    85,
-      85,    87,    86
+       0,    48,    49,    50,    50,    52,    53,    51,    54,    54,
+      55,    56,    56,    58,    59,    57,    60,    60,    61,    61,
+      61,    61,    61,    61,    61,    61,    61,    62,    62,    62,
+      63,    63,    65,    66,    64,    67,    67,    68,    68,    69,
+      70,    70,    71,    71,    71,    71,    71,    71,    72,    72,
+      73,    73,    73,    75,    74,    77,    76,    79,    78,    80,
+      81,    81,    82,    82,    83,    83,    84,    85,    86,    86,
+      86,    86,    86,    86,    86,    86,    86,    86,    86,    86,
+      86,    86,    86,    86,    86,    86,    86,    86,    86,    86,
+      86,    86,    88,    87
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -1104,7 +1112,7 @@ static const yytype_int8 yyr2[] =
        0,     1,     1,     3,     1,     3,     5,     5,     3,     3,
        3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
        3,     2,     1,     4,     1,     1,     1,     1,     1,     1,
-       3,     0,     7
+       3,     3,     0,     7
 };
 
 
@@ -1838,100 +1846,100 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: user_defined_types END_USR_TYPES declarations END_GLOBAL_VARS global_function_definitions END_GLOBAL_FUNCS special_function  */
-#line 310 "limbaj.y"
+#line 317 "limbaj.y"
                                                                                                                                      {printf("The programm is correct!\n");}
-#line 1844 "limbaj.tab.c"
+#line 1852 "limbaj.tab.c"
     break;
 
   case 5: /* $@1: %empty  */
-#line 316 "limbaj.y"
+#line 323 "limbaj.y"
                                    {symbolTable.enterScope(string((yyvsp[-1].string)));}
-#line 1850 "limbaj.tab.c"
+#line 1858 "limbaj.tab.c"
     break;
 
   case 6: /* $@2: %empty  */
-#line 316 "limbaj.y"
+#line 323 "limbaj.y"
                                                                                                                               { symbolTable.exitScope();}
-#line 1856 "limbaj.tab.c"
+#line 1864 "limbaj.tab.c"
     break;
 
   case 7: /* user_defined_type: USR_TYPE ID '{' $@1 usr_type_vars END_USR_TYPE_VARS usr_type_methods '}' $@2  */
-#line 316 "limbaj.y"
+#line 323 "limbaj.y"
                                                                                                                                                           {
                         UserType userType = UserType((yyvsp[-7].string), *(yyvsp[-4].vars), *(yyvsp[-2].funcs));
                         userTypes.push_back(userType);
                     }
-#line 1865 "limbaj.tab.c"
-    break;
-
-  case 8: /* usr_type_vars: %empty  */
-#line 322 "limbaj.y"
-                             {
-                    (yyval.vars) = new vector<VarInfo>();
-                }
 #line 1873 "limbaj.tab.c"
     break;
 
+  case 8: /* usr_type_vars: %empty  */
+#line 329 "limbaj.y"
+                             {
+                    (yyval.vars) = new vector<VarInfo>();
+                }
+#line 1881 "limbaj.tab.c"
+    break;
+
   case 9: /* usr_type_vars: usr_type_vars usr_type_var ';'  */
-#line 325 "limbaj.y"
+#line 332 "limbaj.y"
                                                 {
                     (yyval.vars) = (yyvsp[-2].vars);
                     (yyval.vars)->push_back(*(yyvsp[-1].var));
                     delete((yyvsp[-1].var));
                 }
-#line 1883 "limbaj.tab.c"
+#line 1891 "limbaj.tab.c"
     break;
 
   case 10: /* usr_type_var: TYPE ID  */
-#line 332 "limbaj.y"
+#line 339 "limbaj.y"
                       {
                     VarInfo* var = new VarInfo((yyvsp[-1].string), (yyvsp[0].string));
                     (yyval.var) = var;
                 }
-#line 1892 "limbaj.tab.c"
-    break;
-
-  case 11: /* usr_type_methods: %empty  */
-#line 338 "limbaj.y"
-                                {
-                    (yyval.funcs) = new vector<FunctionInfo>();
-                }
 #line 1900 "limbaj.tab.c"
     break;
 
+  case 11: /* usr_type_methods: %empty  */
+#line 345 "limbaj.y"
+                                {
+                    (yyval.funcs) = new vector<FunctionInfo>();
+                }
+#line 1908 "limbaj.tab.c"
+    break;
+
   case 12: /* usr_type_methods: usr_type_methods usr_type_method  */
-#line 341 "limbaj.y"
+#line 348 "limbaj.y"
                                                    {
                     (yyval.funcs) = (yyvsp[-1].funcs);
                     (yyval.funcs)->push_back(*(yyvsp[0].func));
                     delete((yyvsp[0].func));
                 }
-#line 1910 "limbaj.tab.c"
+#line 1918 "limbaj.tab.c"
     break;
 
   case 13: /* $@3: %empty  */
-#line 348 "limbaj.y"
+#line 355 "limbaj.y"
                                                 {symbolTable.enterScope(string((yyvsp[-4].string)));}
-#line 1916 "limbaj.tab.c"
+#line 1924 "limbaj.tab.c"
     break;
 
   case 14: /* $@4: %empty  */
-#line 348 "limbaj.y"
+#line 355 "limbaj.y"
                                                                                                      {symbolTable.exitScope();}
-#line 1922 "limbaj.tab.c"
+#line 1930 "limbaj.tab.c"
     break;
 
   case 15: /* usr_type_method: TYPE ID '(' func_param ')' '{' $@3 statements '}' $@4  */
-#line 348 "limbaj.y"
+#line 355 "limbaj.y"
                                                                                                                                 {
                     FunctionInfo* func = new FunctionInfo((yyvsp[-9].string), (yyvsp[-8].string), *(yyvsp[-6].vars));
                     (yyval.func) = func;
                 }
-#line 1931 "limbaj.tab.c"
+#line 1939 "limbaj.tab.c"
     break;
 
   case 18: /* decl: TYPE ID  */
-#line 358 "limbaj.y"
+#line 365 "limbaj.y"
               {
             if(symbolTable.variableExists((yyvsp[0].string))) {
                 error_variable_exists((yyvsp[0].string));
@@ -1940,11 +1948,11 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1944 "limbaj.tab.c"
+#line 1952 "limbaj.tab.c"
     break;
 
   case 19: /* decl: CONST TYPE ID  */
-#line 366 "limbaj.y"
+#line 373 "limbaj.y"
                     {
             if(symbolTable.variableExists((yyvsp[0].string))) {
                 error_variable_exists((yyvsp[0].string));
@@ -1953,11 +1961,11 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1957 "limbaj.tab.c"
+#line 1965 "limbaj.tab.c"
     break;
 
   case 20: /* decl: TYPE ID ASSIGN expr  */
-#line 374 "limbaj.y"
+#line 381 "limbaj.y"
                           {
             if(symbolTable.variableExists((yyvsp[-2].string))) {
                 error_variable_exists((yyvsp[-2].string));   
@@ -1971,14 +1979,17 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1975 "limbaj.tab.c"
+#line 1983 "limbaj.tab.c"
     break;
 
   case 21: /* decl: CONST TYPE ID ASSIGN expr  */
-#line 387 "limbaj.y"
+#line 394 "limbaj.y"
                                 { 
             if(symbolTable.variableExists((yyvsp[-2].string))) {
                 error_variable_exists((yyvsp[-2].string));
+            }
+            if (strcmp((yyvsp[-3].string), (yyvsp[0].node)->string_type().c_str()) != 0){
+                error_different_types((yyvsp[-3].string), (yyvsp[0].node)->string_type().c_str());
             }
             VarInfo* var = new VarInfo((yyvsp[-3].string), (yyvsp[-2].string), true);
             var->assign_expr((yyvsp[0].node));
@@ -1986,13 +1997,13 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 1990 "limbaj.tab.c"
+#line 2001 "limbaj.tab.c"
     break;
 
   case 22: /* decl: TYPE ID '[' expr ']'  */
-#line 397 "limbaj.y"
+#line 407 "limbaj.y"
                            {
-            if((yyvsp[-1].node)->string_type() != "int") yyerror("Array element access number is not an integer");
+            if((yyvsp[-1].node)->string_type() != "int") yyerror("Array size specifier is not an integer");
             if(symbolTable.variableExists((yyvsp[-3].string))) {
                 error_variable_exists((yyvsp[-3].string));
             }
@@ -2000,13 +2011,13 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 2004 "limbaj.tab.c"
+#line 2015 "limbaj.tab.c"
     break;
 
   case 23: /* decl: TYPE ID '[' expr ']' ASSIGN '{' expressions '}'  */
-#line 406 "limbaj.y"
+#line 416 "limbaj.y"
                                                       {
-            if((yyvsp[-5].node)->string_type() != "int") yyerror("Array element access number is not an integer");
+            if((yyvsp[-5].node)->string_type() != "int") yyerror("Array size specifier is not an integer");
             if(symbolTable.variableExists((yyvsp[-7].string))) {
                 error_variable_exists((yyvsp[-7].string));
             }
@@ -2065,11 +2076,11 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 2069 "limbaj.tab.c"
+#line 2080 "limbaj.tab.c"
     break;
 
   case 24: /* decl: USR_TYPE ID ID  */
-#line 466 "limbaj.y"
+#line 476 "limbaj.y"
                      {
             if(symbolTable.variableExists((yyvsp[0].string))) {
                 error_variable_exists((yyvsp[0].string));
@@ -2078,11 +2089,11 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 2082 "limbaj.tab.c"
+#line 2093 "limbaj.tab.c"
     break;
 
   case 25: /* decl: CONST USR_TYPE ID ID  */
-#line 474 "limbaj.y"
+#line 484 "limbaj.y"
                            {
             if(symbolTable.variableExists((yyvsp[0].string))) {
                 error_variable_exists((yyvsp[0].string));
@@ -2091,11 +2102,11 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 2095 "limbaj.tab.c"
+#line 2106 "limbaj.tab.c"
     break;
 
   case 26: /* decl: USR_TYPE ID ID '{' initializer_list '}'  */
-#line 482 "limbaj.y"
+#line 492 "limbaj.y"
                                               { // initialize user type variable with initializer list 
             if(symbolTable.variableExists((yyvsp[-3].string))) {
                 error_variable_exists((yyvsp[-3].string));
@@ -2143,105 +2154,109 @@ yyreduce:
             (yyval.var) = var;
             symbolTable.addVariable(*var);
     }
-#line 2147 "limbaj.tab.c"
+#line 2158 "limbaj.tab.c"
     break;
 
   case 27: /* initializer_list: %empty  */
-#line 531 "limbaj.y"
+#line 541 "limbaj.y"
                                 {
                     (yyval.nodes) = new vector<ASTNode*>();
                 }
-#line 2155 "limbaj.tab.c"
+#line 2166 "limbaj.tab.c"
     break;
 
   case 28: /* initializer_list: initializer_list ',' expr  */
-#line 534 "limbaj.y"
+#line 544 "limbaj.y"
                                             {
                     (yyval.nodes) = (yyvsp[-2].nodes);
                     (yyval.nodes)->push_back((yyvsp[0].node));
                 }
-#line 2164 "limbaj.tab.c"
+#line 2175 "limbaj.tab.c"
     break;
 
   case 29: /* initializer_list: expr  */
-#line 538 "limbaj.y"
+#line 548 "limbaj.y"
                        {
                     (yyval.nodes) = new vector<ASTNode*>();
                     (yyval.nodes)->push_back((yyvsp[0].node));
                 }
-#line 2173 "limbaj.tab.c"
+#line 2184 "limbaj.tab.c"
     break;
 
   case 32: /* $@5: %empty  */
-#line 548 "limbaj.y"
+#line 558 "limbaj.y"
                                                            {symbolTable.enterScope(string((yyvsp[-4].string)));}
-#line 2179 "limbaj.tab.c"
+#line 2190 "limbaj.tab.c"
     break;
 
   case 33: /* $@6: %empty  */
-#line 548 "limbaj.y"
+#line 558 "limbaj.y"
                                                                                                                 {symbolTable.exitScope();}
-#line 2185 "limbaj.tab.c"
+#line 2196 "limbaj.tab.c"
     break;
 
   case 34: /* global_function_definition: TYPE ID '(' func_param ')' '{' $@5 statements '}' $@6  */
-#line 548 "limbaj.y"
+#line 558 "limbaj.y"
                                                                                                                                            {
                             FunctionInfo* func = new FunctionInfo((yyvsp[-9].string), (yyvsp[-8].string), *(yyvsp[-6].vars));
                             symbolTable.addFunction(*func);
                         }
-#line 2194 "limbaj.tab.c"
+#line 2205 "limbaj.tab.c"
     break;
 
   case 35: /* func_param: %empty  */
-#line 555 "limbaj.y"
+#line 565 "limbaj.y"
                           {
                 (yyval.vars) = new vector<VarInfo>();
             }
-#line 2202 "limbaj.tab.c"
+#line 2213 "limbaj.tab.c"
     break;
 
   case 36: /* func_param: list_param  */
-#line 558 "limbaj.y"
+#line 568 "limbaj.y"
                          {
                 (yyval.vars) = (yyvsp[0].vars);
             }
-#line 2210 "limbaj.tab.c"
+#line 2221 "limbaj.tab.c"
     break;
 
   case 37: /* list_param: param  */
-#line 563 "limbaj.y"
+#line 573 "limbaj.y"
                   {
                 (yyval.vars) = new vector<VarInfo>();
                 (yyval.vars)->push_back(*(yyvsp[0].var));
                 delete((yyvsp[0].var));
                 }
-#line 2220 "limbaj.tab.c"
+#line 2231 "limbaj.tab.c"
     break;
 
   case 38: /* list_param: list_param ',' param  */
-#line 568 "limbaj.y"
+#line 578 "limbaj.y"
                                    {
                 (yyval.vars) = (yyvsp[-2].vars);
                 (yyval.vars)->push_back(*(yyvsp[0].var));
                 delete((yyvsp[0].var));
             }
-#line 2230 "limbaj.tab.c"
+#line 2241 "limbaj.tab.c"
     break;
 
   case 39: /* param: TYPE ID  */
-#line 575 "limbaj.y"
+#line 585 "limbaj.y"
                {
             VarInfo* var = new VarInfo((yyvsp[-1].string), (yyvsp[0].string));
             (yyval.var) = var;
         }
-#line 2239 "limbaj.tab.c"
+#line 2250 "limbaj.tab.c"
     break;
 
   case 48: /* assignment_statement: ID ASSIGN expr ';'  */
-#line 593 "limbaj.y"
+#line 603 "limbaj.y"
                                          {
+                        if(!symbolTable.variableExists((yyvsp[-3].string))) {
+                            error_variable_not_found((yyvsp[-3].string));
+                        }
                         VarInfo temp = symbolTable.getVariable((yyvsp[-3].string));
+
                         if(strcmp(temp.getType().c_str(), (yyvsp[-1].node)->string_type().c_str()) == 0){
                             temp.assign_expr((yyvsp[-1].node));
                         }
@@ -2249,37 +2264,42 @@ yyreduce:
                             error_different_types(temp.getType().c_str(), (yyvsp[-1].node)->string_type().c_str());
                         }
                     }
-#line 2253 "limbaj.tab.c"
+#line 2268 "limbaj.tab.c"
     break;
 
   case 49: /* assignment_statement: ID '[' expr ']' ASSIGN expr ';'  */
-#line 602 "limbaj.y"
+#line 616 "limbaj.y"
                                                       {
                         if(strcmp((yyvsp[-4].node)->string_type().c_str(), "int") == 0){
+                            if(!symbolTable.variableExists((yyvsp[-6].string))) {
+                                error_variable_not_found((yyvsp[-6].string));
+                            }
+                            
                             VarInfo temp = symbolTable.getVariable((yyvsp[-6].string));
+
                             if(strcmp(temp.getType().c_str(), (yyvsp[-1].node)->string_type().c_str()) == 0){
                                 if(strcmp(temp.getType().c_str(), "int") == 0){
-                                    int* intVals = (int*)(temp.getValueCopy());
+                                    int* intVals = (int*)(temp.getValueReference());
                                     intVals[std::get<int>((yyvsp[-4].node)->evaluate())] = std::get<int>((yyvsp[-1].node)->evaluate());
                                     temp.setValue((void*)intVals);
                                 }
                                 else if(strcmp(temp.getType().c_str(), "float") == 0){
-                                    float* floatVals = (float*)(temp.getValueCopy());
+                                    float* floatVals = (float*)(temp.getValueReference());
                                     floatVals[std::get<int>((yyvsp[-4].node)->evaluate())] = std::get<float>((yyvsp[-1].node)->evaluate());
                                     temp.setValue((void*)floatVals);
                                 }
                                 else if(strcmp(temp.getType().c_str(), "bool") == 0){
-                                    bool* boolVals = (bool*)(temp.getValueCopy());
+                                    bool* boolVals = (bool*)(temp.getValueReference());
                                     boolVals[std::get<int>((yyvsp[-4].node)->evaluate())] = std::get<bool>((yyvsp[-1].node)->evaluate());
                                     temp.setValue((void*)boolVals);
                                 }
                                 else if(strcmp(temp.getType().c_str(), "char") == 0){
-                                    char* charVals = (char*)(temp.getValueCopy());
+                                    char* charVals = (char*)(temp.getValueReference());
                                     charVals[std::get<int>((yyvsp[-4].node)->evaluate())] = std::get<char>((yyvsp[-1].node)->evaluate());
                                     temp.setValue((void*)charVals);
                                 }
                                 else if(strcmp(temp.getType().c_str(), "string") == 0){
-                                    char** stringVals = (char**)(temp.getValueCopy());
+                                    char** stringVals = (char**)(temp.getValueReference());
                                     stringVals[std::get<int>((yyvsp[-4].node)->evaluate())] = *(std::get<char**>((yyvsp[-1].node)->evaluate()));
                                     temp.setValue((void*)stringVals);
                                 }
@@ -2290,11 +2310,11 @@ yyreduce:
                         }
                         else yyerror("Array element access number is not an integer");
                     }
-#line 2294 "limbaj.tab.c"
+#line 2314 "limbaj.tab.c"
     break;
 
   case 53: /* $@7: %empty  */
-#line 645 "limbaj.y"
+#line 664 "limbaj.y"
                                   {
         symbolTable.enterScope("if" + std::to_string(ifCounter++));
         if(strcmp((yyvsp[-2].node)->string_type().c_str(), "bool") != 0 || get<bool>((yyvsp[-2].node)->evaluate()) == 0){
@@ -2302,105 +2322,108 @@ yyreduce:
             //break;
         }
         }
-#line 2306 "limbaj.tab.c"
+#line 2326 "limbaj.tab.c"
     break;
 
   case 54: /* if_statement: IF '(' expr ')' '{' $@7 statements '}'  */
-#line 651 "limbaj.y"
+#line 670 "limbaj.y"
                          {symbolTable.exitScope();}
-#line 2312 "limbaj.tab.c"
+#line 2332 "limbaj.tab.c"
     break;
 
   case 55: /* $@8: %empty  */
-#line 654 "limbaj.y"
+#line 673 "limbaj.y"
                                                                                       { symbolTable.enterScope("for" + std::to_string(forCounter++));}
-#line 2318 "limbaj.tab.c"
+#line 2338 "limbaj.tab.c"
     break;
 
   case 56: /* for_statement: FOR '(' assignment_statement ';' expr ';' assignment_statement ')' '{' $@8 statements '}'  */
-#line 654 "limbaj.y"
+#line 673 "limbaj.y"
                                                                                                                                                                       {symbolTable.exitScope();}
-#line 2324 "limbaj.tab.c"
+#line 2344 "limbaj.tab.c"
     break;
 
   case 57: /* $@9: %empty  */
-#line 657 "limbaj.y"
+#line 676 "limbaj.y"
                                         {symbolTable.enterScope("while" + std::to_string(whileCounter++));}
-#line 2330 "limbaj.tab.c"
+#line 2350 "limbaj.tab.c"
     break;
 
   case 58: /* while_statement: WHILE '(' expr ')' '{' $@9 statements '}'  */
-#line 657 "limbaj.y"
+#line 676 "limbaj.y"
                                                                                                                            {symbolTable.exitScope();}
-#line 2336 "limbaj.tab.c"
+#line 2356 "limbaj.tab.c"
     break;
 
   case 59: /* function_call: ID '(' arguments ')'  */
-#line 660 "limbaj.y"
+#line 679 "limbaj.y"
                                     {
+        if(!symbolTable.functionExists((yyvsp[-3].string))) {
+            error_function_not_found((yyvsp[-3].string));
+        }
         FunctionCallNode* func = new FunctionCallNode((yyvsp[-3].string), (yyvsp[-1].nodes));
         (yyval.node) = func;
     }
-#line 2345 "limbaj.tab.c"
+#line 2368 "limbaj.tab.c"
     break;
 
   case 60: /* arguments: %empty  */
-#line 666 "limbaj.y"
+#line 688 "limbaj.y"
                          {
             vector<ASTNode*>* temp = new vector<ASTNode*>();
             (yyval.nodes) = temp;
         }
-#line 2354 "limbaj.tab.c"
+#line 2377 "limbaj.tab.c"
     break;
 
   case 61: /* arguments: arg_list  */
-#line 670 "limbaj.y"
+#line 692 "limbaj.y"
                    {(yyval.nodes) = (yyvsp[0].nodes);}
-#line 2360 "limbaj.tab.c"
+#line 2383 "limbaj.tab.c"
     break;
 
   case 62: /* arg_list: expr  */
-#line 673 "limbaj.y"
+#line 695 "limbaj.y"
                {
         vector<ASTNode*>* temp = new vector<ASTNode*>();
         temp->push_back((yyvsp[0].node));
         (yyval.nodes) = temp;
     }
-#line 2370 "limbaj.tab.c"
+#line 2393 "limbaj.tab.c"
     break;
 
   case 63: /* arg_list: arg_list ',' expr  */
-#line 678 "limbaj.y"
+#line 700 "limbaj.y"
                         {
         vector<ASTNode*>* temp = (yyvsp[-2].nodes);
         temp->push_back((yyvsp[0].node));
         (yyval.nodes) = temp;
     }
-#line 2380 "limbaj.tab.c"
+#line 2403 "limbaj.tab.c"
     break;
 
   case 64: /* expressions: expr  */
-#line 685 "limbaj.y"
+#line 707 "limbaj.y"
                   {
                 vector<ASTNode*>* temp = new vector<ASTNode*>();
                 temp->push_back((yyvsp[0].node));
                 (yyval.nodes) = temp;
             }
-#line 2390 "limbaj.tab.c"
+#line 2413 "limbaj.tab.c"
     break;
 
   case 65: /* expressions: expressions ',' expr  */
-#line 690 "limbaj.y"
+#line 712 "limbaj.y"
                                   {
                 vector<ASTNode*>* temp = (yyvsp[-2].nodes);
                 temp->push_back((yyvsp[0].node));
                 (yyval.nodes) = temp;
             }
-#line 2400 "limbaj.tab.c"
+#line 2423 "limbaj.tab.c"
     break;
 
   case 66: /* eval_statement: EVAL '(' expr ')' ';'  */
-#line 697 "limbaj.y"
+#line 719 "limbaj.y"
                                       { 
     switch((yyvsp[-2].node)->type()) {
         case ExprType::INT:
@@ -2429,11 +2452,11 @@ yyreduce:
     }
     free((yyvsp[-2].node)); // free the memory allocated for the expression
 }
-#line 2433 "limbaj.tab.c"
+#line 2456 "limbaj.tab.c"
     break;
 
   case 67: /* type_of_statement: TYPEOF '(' expr ')' ';'  */
-#line 727 "limbaj.y"
+#line 749 "limbaj.y"
                                            { 
         switch ((yyvsp[-2].node)->type()) {
             case ExprType::INT:
@@ -2457,167 +2480,224 @@ yyreduce:
         }
     free((yyvsp[-2].node)); // free the memory allocated for the expression
     }
-#line 2461 "limbaj.tab.c"
+#line 2484 "limbaj.tab.c"
     break;
 
   case 68: /* expr: expr PLUS expr  */
-#line 752 "limbaj.y"
+#line 774 "limbaj.y"
                      { (yyval.node) = new BinaryOpNode('+', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2467 "limbaj.tab.c"
+#line 2490 "limbaj.tab.c"
     break;
 
   case 69: /* expr: expr MINUS expr  */
-#line 753 "limbaj.y"
+#line 775 "limbaj.y"
                       { (yyval.node) = new BinaryOpNode('-', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2473 "limbaj.tab.c"
+#line 2496 "limbaj.tab.c"
     break;
 
   case 70: /* expr: expr MUL expr  */
-#line 754 "limbaj.y"
+#line 776 "limbaj.y"
                     { (yyval.node) = new BinaryOpNode('*', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2479 "limbaj.tab.c"
+#line 2502 "limbaj.tab.c"
     break;
 
   case 71: /* expr: expr DIV expr  */
-#line 755 "limbaj.y"
+#line 777 "limbaj.y"
                     { (yyval.node) = new BinaryOpNode('/', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2485 "limbaj.tab.c"
+#line 2508 "limbaj.tab.c"
     break;
 
   case 72: /* expr: expr MOD expr  */
-#line 756 "limbaj.y"
+#line 778 "limbaj.y"
                     { (yyval.node) = new BinaryOpNode('%', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2491 "limbaj.tab.c"
+#line 2514 "limbaj.tab.c"
     break;
 
   case 73: /* expr: expr EQ expr  */
-#line 757 "limbaj.y"
+#line 779 "limbaj.y"
                    { (yyval.node) = new BinaryOpNode('=', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2497 "limbaj.tab.c"
+#line 2520 "limbaj.tab.c"
     break;
 
   case 74: /* expr: expr NEQ expr  */
-#line 758 "limbaj.y"
+#line 780 "limbaj.y"
                     { (yyval.node) = new BinaryOpNode('n', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2503 "limbaj.tab.c"
+#line 2526 "limbaj.tab.c"
     break;
 
   case 75: /* expr: expr LT expr  */
-#line 759 "limbaj.y"
+#line 781 "limbaj.y"
                    { (yyval.node) = new BinaryOpNode('<', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2509 "limbaj.tab.c"
+#line 2532 "limbaj.tab.c"
     break;
 
   case 76: /* expr: expr LE expr  */
-#line 760 "limbaj.y"
+#line 782 "limbaj.y"
                    { (yyval.node) = new BinaryOpNode('l', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2515 "limbaj.tab.c"
+#line 2538 "limbaj.tab.c"
     break;
 
   case 77: /* expr: expr GT expr  */
-#line 761 "limbaj.y"
+#line 783 "limbaj.y"
                    { (yyval.node) = new BinaryOpNode('>', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2521 "limbaj.tab.c"
+#line 2544 "limbaj.tab.c"
     break;
 
   case 78: /* expr: expr GE expr  */
-#line 762 "limbaj.y"
+#line 784 "limbaj.y"
                    { (yyval.node) = new BinaryOpNode('g', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2527 "limbaj.tab.c"
+#line 2550 "limbaj.tab.c"
     break;
 
   case 79: /* expr: expr AND expr  */
-#line 763 "limbaj.y"
+#line 785 "limbaj.y"
                     { (yyval.node) = new BinaryOpNode('&', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2533 "limbaj.tab.c"
+#line 2556 "limbaj.tab.c"
     break;
 
   case 80: /* expr: expr OR expr  */
-#line 764 "limbaj.y"
+#line 786 "limbaj.y"
                    { (yyval.node) = new BinaryOpNode('|', (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2539 "limbaj.tab.c"
+#line 2562 "limbaj.tab.c"
     break;
 
   case 81: /* expr: NOT expr  */
-#line 765 "limbaj.y"
+#line 787 "limbaj.y"
                { (yyval.node) = new BinaryOpNode('!', (yyvsp[0].node), new BoolNode(false)); /* right node is a dummy value */ }
-#line 2545 "limbaj.tab.c"
+#line 2568 "limbaj.tab.c"
     break;
 
   case 82: /* expr: ID  */
-#line 766 "limbaj.y"
+#line 788 "limbaj.y"
          { (yyval.node) = new IdentifierNode((yyvsp[0].string)); }
-#line 2551 "limbaj.tab.c"
+#line 2574 "limbaj.tab.c"
     break;
 
   case 83: /* expr: ID '[' expr ']'  */
-#line 767 "limbaj.y"
+#line 789 "limbaj.y"
                       {
         if((yyvsp[-1].node)->type() == ExprType::INT) {
             (yyval.node) = new VectorElementNode((yyvsp[-3].string), std::get<int>((yyvsp[-1].node)->evaluate()));
         }
         else yyerror("Access number must be integer type");
     }
-#line 2562 "limbaj.tab.c"
+#line 2585 "limbaj.tab.c"
     break;
 
   case 84: /* expr: INT  */
-#line 773 "limbaj.y"
+#line 795 "limbaj.y"
           { (yyval.node) = new IntNode((yyvsp[0].intValue)); }
-#line 2568 "limbaj.tab.c"
+#line 2591 "limbaj.tab.c"
     break;
 
   case 85: /* expr: FLOAT  */
-#line 774 "limbaj.y"
+#line 796 "limbaj.y"
             { (yyval.node) = new FloatNode((yyvsp[0].floatValue)); }
-#line 2574 "limbaj.tab.c"
+#line 2597 "limbaj.tab.c"
     break;
 
   case 86: /* expr: CHAR  */
-#line 775 "limbaj.y"
+#line 797 "limbaj.y"
            { (yyval.node) = new CharNode((yyvsp[0].charValue)); }
-#line 2580 "limbaj.tab.c"
+#line 2603 "limbaj.tab.c"
     break;
 
   case 87: /* expr: BOOL  */
-#line 776 "limbaj.y"
+#line 798 "limbaj.y"
            { (yyval.node) = new BoolNode((yyvsp[0].boolValue)); }
-#line 2586 "limbaj.tab.c"
+#line 2609 "limbaj.tab.c"
     break;
 
   case 88: /* expr: STRING  */
-#line 777 "limbaj.y"
-             { (yyval.node) = new StringNode(&(yyvsp[0].string)); 
-    }
-#line 2593 "limbaj.tab.c"
+#line 799 "limbaj.y"
+             { (yyval.node) = new StringNode(&(yyvsp[0].string)); }
+#line 2615 "limbaj.tab.c"
     break;
 
   case 89: /* expr: function_call  */
-#line 779 "limbaj.y"
+#line 800 "limbaj.y"
                     { (yyval.node) = (yyvsp[0].node); }
-#line 2599 "limbaj.tab.c"
-    break;
-
-  case 90: /* expr: '(' expr ')'  */
-#line 780 "limbaj.y"
-                   { (yyval.node) = (yyvsp[-1].node); }
-#line 2605 "limbaj.tab.c"
-    break;
-
-  case 91: /* $@10: %empty  */
-#line 782 "limbaj.y"
-                                               { symbolTable.enterScope("clean_code_executer"); }
-#line 2611 "limbaj.tab.c"
-    break;
-
-  case 92: /* special_function: SPECIAL_FUNCTION '(' ')' '{' $@10 statements '}'  */
-#line 782 "limbaj.y"
-                                                                                                                 { symbolTable.exitScope(); }
-#line 2617 "limbaj.tab.c"
-    break;
-
-
 #line 2621 "limbaj.tab.c"
+    break;
+
+  case 90: /* expr: ID '.' ID  */
+#line 801 "limbaj.y"
+                { 
+        bool found = false;
+        VarInfo variable = symbolTable.getVariable((yyvsp[-2].string));
+        // search for the user type
+        for (const UserType& userType : userTypes) {
+            if(userType.getName() == variable.getType()) {
+                found = true;
+                // check if the variable exists in the user type
+                bool foundVar = false;
+                for (const VarInfo& var : userType.getVars()) {
+                    if (var.getName() == (yyvsp[0].string)) {
+                        foundVar = true;
+                        int offset = 0;
+                        for (const VarInfo& v : userType.getVars()) {
+                            if (v.getName() == (yyvsp[0].string)) {
+                                break;
+                            }
+                            offset += v.getSize();
+                        }
+                        if (var.getType() == "int") {
+                            int value = *(int*)((char*)symbolTable.getVariable((yyvsp[-2].string)).getValueReference() + offset);
+                            (yyval.node) = new IntNode(value);
+                        } else if (var.getType() == "float") {
+                            float valuef = *(float*)((char*)symbolTable.getVariable((yyvsp[-2].string)).getValueReference() + offset);
+                            (yyval.node) = new FloatNode(valuef);
+                        } else if (var.getType() == "bool") {
+                            bool valueb = *(bool*)((char*)symbolTable.getVariable((yyvsp[-2].string)).getValueReference() + offset);
+                            (yyval.node) = new BoolNode(valueb);
+                        } else if (var.getType() == "char") {
+                            char valuec = *(char*)((char*)symbolTable.getVariable((yyvsp[-2].string)).getValueReference() + offset);
+                            
+                            (yyval.node) = new CharNode(valuec);
+                        } else if (var.getType() == "string") {
+                            char* values = *(char**)((char*)symbolTable.getVariable((yyvsp[-2].string)).getValueReference() + offset);
+                            (yyval.node) = new StringNode(&values);
+                        } else {
+                            yyerror("Unknown type in user type variable");
+                        }
+                        break;
+                    }
+                }
+                if (!foundVar) {
+                    char errorMsg[100];
+                    sprintf(errorMsg, "Variable %s not found in user type %s", (yyvsp[0].string), userType.getName().c_str());
+                    yyerror(errorMsg);
+                }
+                break;
+            }
+        }
+        if (!found) {
+            yyerror("User type not found");
+        }
+    }
+#line 2679 "limbaj.tab.c"
+    break;
+
+  case 91: /* expr: '(' expr ')'  */
+#line 854 "limbaj.y"
+                   { (yyval.node) = (yyvsp[-1].node); }
+#line 2685 "limbaj.tab.c"
+    break;
+
+  case 92: /* $@10: %empty  */
+#line 856 "limbaj.y"
+                                               { symbolTable.enterScope("clean_code_executer"); }
+#line 2691 "limbaj.tab.c"
+    break;
+
+  case 93: /* special_function: SPECIAL_FUNCTION '(' ')' '{' $@10 statements '}'  */
+#line 856 "limbaj.y"
+                                                                                                                 { symbolTable.exitScope(); }
+#line 2697 "limbaj.tab.c"
+    break;
+
+
+#line 2701 "limbaj.tab.c"
 
       default: break;
     }
@@ -2841,7 +2921,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 785 "limbaj.y"
+#line 859 "limbaj.y"
 
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
@@ -2865,8 +2945,28 @@ void error_variable_exists(const char* name){
     exit(1);
 }
 
+void error_function_exists(const char* name){
+    printf("error: Function already exists (%s) at line:%d\n",name,yylineno);
+    exit(1);
+}
+
+void error_function_not_found(const char* name){
+    printf("error: Function does not exist (%s) at line:%d\n",name,yylineno);
+    exit(1);
+}
+
+void error_variable_not_found(const char* name){
+    printf("error: Variable does not exist (%s) at line:%d\n",name,yylineno);
+    exit(1);
+}
+
 void error_different_types(const char* left , const char* right){
     printf("error: Different types assignment (%s <- %s) at line:%d\n",left, right, yylineno);
+    exit(1);
+}
+
+void error_type_mismatch(const char* left , const char* right){
+    printf("error: Type mismatch (%s, %s) at line:%d\n",left, right, yylineno);
     exit(1);
 }
 
@@ -2923,12 +3023,12 @@ VarInfo& SymbolTable::getVariable(const string& name) {
             return it->second[name];
         }
     }
-    return variables[""][""]; // return empty variable
+    return DummyVarInfo; // return dummy variable (empty) if variable does not exist
 }
 
 FunctionInfo SymbolTable::getFunction(const string& name) {
     //search for function in global scope
-    return functions[""][name];
+    return DummyFunctionInfo;
 }
 
 void SymbolTable::saveInFile() {
@@ -3062,32 +3162,18 @@ void VarInfo::setValue(void* value){
     memcpy(this->memoryLocation, value, this->size);
 }
 
-void* VarInfo::getValueCopy() const {
-    if(this->type == "string" && this->size == sizeof(char*)){
-        char** copy = new char*[1];
-        copy[0] = new char[strlen(*(char**)this->memoryLocation) + 1];
-        strcpy(copy[0], *(char**)this->memoryLocation);
-        return copy;
-    }
-    else {
-        void* copy = malloc(this->size);
-        memcpy(copy, this->memoryLocation, this->size);
-        return copy;
-    }
+void* VarInfo::getValueReference() const {
+    return this->memoryLocation;
+    
 }
 
 void VarInfo::write_to_string(string& str) const {
     if(this->size == 0) return; // variabila nu exosta
     if(!this->isUserType) {
-        str += "name: ";
-        str += name;
-        str += "\ntype: ";
-        str += type;
-        str += "\nconst: ";
-        string is_const = std::to_string(this->isConst);
-        str += is_const;
-        str += "\nsize in bytes: ";
-        str += std::to_string(this->size); 
+        str += "name: " + this->name;
+        str += "\ntype: " + this->type;
+        str += "\nconst: " + std::to_string(this->isConst);
+        str += "\nsize in bytes: " + std::to_string(this->size);
         str += "\nvalue: ";
     }
     if(this->type == "int"){
@@ -3149,39 +3235,22 @@ void VarInfo::write_to_string(string& str) const {
         }
     }
     else if (this->isUserType) {
-        // print the user type bytes for debugging
-        
-
-        // print to string user type variable name and type
         str += "\n\n____user type variable: \n\n";
-        str += "type: ";
-        str += this->type;
-        str += "\n";
-        str += "name: ";
-        str += this->name;
-        str += "\n";
-        str += "size in bytes: ";
-        str += std::to_string(this->size);
-        str += "\n";
-        string is_const = std::to_string(this->isConst);
-        str += "const: ";
-        str += is_const;
-        str += "\n\n";
+        str += "type: " + this->type + "\n";
+        str += "name: " + this->name + "\n";
+        str += "size in bytes: " + std::to_string(this->size) + "\n";
+        str += "const: " + std::to_string(this->isConst) + "\n\n";
         str += "__variables: \n";
         for (int i = 0; i < userTypes.size(); ++i) {
             if (userTypes[i].getName() == this->type) {
                 int offset = 0;
                 for (const VarInfo& var : userTypes[i].getVars()) {
-                    str += "name: ";
-                    str += var.getName();
-                    str += "\ntype: ";
-                    str += var.getType();
-                    str += "\nsize in bytes: ";
-                    str += std::to_string(var.getSize());
+                    str += "name: " + var.getName();
+                    str += "\ntype: " + var.getType();
+                    str += "\nsize in bytes: " + std::to_string(var.getSize());
+                    str += "\nconst: " + std::to_string(var.isConst);
                     str += "\nvalue: ";
                     if (var.getType() == "int") {
-                        cout<<"INT"<<endl;
-                        cout<<*(int*)((char*)this->memoryLocation + offset)<<endl;
                         str += std::to_string(*(int*)((char*)this->memoryLocation + offset));
                     }
                     else if (var.getType() == "char") {
@@ -3194,8 +3263,6 @@ void VarInfo::write_to_string(string& str) const {
                         str += std::to_string(*(bool*)((char*)this->memoryLocation + offset));
                     }
                     else if (var.getType() == "string") {
-                        cout<<"STRING"<<endl;
-                        cout<<*(((char**)this->memoryLocation + offset))<<endl;
                         str += *(((char**)this->memoryLocation + offset));
                     }
                     str += "\n\n";
@@ -3292,17 +3359,12 @@ FunctionInfo::FunctionInfo(string type, string name, vector<VarInfo> params) {
 }
 
 void FunctionInfo::write_to_string(string& str) const {
-    str += "name: ";
-    str += name;
-    str += "\nreturn type: ";
-    str += type;
+    str += "name: " + name;
+    str += "\nreturn type: " + type;
     str += "\nparams: ";
     if(params.size() != 0) {
-        
         for (const VarInfo& v : params) {
-            str += v.getType();
-            str += " ";
-            str += v.getName();
+            str += v.getType() + " " + v.getName();
             if(&v != &params.back()) str += ", ";
         }
     }
@@ -3369,7 +3431,7 @@ ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
 
 ASTNode::ReturnValue BinaryOpNode::evaluate() const {
     if(left->type() != right->type()) {
-        yyerror("Incompatible types");
+        error_type_mismatch(left->string_type().c_str(), right->string_type().c_str());
     }
     ExprType type = left->type();
     switch (type) {
@@ -3390,7 +3452,7 @@ ASTNode::ReturnValue BinaryOpNode::evaluate() const {
 
 ExprType BinaryOpNode::type() const {
     if(left->type() != right->type()) {
-        yyerror("Incompatible typesss");
+        error_type_mismatch(left->string_type().c_str(), right->string_type().c_str());
     }
     if(this->op == '=' || this->op == 'n' || this->op == '<' || this->op == 'l' || this->op == '>' || this->op == 'g' || this->op == '&' || this->op == '|') {
         return ExprType::BOOLEAN;
@@ -3402,7 +3464,7 @@ ExprType BinaryOpNode::type() const {
 
 string BinaryOpNode::string_type() const {
     if(left->type() != right->type()) {
-        yyerror("Incompatible typesss");
+        error_type_mismatch(left->string_type().c_str(), right->string_type().c_str());
     }
     if(this->op == '=' || this->op == 'n' || this->op == '<' || this->op == 'l' || this->op == '>' || this->op == 'g' || this->op == '&' || this->op == '|') {
         return "bool";
@@ -3423,12 +3485,7 @@ ASTNode::ReturnValue FunctionCallNode::evaluate() const {
         ASTNode* aParam = (*this->params)[i];
         if (strcmp(aParam->string_type().c_str(), p[i].getType().c_str()) != 0){
             std::string to_return = "Different parameter types [Param: ";
-            to_return += to_string(i+1);
-            to_return += "](";
-            to_return += p[i].getType();
-            to_return += "<-";
-            to_return += aParam->string_type();
-            to_return += ") ";
+            to_return += to_string(i+1) + "](" + p[i].getType() + "<-" + aParam->string_type() + ") ";
             yyerror(to_return.c_str());
         }
     }
@@ -3440,9 +3497,9 @@ ASTNode::ReturnValue FunctionCallNode::evaluate() const {
         case 'b':
             return ReturnValue(false);
         case 'c':
-            return ReturnValue('0');
+            return ReturnValue(0);
         case 's':
-            return ReturnValue('0');
+            return ReturnValue(0);
         default:
             return ReturnValue(0);
     }
@@ -3479,27 +3536,27 @@ string FunctionCallNode::string_type() const {
 ASTNode::ReturnValue VectorElementNode::evaluate() const {
     VarInfo var = symbolTable.getVariable(name);
     if(strcmp(var.getType().c_str(), "int") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         int* intVals = (int*)vals;
         return ReturnValue(intVals[index]);
     }
     else if(strcmp(var.getType().c_str(), "bool") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         bool* boolVals = (bool*)vals;
         return ReturnValue(boolVals[index]);
     }
     else if(strcmp(var.getType().c_str(), "float") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         float* floatVals = (float*)vals;
         return ReturnValue(floatVals[index]);
     }
     else if(strcmp(var.getType().c_str(), "char") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         char* charVals = (char*)vals;
         return ReturnValue(charVals[index]);
     }
     else if(strcmp(var.getType().c_str(), "string") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         char** stringVals = (char**)vals;
         return ReturnValue(&(stringVals[index]));
     }
@@ -3529,15 +3586,15 @@ ASTNode::ReturnValue IdentifierNode::evaluate() const {
     VarInfo var = symbolTable.getVariable(name);
     switch (var.getType()[0]) {
         case 'g':
-            return ReturnValue(*(int*)var.getValueCopy());
+            return ReturnValue(*(int*)var.getValueReference());
         case 'f':
-            return ReturnValue(*(float*)var.getValueCopy());
+            return ReturnValue(*(float*)var.getValueReference());
         case 'b':
-            return ReturnValue(*(bool*)var.getValueCopy());
+            return ReturnValue(*(bool*)var.getValueReference());
         case 'c':
-            return ReturnValue(*(char*)var.getValueCopy());
+            return ReturnValue(*(char*)var.getValueReference());
         case 's':
-            return ReturnValue((char**)var.getValueCopy());
+            return ReturnValue((char**)var.getValueReference());
         default:
             return ReturnValue(0);
     }
@@ -3572,11 +3629,6 @@ string IdentifierNode::string_type() const {
 int main(int argc, char** argv){
     yyin=fopen(argv[1],"r");
     yyparse();
-
-    // Print user types
-    // for (UserType& userType : userTypes) {
-    //     userType.printMembers();
-    // }
 
     // Print symbol table in file
     symbolTable.saveInFile();

@@ -15,7 +15,12 @@ extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
 void error_variable_exists(const char* name);
+void error_function_exists(const char* name);
+void error_variable_not_found(const char* name);
+void error_function_not_found(const char* name);
 void error_different_types(const char* left , const char* right);
+void incompatible_types(const char* left , const char* right);
+
 
 class ASTNode;
 class SymbolTable;
@@ -41,7 +46,7 @@ public:
     void setValue(void* value);
     void setSize(int size); 
     int getSize() const { return this->size; }
-    void* getValueCopy() const;
+    void* getValueReference() const;
     void assign_expr(ASTNode* expr);
     void write_to_string(string &str) const;
     void printMembers() const;
@@ -238,6 +243,8 @@ public:
 unsigned long long ifCounter = 0;
 unsigned long long forCounter = 0;
 unsigned long long whileCounter = 0;
+VarInfo DummyVarInfo = VarInfo();
+FunctionInfo DummyFunctionInfo = FunctionInfo();
 
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
@@ -388,6 +395,9 @@ decl: TYPE ID {
             if(symbolTable.variableExists($3)) {
                 error_variable_exists($3);
             }
+            if (strcmp($2, $5->string_type().c_str()) != 0){
+                error_different_types($2, $5->string_type().c_str());
+            }
             VarInfo* var = new VarInfo($2, $3, true);
             var->assign_expr($5);
             free($5);
@@ -395,7 +405,7 @@ decl: TYPE ID {
             symbolTable.addVariable(*var);
     }
     | TYPE ID '[' expr ']' {
-            if($4->string_type() != "int") yyerror("Array element access number is not an integer");
+            if($4->string_type() != "int") yyerror("Array size specifier is not an integer");
             if(symbolTable.variableExists($2)) {
                 error_variable_exists($2);
             }
@@ -404,7 +414,7 @@ decl: TYPE ID {
             symbolTable.addVariable(*var);
     }
     | TYPE ID '[' expr ']' ASSIGN '{' expressions '}' {
-            if($4->string_type() != "int") yyerror("Array element access number is not an integer");
+            if($4->string_type() != "int") yyerror("Array size specifier is not an integer");
             if(symbolTable.variableExists($2)) {
                 error_variable_exists($2);
             }
@@ -591,7 +601,11 @@ statement: decl ';'
     ;
 
 assignment_statement: ID ASSIGN expr ';' {
+                        if(!symbolTable.variableExists($1)) {
+                            error_variable_not_found($1);
+                        }
                         VarInfo temp = symbolTable.getVariable($1);
+
                         if(strcmp(temp.getType().c_str(), $3->string_type().c_str()) == 0){
                             temp.assign_expr($3);
                         }
@@ -601,30 +615,35 @@ assignment_statement: ID ASSIGN expr ';' {
                     }
                     | ID '[' expr ']' ASSIGN expr ';' {
                         if(strcmp($3->string_type().c_str(), "int") == 0){
+                            if(!symbolTable.variableExists($1)) {
+                                error_variable_not_found($1);
+                            }
+                            
                             VarInfo temp = symbolTable.getVariable($1);
+
                             if(strcmp(temp.getType().c_str(), $6->string_type().c_str()) == 0){
                                 if(strcmp(temp.getType().c_str(), "int") == 0){
-                                    int* intVals = (int*)(temp.getValueCopy());
+                                    int* intVals = (int*)(temp.getValueReference());
                                     intVals[std::get<int>($3->evaluate())] = std::get<int>($6->evaluate());
                                     temp.setValue((void*)intVals);
                                 }
                                 else if(strcmp(temp.getType().c_str(), "float") == 0){
-                                    float* floatVals = (float*)(temp.getValueCopy());
+                                    float* floatVals = (float*)(temp.getValueReference());
                                     floatVals[std::get<int>($3->evaluate())] = std::get<float>($6->evaluate());
                                     temp.setValue((void*)floatVals);
                                 }
                                 else if(strcmp(temp.getType().c_str(), "bool") == 0){
-                                    bool* boolVals = (bool*)(temp.getValueCopy());
+                                    bool* boolVals = (bool*)(temp.getValueReference());
                                     boolVals[std::get<int>($3->evaluate())] = std::get<bool>($6->evaluate());
                                     temp.setValue((void*)boolVals);
                                 }
                                 else if(strcmp(temp.getType().c_str(), "char") == 0){
-                                    char* charVals = (char*)(temp.getValueCopy());
+                                    char* charVals = (char*)(temp.getValueReference());
                                     charVals[std::get<int>($3->evaluate())] = std::get<char>($6->evaluate());
                                     temp.setValue((void*)charVals);
                                 }
                                 else if(strcmp(temp.getType().c_str(), "string") == 0){
-                                    char** stringVals = (char**)(temp.getValueCopy());
+                                    char** stringVals = (char**)(temp.getValueReference());
                                     stringVals[std::get<int>($3->evaluate())] = *(std::get<char**>($6->evaluate()));
                                     temp.setValue((void*)stringVals);
                                 }
@@ -658,6 +677,9 @@ while_statement: WHILE '(' expr ')' '{' {symbolTable.enterScope("while" + std::t
     ;
 
 function_call: ID '(' arguments ')' {
+        if(!symbolTable.functionExists($1)) {
+            error_function_not_found($1);
+        }
         FunctionCallNode* func = new FunctionCallNode($1, $3);
         $$ = func;
     }
@@ -774,9 +796,61 @@ expr: expr PLUS expr { $$ = new BinaryOpNode('+', $1, $3); }
     | FLOAT { $$ = new FloatNode($1); }
     | CHAR { $$ = new CharNode($1); }
     | BOOL { $$ = new BoolNode($1); }
-    | STRING { $$ = new StringNode(&$1); 
-    }
+    | STRING { $$ = new StringNode(&$1); }
     | function_call { $$ = $1; }
+    | ID '.' ID { 
+        bool found = false;
+        VarInfo variable = symbolTable.getVariable($1);
+        // search for the user type
+        for (const UserType& userType : userTypes) {
+            if(userType.getName() == variable.getType()) {
+                found = true;
+                // check if the variable exists in the user type
+                bool foundVar = false;
+                for (const VarInfo& var : userType.getVars()) {
+                    if (var.getName() == $3) {
+                        foundVar = true;
+                        int offset = 0;
+                        for (const VarInfo& v : userType.getVars()) {
+                            if (v.getName() == $3) {
+                                break;
+                            }
+                            offset += v.getSize();
+                        }
+                        if (var.getType() == "int") {
+                            int value = *(int*)((char*)symbolTable.getVariable($1).getValueReference() + offset);
+                            $$ = new IntNode(value);
+                        } else if (var.getType() == "float") {
+                            float valuef = *(float*)((char*)symbolTable.getVariable($1).getValueReference() + offset);
+                            $$ = new FloatNode(valuef);
+                        } else if (var.getType() == "bool") {
+                            bool valueb = *(bool*)((char*)symbolTable.getVariable($1).getValueReference() + offset);
+                            $$ = new BoolNode(valueb);
+                        } else if (var.getType() == "char") {
+                            char valuec = *(char*)((char*)symbolTable.getVariable($1).getValueReference() + offset);
+                            
+                            $$ = new CharNode(valuec);
+                        } else if (var.getType() == "string") {
+                            char* values = *(char**)((char*)symbolTable.getVariable($1).getValueReference() + offset);
+                            $$ = new StringNode(&values);
+                        } else {
+                            yyerror("Unknown type in user type variable");
+                        }
+                        break;
+                    }
+                }
+                if (!foundVar) {
+                    char errorMsg[100];
+                    sprintf(errorMsg, "Variable %s not found in user type %s", $3, userType.getName().c_str());
+                    yyerror(errorMsg);
+                }
+                break;
+            }
+        }
+        if (!found) {
+            yyerror("User type not found");
+        }
+    }
     | '(' expr ')' { $$ = $2; }
     ;
 special_function: SPECIAL_FUNCTION '(' ')' '{' { symbolTable.enterScope("clean_code_executer"); } statements '}' { symbolTable.exitScope(); }
@@ -805,8 +879,28 @@ void error_variable_exists(const char* name){
     exit(1);
 }
 
+void error_function_exists(const char* name){
+    printf("error: Function already exists (%s) at line:%d\n",name,yylineno);
+    exit(1);
+}
+
+void error_function_not_found(const char* name){
+    printf("error: Function does not exist (%s) at line:%d\n",name,yylineno);
+    exit(1);
+}
+
+void error_variable_not_found(const char* name){
+    printf("error: Variable does not exist (%s) at line:%d\n",name,yylineno);
+    exit(1);
+}
+
 void error_different_types(const char* left , const char* right){
     printf("error: Different types assignment (%s <- %s) at line:%d\n",left, right, yylineno);
+    exit(1);
+}
+
+void error_type_mismatch(const char* left , const char* right){
+    printf("error: Type mismatch (%s, %s) at line:%d\n",left, right, yylineno);
     exit(1);
 }
 
@@ -863,12 +957,12 @@ VarInfo& SymbolTable::getVariable(const string& name) {
             return it->second[name];
         }
     }
-    return variables[""][""]; // return empty variable
+    return DummyVarInfo; // return dummy variable (empty) if variable does not exist
 }
 
 FunctionInfo SymbolTable::getFunction(const string& name) {
     //search for function in global scope
-    return functions[""][name];
+    return DummyFunctionInfo;
 }
 
 void SymbolTable::saveInFile() {
@@ -1002,32 +1096,18 @@ void VarInfo::setValue(void* value){
     memcpy(this->memoryLocation, value, this->size);
 }
 
-void* VarInfo::getValueCopy() const {
-    if(this->type == "string" && this->size == sizeof(char*)){
-        char** copy = new char*[1];
-        copy[0] = new char[strlen(*(char**)this->memoryLocation) + 1];
-        strcpy(copy[0], *(char**)this->memoryLocation);
-        return copy;
-    }
-    else {
-        void* copy = malloc(this->size);
-        memcpy(copy, this->memoryLocation, this->size);
-        return copy;
-    }
+void* VarInfo::getValueReference() const {
+    return this->memoryLocation;
+    
 }
 
 void VarInfo::write_to_string(string& str) const {
     if(this->size == 0) return; // variabila nu exosta
     if(!this->isUserType) {
-        str += "name: ";
-        str += name;
-        str += "\ntype: ";
-        str += type;
-        str += "\nconst: ";
-        string is_const = std::to_string(this->isConst);
-        str += is_const;
-        str += "\nsize in bytes: ";
-        str += std::to_string(this->size); 
+        str += "name: " + this->name;
+        str += "\ntype: " + this->type;
+        str += "\nconst: " + std::to_string(this->isConst);
+        str += "\nsize in bytes: " + std::to_string(this->size);
         str += "\nvalue: ";
     }
     if(this->type == "int"){
@@ -1089,39 +1169,22 @@ void VarInfo::write_to_string(string& str) const {
         }
     }
     else if (this->isUserType) {
-        // print the user type bytes for debugging
-        
-
-        // print to string user type variable name and type
         str += "\n\n____user type variable: \n\n";
-        str += "type: ";
-        str += this->type;
-        str += "\n";
-        str += "name: ";
-        str += this->name;
-        str += "\n";
-        str += "size in bytes: ";
-        str += std::to_string(this->size);
-        str += "\n";
-        string is_const = std::to_string(this->isConst);
-        str += "const: ";
-        str += is_const;
-        str += "\n\n";
+        str += "type: " + this->type + "\n";
+        str += "name: " + this->name + "\n";
+        str += "size in bytes: " + std::to_string(this->size) + "\n";
+        str += "const: " + std::to_string(this->isConst) + "\n\n";
         str += "__variables: \n";
         for (int i = 0; i < userTypes.size(); ++i) {
             if (userTypes[i].getName() == this->type) {
                 int offset = 0;
                 for (const VarInfo& var : userTypes[i].getVars()) {
-                    str += "name: ";
-                    str += var.getName();
-                    str += "\ntype: ";
-                    str += var.getType();
-                    str += "\nsize in bytes: ";
-                    str += std::to_string(var.getSize());
+                    str += "name: " + var.getName();
+                    str += "\ntype: " + var.getType();
+                    str += "\nsize in bytes: " + std::to_string(var.getSize());
+                    str += "\nconst: " + std::to_string(var.isConst);
                     str += "\nvalue: ";
                     if (var.getType() == "int") {
-                        cout<<"INT"<<endl;
-                        cout<<*(int*)((char*)this->memoryLocation + offset)<<endl;
                         str += std::to_string(*(int*)((char*)this->memoryLocation + offset));
                     }
                     else if (var.getType() == "char") {
@@ -1134,8 +1197,6 @@ void VarInfo::write_to_string(string& str) const {
                         str += std::to_string(*(bool*)((char*)this->memoryLocation + offset));
                     }
                     else if (var.getType() == "string") {
-                        cout<<"STRING"<<endl;
-                        cout<<*(((char**)this->memoryLocation + offset))<<endl;
                         str += *(((char**)this->memoryLocation + offset));
                     }
                     str += "\n\n";
@@ -1232,17 +1293,12 @@ FunctionInfo::FunctionInfo(string type, string name, vector<VarInfo> params) {
 }
 
 void FunctionInfo::write_to_string(string& str) const {
-    str += "name: ";
-    str += name;
-    str += "\nreturn type: ";
-    str += type;
+    str += "name: " + name;
+    str += "\nreturn type: " + type;
     str += "\nparams: ";
     if(params.size() != 0) {
-        
         for (const VarInfo& v : params) {
-            str += v.getType();
-            str += " ";
-            str += v.getName();
+            str += v.getType() + " " + v.getName();
             if(&v != &params.back()) str += ", ";
         }
     }
@@ -1309,7 +1365,7 @@ ASTNode::ReturnValue handleOperation(char op, T leftValue, T rightValue) {
 
 ASTNode::ReturnValue BinaryOpNode::evaluate() const {
     if(left->type() != right->type()) {
-        yyerror("Incompatible types");
+        error_type_mismatch(left->string_type().c_str(), right->string_type().c_str());
     }
     ExprType type = left->type();
     switch (type) {
@@ -1330,7 +1386,7 @@ ASTNode::ReturnValue BinaryOpNode::evaluate() const {
 
 ExprType BinaryOpNode::type() const {
     if(left->type() != right->type()) {
-        yyerror("Incompatible typesss");
+        error_type_mismatch(left->string_type().c_str(), right->string_type().c_str());
     }
     if(this->op == '=' || this->op == 'n' || this->op == '<' || this->op == 'l' || this->op == '>' || this->op == 'g' || this->op == '&' || this->op == '|') {
         return ExprType::BOOLEAN;
@@ -1342,7 +1398,7 @@ ExprType BinaryOpNode::type() const {
 
 string BinaryOpNode::string_type() const {
     if(left->type() != right->type()) {
-        yyerror("Incompatible typesss");
+        error_type_mismatch(left->string_type().c_str(), right->string_type().c_str());
     }
     if(this->op == '=' || this->op == 'n' || this->op == '<' || this->op == 'l' || this->op == '>' || this->op == 'g' || this->op == '&' || this->op == '|') {
         return "bool";
@@ -1363,12 +1419,7 @@ ASTNode::ReturnValue FunctionCallNode::evaluate() const {
         ASTNode* aParam = (*this->params)[i];
         if (strcmp(aParam->string_type().c_str(), p[i].getType().c_str()) != 0){
             std::string to_return = "Different parameter types [Param: ";
-            to_return += to_string(i+1);
-            to_return += "](";
-            to_return += p[i].getType();
-            to_return += "<-";
-            to_return += aParam->string_type();
-            to_return += ") ";
+            to_return += to_string(i+1) + "](" + p[i].getType() + "<-" + aParam->string_type() + ") ";
             yyerror(to_return.c_str());
         }
     }
@@ -1380,9 +1431,9 @@ ASTNode::ReturnValue FunctionCallNode::evaluate() const {
         case 'b':
             return ReturnValue(false);
         case 'c':
-            return ReturnValue('0');
+            return ReturnValue(0);
         case 's':
-            return ReturnValue('0');
+            return ReturnValue(0);
         default:
             return ReturnValue(0);
     }
@@ -1419,27 +1470,27 @@ string FunctionCallNode::string_type() const {
 ASTNode::ReturnValue VectorElementNode::evaluate() const {
     VarInfo var = symbolTable.getVariable(name);
     if(strcmp(var.getType().c_str(), "int") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         int* intVals = (int*)vals;
         return ReturnValue(intVals[index]);
     }
     else if(strcmp(var.getType().c_str(), "bool") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         bool* boolVals = (bool*)vals;
         return ReturnValue(boolVals[index]);
     }
     else if(strcmp(var.getType().c_str(), "float") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         float* floatVals = (float*)vals;
         return ReturnValue(floatVals[index]);
     }
     else if(strcmp(var.getType().c_str(), "char") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         char* charVals = (char*)vals;
         return ReturnValue(charVals[index]);
     }
     else if(strcmp(var.getType().c_str(), "string") == 0){
-        void* vals = var.getValueCopy();
+        void* vals = var.getValueReference();
         char** stringVals = (char**)vals;
         return ReturnValue(&(stringVals[index]));
     }
@@ -1469,15 +1520,15 @@ ASTNode::ReturnValue IdentifierNode::evaluate() const {
     VarInfo var = symbolTable.getVariable(name);
     switch (var.getType()[0]) {
         case 'g':
-            return ReturnValue(*(int*)var.getValueCopy());
+            return ReturnValue(*(int*)var.getValueReference());
         case 'f':
-            return ReturnValue(*(float*)var.getValueCopy());
+            return ReturnValue(*(float*)var.getValueReference());
         case 'b':
-            return ReturnValue(*(bool*)var.getValueCopy());
+            return ReturnValue(*(bool*)var.getValueReference());
         case 'c':
-            return ReturnValue(*(char*)var.getValueCopy());
+            return ReturnValue(*(char*)var.getValueReference());
         case 's':
-            return ReturnValue((char**)var.getValueCopy());
+            return ReturnValue((char**)var.getValueReference());
         default:
             return ReturnValue(0);
     }
@@ -1512,11 +1563,6 @@ string IdentifierNode::string_type() const {
 int main(int argc, char** argv){
     yyin=fopen(argv[1],"r");
     yyparse();
-
-    // Print user types
-    // for (UserType& userType : userTypes) {
-    //     userType.printMembers();
-    // }
 
     // Print symbol table in file
     symbolTable.saveInFile();
