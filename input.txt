@@ -89,12 +89,12 @@ clean_code_executer() {
         }
     }
     
-    Eval(2+3 + 4* 4 / 5 + globalMethod(oh, oh));
-    Eval(2+3 + 4* 4 / 5 + globalMethod(1, 'a')); // TODOO
+    Eval(2+3 + 4* 4 / 5 + globalMethod(2, 3));
+    Eval(2+3 + 4* 4 / 5 + globalMethod(1, 633)); // TODOO
     Eval(1.5+0.7);
 
     
-    
+    myCar.speed = 300 + 10;
 
     Eval((!true || true && false) && true );
     
@@ -102,5 +102,8 @@ clean_code_executer() {
     bool myasdfea = 1 < 2;
     int intTest = 10 + expressionINTEGER;
     Eval(strings[1]);
-    //Eval(myCar.speedd + 200);
+    Eval(myCar.speed);
 }
+
+
+// TODO: ASSIGN TO TYPE AND FUNCTION IN EXPR
