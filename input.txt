@@ -40,6 +40,8 @@ int f(int z, float f, string s) {
     int ix; //should be ok
 }
 
+string check() {}
+
 
 #END_GLOBAL_FUNCS
 
@@ -57,7 +59,7 @@ clean_code_executer() {
     }
     
     Eval(2+3 + 4* 4 / 5 + globalMethod(2, 3));
-    Eval(2+3 + 4* 4 / 5 + globalMethod(1, 633)); // TODOO
+    Eval(2+3 + 4* 4 / 5 + globalMethod(1, 633)); 
     Eval(1.5+0.7);
 
     
@@ -71,6 +73,7 @@ clean_code_executer() {
     Eval(strings[1]);
     Eval(myCar.speed);
     Eval("hello");
+    Eval(check());
 
     //string str = f(1,2.2,"as"); error different types assignment    
     //ints[2] = 1>2; //eroare dif types assignment

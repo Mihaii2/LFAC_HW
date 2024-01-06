@@ -176,6 +176,10 @@ value: 0
 
 -----------------Functions-----------------
 --------Scope: 
+name: check
+return type: string
+params: 
+
 name: f
 return type: int
 params: int z, float f, string s

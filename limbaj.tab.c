@@ -3634,9 +3634,9 @@ ASTNode::ReturnValue FunctionCallNode::evaluate() const {
         case 'b':
             return ReturnValue(false);
         case 'c':
-            return ReturnValue(0);
+            return ReturnValue('0');
         case 's':
-            return ReturnValue(0);
+            return ReturnValue((char**)nullptr);
         default:
             return ReturnValue(0);
     }
