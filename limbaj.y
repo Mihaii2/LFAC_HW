@@ -115,13 +115,10 @@ enum class ExprType {
     CHAR,
 };
 
-using ReturnValue = variant<int, float, bool, char, char**>;
-using ReturnBool = bool;
 
 class ASTNode {
 public:
     using ReturnValue = variant<int, float, bool, char, char**>;
-    using ReturnBool = bool;
     virtual ~ASTNode() {}
     virtual ReturnValue evaluate() const = 0;
     virtual ExprType type() const = 0;
@@ -177,18 +174,9 @@ class StringNode : public ASTNode {
 private:
     char** value;
 public:
-    StringNode(char** val) {
-        value = new char*[1];
-        value[0] = new char[strlen(*val) + 1];
-        strcpy(value[0], *val);
-    }
+    StringNode(char** val);
 
-    ReturnValue evaluate() const override {
-        char** copy = new char*[1];
-        copy[0] = new char[strlen(*value) + 1];
-        strcpy(copy[0], *value);
-        return ReturnValue(copy);
-    }
+    ReturnValue evaluate() const override;
     ExprType type() const override { return ExprType::STRING; }
     string string_type() const override { return "string"; }
 };
@@ -294,7 +282,7 @@ FunctionInfo DummyFunctionInfo = FunctionInfo();
 %token <string> ID TYPE SPECIAL_FUNCTION USR_TYPE
 %token IF WHILE FOR  
 %token END_USR_TYPES END_USR_TYPE_VARS END_GLOBAL_VARS END_GLOBAL_FUNCS
-%token CONST EVAL TYPEOF
+%token CONST EVAL TYPEOF RETURN
 %token NOT EQ NEQ LT LE GT GE ASSIGN PLUS MINUS MUL DIV MOD AND OR GEQ LEQ
 
 %type<vars> usr_type_vars list_param func_param
@@ -339,6 +327,7 @@ usr_type_vars: /* epsilon */ {
 usr_type_var: TYPE ID {
                     VarInfo* var = new VarInfo($1, $2);
                     $$ = var;
+                    symbolTable.addVariable(*var);
                 }
                 ;
 
@@ -355,6 +344,7 @@ usr_type_methods: /* epsilon */ {
 usr_type_method: TYPE ID '(' func_param ')' '{' {symbolTable.enterScope(string($2));} statements '}' {symbolTable.exitScope();} {
                     FunctionInfo* func = new FunctionInfo($1, $2, *$4);
                     $$ = func;
+                    symbolTable.addFunction(*func);
                 }
                 ;
 
@@ -382,7 +372,7 @@ decl: TYPE ID {
             if(symbolTable.variableExists($2)) {
                 error_variable_exists($2);   
             }
-            if (strcmp($4->string_type().c_str(), $1) != 0){
+            if (strcmp($4->string_type().c_str(), $1) != 0){                
                 error_different_types($1, $4->string_type().c_str());
             }
             VarInfo* var = new VarInfo($1, $2, false);
@@ -423,7 +413,7 @@ decl: TYPE ID {
                 yyerror("Array size is smaller than the number of elements provided");
             }
             
-            ReturnValue values[nr_elements];
+            ASTNode::ReturnValue values[nr_elements];
             
             for(int i = 0; i < nr_elements; ++i){
                 ASTNode* node = (*$8)[i];
@@ -508,7 +498,9 @@ decl: TYPE ID {
                 }
             }
             if (userTypeIndex == -1) {
-                yyerror("User type not found");
+                char errorMsg[100];
+                sprintf(errorMsg, "User type %s not found", $2);
+                yyerror(errorMsg);
             }
             if (userTypes[userTypeIndex].getVars().size() != nr_elements) {
                 yyerror("Number of elements in the initializer list is not equal to the number of variables in the user type");
@@ -598,7 +590,10 @@ statement: decl ';'
     | function_call ';'
     | eval_statement
     | type_of_statement
+    | return_statement
     ;
+
+return_statement: RETURN expr ';';
 
 assignment_statement: ID ASSIGN expr ';' {
                         if(!symbolTable.variableExists($1)) {
@@ -857,8 +852,15 @@ expr: expr PLUS expr { $$ = new BinaryOpNode('+', $1, $3); }
     | expr AND expr { $$ = new BinaryOpNode('&', $1, $3); }
     | expr OR expr { $$ = new BinaryOpNode('|', $1, $3); }
     | NOT expr { $$ = new BinaryOpNode('!', $2, new BoolNode(false)); /* right node is a dummy value */ }
-    | ID { $$ = new IdentifierNode($1); }
+    | ID { $$ = new IdentifierNode($1);
+        if(!symbolTable.variableExists($1)) {
+            error_variable_not_found($1);
+        }
+    }
     | ID '[' expr ']' {
+        if(!symbolTable.variableExists($1)) {
+            error_variable_not_found($1);
+        }
         if($3->type() == ExprType::INT) {
             $$ = new VectorElementNode($1, std::get<int>($3->evaluate()));
         }
@@ -920,7 +922,9 @@ expr: expr PLUS expr { $$ = new BinaryOpNode('+', $1, $3); }
             }
         }
         if (!found) {
-            yyerror("User type not found");
+            char errorMsg[100];
+            sprintf(errorMsg, "User type %s not found", variable.getType().c_str());
+            yyerror(errorMsg);
         }
     }
     | '(' expr ')' { $$ = $2; }
@@ -1146,7 +1150,9 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* v
             }
         }
         if (!found) {
-            yyerror("User type not found");
+            char errorMsg[100];
+            sprintf(errorMsg, "User type %s not found", type.c_str());
+            yyerror(errorMsg);
         }
         this->isUserType = true;
     }
@@ -1156,6 +1162,10 @@ VarInfo::VarInfo(string type, string name, bool is_const, int arraySize, void* v
     if (value != nullptr) {
         memcpy(this->memoryLocation, value, this->size * arraySize);
     }
+    else {
+        *((char**)this->memoryLocation) = nullptr;
+    }
+
     this->size = this->size * arraySize;
 }
 
@@ -1185,6 +1195,11 @@ void VarInfo::write_to_string(string& str) const {
         str += "\nconst: " + std::to_string(this->isConst);
         str += "\nsize in bytes: " + std::to_string(this->size);
         str += "\nvalue: ";
+    }
+    if(this->memoryLocation == nullptr) {
+        str += "null";
+        str += "\n\n";
+        return;
     }
     if(this->type == "int"){
         if(this->size == sizeof(int)) str += std::to_string(*(int*)this->memoryLocation);
@@ -1230,17 +1245,22 @@ void VarInfo::write_to_string(string& str) const {
     }
     else if (this->type == "string"){
         if(this->memoryLocation != nullptr) {
-            if(this->size == sizeof(char*)) {
-                str += *((char**)this->memoryLocation);
-            }
-            else if (this->size > sizeof(char*)) {
-                char** arr = (char**)(this->memoryLocation);
-                for(int j = 0; j < this->size/sizeof(char*); ++j){
-                    if(arr[j] != nullptr) {
-                        str += arr[j];
-                        str += " ";
+            if(*((char**)this->memoryLocation) != nullptr) {
+                if(this->size == sizeof(char*)) {
+                    str += *((char**)this->memoryLocation);
+                }
+                else if (this->size > sizeof(char*)) {
+                    char** arr = (char**)(this->memoryLocation);
+                    for(int j = 0; j < this->size/sizeof(char*); ++j){
+                        if(arr[j] != nullptr) {
+                            str += arr[j];
+                            str += " ";
+                        }
                     }
                 }
+            }
+            else {
+                str += "null";
             }
         }
     }
@@ -1391,6 +1411,12 @@ BinaryOpNode::BinaryOpNode(char oper, const ASTNode* l, const ASTNode* r) {
     }
     if((oper == '&' || oper == '|' || oper == '!') && (l->type() != ExprType::BOOLEAN || r->type() != ExprType::BOOLEAN)) {
         yyerror("Logical operations allowed only on bool type");
+    }
+    if(l->type() == ExprType::STRING || r->type() == ExprType::STRING) {
+        yyerror("No operations allowed on string type");
+    }
+    if(l->type() == ExprType::CHAR || r->type() == ExprType::CHAR) {
+        yyerror("No operations allowed on char type");
     }
     this->op = oper;
     this->left = l;
@@ -1651,6 +1677,23 @@ string IdentifierNode::string_type() const {
 }
 
 // IDENTIFIERNODE IMPLEMENTATION ENDS
+
+// STRINGNODE IMPLEMENTATION
+
+StringNode::StringNode(char** val) {
+    value = new char*[1];
+    value[0] = new char[strlen(*val) + 1];
+    strcpy(value[0], *val);
+}
+
+ASTNode::ReturnValue StringNode::evaluate() const {
+    char** copy = new char*[1];
+    copy[0] = new char[strlen(*value) + 1];
+    strcpy(copy[0], *value);
+    return ReturnValue(copy);
+}
+
+// STRINGNODE IMPLEMENTATION ENDS
 
 int main(int argc, char** argv){
     yyin=fopen(argv[1],"r");

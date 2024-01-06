@@ -22,6 +22,7 @@
 "!" {return NOT;}
 "&&" {return AND;}
 "||" {return OR;}
+"return" {return RETURN;}
 "#END_USR_TYPE_VARS" {return END_USR_TYPE_VARS;}
 "#END_USR_TYPES" {return END_USR_TYPES;}
 "#END_GLOBAL_VARS" {return END_GLOBAL_VARS;}

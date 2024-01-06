@@ -1,22 +1,3 @@
-usr_type myType {
-    char a;
-    char gender; // comentariu
-    char b;
-    char c;
-
-    #END_USR_TYPE_VARS 
-
-    int someMethod(int boy, char ch) {
-        int n_ajdwadwh = 15;
-        while(1) {
-            int something = 3;
-        }
-        while(1) {
-            const int omegalul = 3;
-        }
-    }
-} 
-
 usr_type carClass {
     int engine;
     int speed;
@@ -24,44 +5,27 @@ usr_type carClass {
     int consumption;
 
     #END_USR_TYPE_VARS
+
+    string getModel() {
+        int a = 3;
+        return model;
+    }
 }
 
 #END_USR_TYPES
 
-int mix = 5;
-float gb = 2.2;
-int myint = 8889; 
-int sing_arr[1] = {1};
+int mix;
 int ints[11] = {0,11,20,52,49,81,16,8,53,93,22};
 char chars[7] = {'a', '0', 'n', '&'};
-//char too_many_chars[2] = {'a', '0', 'n'}; //eroare
 bool bools[2] = {true || false && true, false};
-int expressionINTEGER = 1 + 2 + 3;
-bool boolValue = true;
-bool dmnefereste = true || (false && true);
+int expressionINT = 1 + 2 + 3;
+bool boolValue = ((true || false) && true) && true && ( 1 > 2 );
 float vloatValue = 0.85191;
-
-usr_type myType typevar {'a', 'm', 'b', 'c'};
-
-usr_type myType typevarEmpty;
-
 usr_type carClass myCar {100, 200, "Dacia", 40};
-
-char charValue1 = 'a';
-char charValue2 = 'j';
-//string jojo = 'b';   //eroare diff types
-//int c = 12.8 + 28.5; //eroare diff types
-//bool b = 12 + 0.5;
-bool cpo = ((true || false) && true) && true && ( 1 > 2 );
-bool newcpo = (1 > 2);
-//char charValue = 'b'; // eroare(redefinire)
+char charValue = 'a';
 string stringValue = "2023 -> 2024";
 string strings[3] = {"abra", "cada", "bra"};
 int shippuden = 2007;
-//int shippuden = 2007 + ints[2];
-char varp[4] = {'2', '0', '2', '3'};
-//nt_exist = 2; // eroare
-bool bools0cpy = bools[0]; 
 
 #END_GLOBAL_VARS
 
@@ -72,16 +36,19 @@ int globalMethod(int a, int b) {
     }
 }
 
+int f(int z, float f, string s) {
+    int ix; //should be ok
+}
+
+
 #END_GLOBAL_FUNCS
 
 clean_code_executer() {
-    //ints[2] = 1 + 2 + 3.5; //eroare dif types
-    //ints[2] = 1>2; //eroare  
-    shippuden = 2017 + ints[1];
+    shippuden = 2017;
     ints[1] = ints[1] + ints[3];
     ints[0] = 2024 + shippuden;
-    varp[3] = '4';
-    int oh = myint + 111;
+    int oh = mix + 111;
+    shippuden = 2007;
     if (1 < 3 && 3 < 2) {
         int a = 3000;
         if(2 < 3) {
@@ -100,10 +67,17 @@ clean_code_executer() {
     
     Eval(1+3 == 6 || 2 > 1  );
     bool myasdfea = 1 < 2;
-    int intTest = 10 + expressionINTEGER;
+    int intTest = 10 + expressionINT;
     Eval(strings[1]);
     Eval(myCar.speed);
+    Eval("hello");
+
+    //string str = f(1,2.2,"as"); error different types assignment    
+    //ints[2] = 1>2; //eroare dif types assignment
+    //ints[2] = 1 + 2 + 3.5; //eroare dif types of operands on the right
+    //char too_many_chars[2] = {'a', '0', 'n'}; //eroare too many elements
+    //string jojo = "asd" + "eae";   //eroare cant add strings
+    //int c = 12.8 + 28.5; //eroare diff types
+    //bool b = 12 + 0.5;
+    //char charValue = 'b'; // eroare(redefinire)
 }
-
-
-// TODO: ASSIGN TO TYPE AND FUNCTION IN EXPR

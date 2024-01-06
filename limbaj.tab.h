@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 265 "limbaj.y"
+#line 253 "limbaj.y"
 
     #include <vector>
     #include <string>
@@ -84,23 +84,24 @@ extern int yydebug;
     CONST = 274,                   /* CONST  */
     EVAL = 275,                    /* EVAL  */
     TYPEOF = 276,                  /* TYPEOF  */
-    NOT = 277,                     /* NOT  */
-    EQ = 278,                      /* EQ  */
-    NEQ = 279,                     /* NEQ  */
-    LT = 280,                      /* LT  */
-    LE = 281,                      /* LE  */
-    GT = 282,                      /* GT  */
-    GE = 283,                      /* GE  */
-    ASSIGN = 284,                  /* ASSIGN  */
-    PLUS = 285,                    /* PLUS  */
-    MINUS = 286,                   /* MINUS  */
-    MUL = 287,                     /* MUL  */
-    DIV = 288,                     /* DIV  */
-    MOD = 289,                     /* MOD  */
-    AND = 290,                     /* AND  */
-    OR = 291,                      /* OR  */
-    GEQ = 292,                     /* GEQ  */
-    LEQ = 293                      /* LEQ  */
+    RETURN = 277,                  /* RETURN  */
+    NOT = 278,                     /* NOT  */
+    EQ = 279,                      /* EQ  */
+    NEQ = 280,                     /* NEQ  */
+    LT = 281,                      /* LT  */
+    LE = 282,                      /* LE  */
+    GT = 283,                      /* GT  */
+    GE = 284,                      /* GE  */
+    ASSIGN = 285,                  /* ASSIGN  */
+    PLUS = 286,                    /* PLUS  */
+    MINUS = 287,                   /* MINUS  */
+    MUL = 288,                     /* MUL  */
+    DIV = 289,                     /* DIV  */
+    MOD = 290,                     /* MOD  */
+    AND = 291,                     /* AND  */
+    OR = 292,                      /* OR  */
+    GEQ = 293,                     /* GEQ  */
+    LEQ = 294                      /* LEQ  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -109,7 +110,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 274 "limbaj.y"
+#line 262 "limbaj.y"
 
     int intValue;
     float floatValue;
@@ -124,7 +125,7 @@ union YYSTYPE
     ASTNode* node;
     std::vector<ASTNode*>* nodes;
 
-#line 128 "limbaj.tab.h"
+#line 129 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
