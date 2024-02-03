@@ -12,6 +12,7 @@ union Data {
 
 int main() {
     Data data;
+    // aight
 
     cout << "Integer value: " << data.intValue << endl;
 
