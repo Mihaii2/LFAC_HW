@@ -42,14 +42,25 @@ int f(int z, float f, string s) {
 
 string check() {}
 
+bool bcheck() {}
+
+float fcheck() {}
+
 
 #END_GLOBAL_FUNCS
 
 clean_code_executer() {
     shippuden = 2017;
     ints[1] = ints[1] + ints[3];
+
+    mix = 10;
+    
+    boolValue = ((shippuden == 2017 || ints[1] > 0) && mix == 10 ) && globalMethod(1,13) == 0;
+
+    Eval(boolValue);
+    Eval(vloatValue);
+
     ints[0] = 2024 + shippuden;
-    int oh = mix + 111;
     shippuden = 2007;
     if (1 < 3 && 3 < 2) {
         int a = 3000;
@@ -58,12 +69,20 @@ clean_code_executer() {
         }
     }
     
-    Eval(2+3 + 4* 4 / 5 + globalMethod(2, 3));
+    Eval(shippuden);
+
+    string myString = "Hello world";
+    Eval(myString);
+
+    Eval(ints[1] + 3 + 4* 4 / 5 + globalMethod(2, ints[1]));
     Eval(2+3 + 4* 4 / 5 + globalMethod(1, 633)); 
     Eval(1.5+0.7);
 
-    
+    TypeOf(shippuden);
+
     myCar.speed = 300 + 10;
+    
+    Eval(myCar.speed);
 
     Eval((!true || true && false) && true );
     
@@ -71,7 +90,6 @@ clean_code_executer() {
     bool myasdfea = 1 < 2;
     int intTest = 10 + expressionINT;
     Eval(strings[1]);
-    Eval(myCar.speed);
     Eval("hello");
     Eval(check());
 

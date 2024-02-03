@@ -786,24 +786,24 @@ expressions: expr {
 eval_statement: EVAL '(' expr ')' ';' { 
     switch($3->type()) {
         case ExprType::INT:
-            printf("Evaluated expression: %d\n", std::get<int>($3->evaluate()));
+            printf("Evaluated expression: %d at line %d\n", std::get<int>($3->evaluate()), yylineno);
             break;
         case ExprType::FLOAT:
-            printf("Evaluated expression: %f\n", std::get<float>($3->evaluate()));
+            printf("Evaluated expression: %f at line %d\n", std::get<float>($3->evaluate()), yylineno);
             break;
         case ExprType::BOOLEAN:
-            printf("Evaluated expression: %s\n", std::get<bool>($3->evaluate())? "true" : "false");
+            printf("Evaluated expression: %s at line %d\n", std::get<bool>($3->evaluate())? "true" : "false", yylineno);
             break;
         case ExprType::STRING:
             if(std::get<char**>($3->evaluate()) != nullptr) {
-                printf("Evaluated expression: %s\n", *(std::get<char**>($3->evaluate())));
+                printf("Evaluated expression: %s at line %d\n", *(std::get<char**>($3->evaluate())), yylineno);
 
             }
             else
                 printf("Evaluated expression: null\n");
             break;
         case ExprType::CHAR:
-            printf("Evaluated expression: %c\n", std::get<char>($3->evaluate()));
+            printf("Evaluated expression: %c at line %d\n", std::get<char>($3->evaluate()), yylineno);
             break;
         default:
             printf("Evaluated expression: Unknown type\n");
@@ -816,22 +816,22 @@ eval_statement: EVAL '(' expr ')' ';' {
 type_of_statement: TYPEOF '(' expr ')' ';' { 
         switch ($3->type()) {
             case ExprType::INT:
-                printf("Type of expression: int\n");
+                printf("Type of expression: int at line %d\n", yylineno);
                 break;
             case ExprType::FLOAT:
-                printf("Type of expression: float\n");
+                printf("Type of expression: float at line %d\n", yylineno);
                 break;
             case ExprType::BOOLEAN:
-                printf("Type of expression: bool\n");
+                printf("Type of expression: bool at line %d\n", yylineno);
                 break;
             case ExprType::STRING:
-                printf("Type of expression: string\n");
+                printf("Type of expression: string at line %d\n", yylineno);
                 break;
             case ExprType::CHAR:
-                printf("Type of expression: char\n");
+                printf("Type of expression: char at line %d\n", yylineno);
                 break;
             default:
-                printf("Type of expression: unknown\n");
+                printf("Type of expression: unknown at line %d\n", yylineno);
                 break;
         }
     free($3); // free the memory allocated for the expression
@@ -1542,7 +1542,7 @@ FunctionCallNode::FunctionCallNode(string name, vector<ASTNode*>* args) {
 ASTNode::ReturnValue FunctionCallNode::evaluate() const {
     FunctionInfo temp = symbolTable.getFunction(name);
     switch(temp.getType()[0]) {
-        case 'g':
+        case 'i':
             return ReturnValue(0);
         case 'f':
             return ReturnValue(0.0f);
@@ -1561,7 +1561,7 @@ ASTNode::ReturnValue FunctionCallNode::evaluate() const {
 ExprType FunctionCallNode::type() const {
     FunctionInfo func = symbolTable.getFunction(name);
     switch (func.getType()[0]) {
-        case 'g':
+        case 'i':
             return ExprType::INT;
         case 'f':
             return ExprType::FLOAT;
@@ -1637,7 +1637,7 @@ string VectorElementNode::string_type() const {
 ASTNode::ReturnValue IdentifierNode::evaluate() const {
     VarInfo var = symbolTable.getVariableReference(name);
     switch (var.getType()[0]) {
-        case 'g':
+        case 'i':
             return ReturnValue(*(int*)var.getValueReference());
         case 'f':
             return ReturnValue(*(float*)var.getValueReference());
@@ -1656,7 +1656,7 @@ ASTNode::ReturnValue IdentifierNode::evaluate() const {
 ExprType IdentifierNode::type() const {
     VarInfo var = symbolTable.getVariableReference(name);
     switch (var.getType()[0]) {
-        case 'g':
+        case 'i':
             return ExprType::INT;
         case 'f':
             return ExprType::FLOAT;

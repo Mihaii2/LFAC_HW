@@ -1,17 +1,10 @@
 -----------------Variables-----------------
---------Scope: clean_code_executer::if0::
-name: a
-type: int
-const: 0
-size in bytes: 4
-value: 200
-
 --------Scope: clean_code_executer::
 name: intTest
 type: int
 const: 0
 size in bytes: 4
-value: 10
+value: 16
 
 name: myasdfea
 type: bool
@@ -19,11 +12,18 @@ const: 0
 size in bytes: 1
 value: 1
 
-name: oh
+name: myString
+type: string
+const: 0
+size in bytes: 8
+value: Hello world
+
+--------Scope: clean_code_executer::if0::
+name: a
 type: int
 const: 0
 size in bytes: 4
-value: 111
+value: 200
 
 --------Scope: f::
 name: ix
@@ -92,7 +92,7 @@ name: boolValue
 type: bool
 const: 0
 size in bytes: 1
-value: 0
+value: 1
 
 name: expressionINT
 type: int
@@ -134,13 +134,13 @@ name: ints
 type: int
 const: 0
 size in bytes: 44
-value: 2024 63 20 52 49 81 16 8 53 93 22 
+value: 4041 63 20 52 49 81 16 8 53 93 22 
 
 name: mix
 type: int
 const: 0
 size in bytes: 4
-value: 0
+value: 10
 
 --------Scope: carClass::getModel::
 name: a
@@ -176,6 +176,14 @@ value: 0
 
 -----------------Functions-----------------
 --------Scope: 
+name: fcheck
+return type: float
+params: 
+
+name: bcheck
+return type: bool
+params: 
+
 name: check
 return type: string
 params: 
