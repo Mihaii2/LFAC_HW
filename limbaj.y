@@ -748,6 +748,7 @@ function_call: ID '(' arguments ')' {
             error_function_not_found($1);
         }
         FunctionCallNode* func = new FunctionCallNode($1, $3);
+        // Added some comment lmao
         $$ = func;
     }
     ;
