@@ -749,6 +749,7 @@ function_call: ID '(' arguments ')' {
         }
         FunctionCallNode* func = new FunctionCallNode($1, $3);
         // Added some comment lmao
+        // Another comment
         $$ = func;
     }
     ;
